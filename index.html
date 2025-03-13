@@ -45,16 +45,32 @@
 
         function addPlayer() {
             const name = document.getElementById('playerName').value.trim();
-            if (name) {
-                players.push({ name, score: 0 });
-                document.getElementById('playerName').value = '';
+            if (name === '') {
+                alert("Voer een naam in!");
+                return;
+            }
+            if (players.some(player => player.name.toLowerCase() === name.toLowerCase())) {
+                alert("Deze speler bestaat al!");
+                return;
+            }
+            players.push({ name, score: 0 });
+            document.getElementById('playerName').value = '';
+            saveAndRender();
+        }
+
+        function updateScore(name, change) {
+            let player = players.find(player => player.name === name);
+            if (player) {
+                player.score += change;
                 saveAndRender();
             }
         }
 
-        function updateScore(index, change) {
-            players[index].score += change;
-            saveAndRender();
+        function deletePlayer(name) {
+            if (confirm(`Weet je zeker dat je ${name} wilt verwijderen?`)) {
+                players = players.filter(player => player.name !== name);
+                saveAndRender();
+            }
         }
 
         function saveAndRender() {
@@ -70,17 +86,18 @@
             sortedPlayers.sort((a, b) => sortOrder === 'desc' ? b.score - a.score : a.score - b.score);
             
             container.innerHTML = '';
-            sortedPlayers.forEach((player, index) => {
+            sortedPlayers.forEach((player) => {
                 container.innerHTML += `
                     <div class="player">
                         <h3>${player.name}</h3>
                         <p>Score: ${player.score}</p>
-                        <button onclick="updateScore(${index}, 1)" class="btn-positive">+1</button>
-                        <button onclick="updateScore(${index}, 5)" class="btn-positive">+5</button>
-                        <button onclick="updateScore(${index}, -1)" class="btn-negative">-1</button>
-                        <button onclick="updateScore(${index}, -5)" class="btn-negative">-5</button>
-                        <input type="number" id="custom${index}" placeholder="Andere waarde">
-                        <button onclick="updateScore(${index}, parseInt(document.getElementById('custom'+${index}).value) || 0)" class="btn-positive">Voeg toe</button>
+                        <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
+                        <button onclick="updateScore('${player.name}', 5)" class="btn-positive">+5</button>
+                        <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
+                        <button onclick="updateScore('${player.name}', -5)" class="btn-negative">-5</button>
+                        <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
+                        <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
+                        <button onclick="deletePlayer('${player.name}')" class="btn-delete">🗑 Verwijderen</button>
                     </div>`;
             });
         }
