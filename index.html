@@ -45,6 +45,13 @@
             <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
             <button onclick="resetGame()" class="btn-reset">Nieuwe sessie</button>
         </div>
+        <div>
+            <label for="sortOrder">Sorteer scores:</label>
+            <select id="sortOrder" onchange="renderPlayers()">
+                <option value="desc">Hoogste eerst</option>
+                <option value="asc">Laagste eerst</option>
+            </select>
+        </div>
         <div id="players"></div>
     </div>
     
@@ -81,8 +88,13 @@
 
         function renderPlayers() {
             const container = document.getElementById('players');
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            let sortedPlayers = [...players];
+            sortedPlayers.sort((a, b) => sortOrder === 'desc' ? b.score - a.score : a.score - b.score);
+            
             container.innerHTML = '';
-            players.forEach((player, index) => {
+            sortedPlayers.forEach((player, index) => {
                 container.innerHTML += `
                     <div class="player">
                         <h3>${player.name}</h3>
