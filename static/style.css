@@ -4,6 +4,7 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 40px 20px;
+    touch-action: manipulation;
 }
 
 .container {
@@ -45,6 +46,8 @@ h1 img {
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 1em;
+    touch-action: manipulation;
+    user-select: none;
 }
 
 .sort-container {
@@ -158,5 +161,9 @@ button {
     }
     .player .actions, .player .inline-actions {
         gap: 8px;
+    }
+    input[type="text"] {
+        font-size: 16px;
+        user-select: none;
     }
 }
