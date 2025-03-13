@@ -91,16 +91,21 @@
                     <div class="player">
                         <h3>${player.name}</h3>
                         <p>Score: ${player.score}</p>
-                        <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
-                        <button onclick="updateScore('${player.name}', 5)" class="btn-positive">+5</button>
-                        <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
-                        <button onclick="updateScore('${player.name}', -5)" class="btn-negative">-5</button>
-                        <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
-                        <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
-                        <button onclick="deletePlayer('${player.name}')" class="btn-delete">🗑 Verwijderen</button>
+                        <div class="inline-actions">
+                            <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
+                            <button onclick="updateScore('${player.name}', 5)" class="btn-positive">+5</button>
+                            <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
+                            <button onclick="updateScore('${player.name}', -5)" class="btn-negative">-5</button>
+                        </div>
+                        <div class="actions">
+                            <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
+                            <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
+                            <button onclick="deletePlayer('${player.name}')" class="btn-delete">🗑 Verwijderen</button>
+                        </div>
                     </div>`;
             });
         }
+        
 
         function resetGame() {
             if (confirm("Weet je zeker dat je een nieuwe sessie wilt starten? Dit wist alle scores.")) {
