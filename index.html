@@ -15,13 +15,16 @@
     </div>
     
     <div class="container">
-        <h1>Scorebord</h1>
-        <div>
+        <h1>
+            <img src="static/image/seshscore_icon_48x48.png" alt="SeshScore Logo">
+            SeshScore
+        </h1>
+        <div class="player-input">
             <input type="text" id="playerName" placeholder="Naam speler">
             <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
             <button onclick="resetGame()" class="btn-reset">Nieuwe sessie</button>
         </div>
-        <div>
+        <div class="sort-container">
             <label for="sortOrder">Sorteer scores:</label>
             <select id="sortOrder" onchange="renderPlayers()">
                 <option value="desc">Hoogste eerst</option>
@@ -30,6 +33,7 @@
         </div>
         <div id="players"></div>
     </div>
+    
     
     <script>
         if ('serviceWorker' in navigator) {
