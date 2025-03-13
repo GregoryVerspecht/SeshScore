@@ -45,9 +45,13 @@ h1 img {
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 1em;
+    font-size: 16px;
     touch-action: manipulation;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-text-size-adjust: 100%;
+    -webkit-appearance: none;
+    caret-color: transparent;
 }
 
 .sort-container {
@@ -165,5 +169,9 @@ button {
     input[type="text"] {
         font-size: 16px;
         user-select: none;
+        -webkit-user-select: none;
+        -webkit-text-size-adjust: 100%;
+        -webkit-appearance: none;
+        caret-color: transparent;
     }
 }
