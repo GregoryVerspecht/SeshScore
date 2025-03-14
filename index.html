@@ -14,16 +14,28 @@
         <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
     </div>
     
-    <div class="container">
+    <div class="container active" id="start">
+        <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
+        <button onclick="showScreen('settings')" class="btn-positive">Nieuwe sesh</button>
+        <button onclick="showScreen('game')" class="btn-reset">Vorige sesh</button>
+    </div>
+
+    <div class="container" id="settings">
+        <h1>Spelerbeheer</h1>
+        <div class="player-input">
+            <input type="text" id="playerName" placeholder="Naam speler">
+            <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
+            <button onclick="deleteAllPlayers()" class="btn-delete">🗑 Verwijder alle spelers</button>
+            <button onclick="showScreen('game')" class="btn-reset">Start spel</button>
+        </div>
+        <div id="players"></div>
+    </div>
+    
+    <div class="container" id="game">
         <h1>
             <img src="static/image/seshscore_icon_96x96.png" alt="SeshScore Logo">
             SeshScore
         </h1>
-        <div class="player-input">
-            <input type="text" id="playerName" placeholder="Naam speler">
-            <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
-            <button onclick="resetGame()" class="btn-reset">Nieuwe sessie</button>
-        </div>
         <div class="sort-container">
             <label for="sortOrder">Sorteer scores:</label>
             <select id="sortOrder" onchange="renderPlayers()">
@@ -31,9 +43,10 @@
                 <option value="asc">Laagste eerst</option>
             </select>
         </div>
+        <h1> Test </h1>
         <div id="players"></div>
+        <button onclick="showScreen('start')" class="btn-reset">Terug naar start</button>
     </div>
-    
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -41,8 +54,14 @@
         }
 
         window.addEventListener('load', function() {
-            setTimeout(() => document.getElementById('splash').style.display = 'none', 2000);
+            setTimeout(() => document.getElementById('splash').style.display = 'none', 1000);
         });
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            renderPlayers();
+        }
         
         let sessionID = 'scoreboard_session';
         let players = JSON.parse(localStorage.getItem(sessionID)) || [];
@@ -60,6 +79,14 @@
             players.push({ name, score: 0 });
             document.getElementById('playerName').value = '';
             saveAndRender();
+        }
+
+        function deleteAllPlayers() {
+            if (confirm("Weet je zeker dat je alle spelers wilt verwijderen?")) {
+                players = [];
+                localStorage.removeItem(sessionID);
+                renderPlayers();
+            }
         }
 
         function updateScore(name, change) {
@@ -97,28 +124,17 @@
                         <p>Score: ${player.score}</p>
                         <div class="inline-actions">
                             <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
-                            <button onclick="updateScore('${player.name}', 5)" class="btn-positive">+5</button>
                             <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
-                            <button onclick="updateScore('${player.name}', -5)" class="btn-negative">-5</button>
                         </div>
                         <div class="actions">
                             <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
                             <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
-                            <button onclick="deletePlayer('${player.name}')" class="btn-delete">🗑 Verwijderen</button>
+                            <button onclick="deletePlayer('${player.name}');" class="btn-delete">🗑 Verwijderen</button>
                         </div>
                     </div>`;
             });
         }
         
-
-        function resetGame() {
-            if (confirm("Weet je zeker dat je een nieuwe sessie wilt starten? Dit wist alle scores.")) {
-                players = [];
-                localStorage.removeItem(sessionID);
-                renderPlayers();
-            }
-        }
-
         renderPlayers();
     </script>
 </body>
