@@ -14,26 +14,42 @@
         <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
     </div>
     
-    <div class="container">
+    <div class="container active" id="start">
+        <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
+        <button onclick="showScreen('settings')" class="btn-positive">Nieuwe sesh</button>
+        <button onclick="showScreen('game')" class="btn-reset">Vorige sesh</button>
+    </div>
+
+    <div class="container" id="settings">
+        <h1>Spelerbeheer</h1>
+        <div class="player-input">
+            <input type="text" id="playerName" placeholder="Naam speler">
+            <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
+            <button onclick="deleteAllPlayers()" class="btn-delete">🗑 Verwijder alle spelers</button>
+            <button onclick="showScreen('game')" class="btn-reset">Start spel</button>
+        </div>
+        <!-- unieke ID zodat dit niet botst met de game container -->
+        <div id="players-settings"></div>
+    </div>
+    
+    <div class="container" id="game">
         <h1>
             <img src="static/image/seshscore_icon_96x96.png" alt="SeshScore Logo">
             SeshScore
         </h1>
-        <div class="player-input">
-            <input type="text" id="playerName" placeholder="Naam speler">
-            <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
-            <button onclick="resetGame()" class="btn-reset">Nieuwe sessie</button>
-        </div>
+
         <div class="sort-container">
             <label for="sortOrder">Sorteer scores:</label>
             <select id="sortOrder" onchange="renderPlayers()">
+                <option value="custom">Ingevoerde volgorde</option>
                 <option value="desc">Hoogste eerst</option>
                 <option value="asc">Laagste eerst</option>
             </select>
         </div>
-        <div id="players"></div>
+
+        <div id="players-game"></div>
+        <button onclick="showScreen('start')" class="btn-reset">Terug naar start</button>
     </div>
-    
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -41,11 +57,21 @@
         }
 
         window.addEventListener('load', function() {
-            setTimeout(() => document.getElementById('splash').style.display = 'none', 2000);
+            setTimeout(() => document.getElementById('splash').style.display = 'none', 1000);
         });
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            renderPlayers();
+        }
         
-        let sessionID = 'scoreboard_session';
+        const sessionID = 'scoreboard_session';
         let players = JSON.parse(localStorage.getItem(sessionID)) || [];
+
+        // Zorg dat bestaande spelers (oude storage) ook een order krijgen
+        players = players.map((p, i) => ({ ...p, order: p.order ?? i }));
+        localStorage.setItem(sessionID, JSON.stringify(players));
 
         function addPlayer() {
             const name = document.getElementById('playerName').value.trim();
@@ -57,9 +83,21 @@
                 alert("Deze speler bestaat al!");
                 return;
             }
-            players.push({ name, score: 0 });
+
+            // bewaart invoervolgorde
+            const order = Date.now();
+            players.push({ name, score: 0, order });
+
             document.getElementById('playerName').value = '';
             saveAndRender();
+        }
+
+        function deleteAllPlayers() {
+            if (confirm("Weet je zeker dat je alle spelers wilt verwijderen?")) {
+                players = [];
+                localStorage.removeItem(sessionID);
+                renderPlayers();
+            }
         }
 
         function updateScore(name, change) {
@@ -82,43 +120,49 @@
             renderPlayers();
         }
 
-        function renderPlayers() {
-            const container = document.getElementById('players');
-            const sortOrder = document.getElementById('sortOrder').value;
-            
+        function getSortedPlayers() {
+            const sortSelect = document.getElementById('sortOrder');
+            const sortOrder = sortSelect ? sortSelect.value : 'custom';
+
             let sortedPlayers = [...players];
-            sortedPlayers.sort((a, b) => sortOrder === 'desc' ? b.score - a.score : a.score - b.score);
-            
-            container.innerHTML = '';
-            sortedPlayers.forEach((player) => {
-                container.innerHTML += `
-                    <div class="player">
-                        <h3>${player.name}</h3>
-                        <p>Score: ${player.score}</p>
-                        <div class="inline-actions">
-                            <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
-                            <button onclick="updateScore('${player.name}', 5)" class="btn-positive">+5</button>
-                            <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
-                            <button onclick="updateScore('${player.name}', -5)" class="btn-negative">-5</button>
-                        </div>
-                        <div class="actions">
-                            <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
-                            <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
-                            <button onclick="deletePlayer('${player.name}')" class="btn-delete">🗑 Verwijderen</button>
-                        </div>
-                    </div>`;
-            });
+
+            if (sortOrder === 'custom') {
+                sortedPlayers.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            } else if (sortOrder === 'desc') {
+                sortedPlayers.sort((a, b) => b.score - a.score);
+            } else { // 'asc'
+                sortedPlayers.sort((a, b) => a.score - b.score);
+            }
+
+            return sortedPlayers;
+        }
+
+        function renderPlayers() {
+            const containerSettings = document.getElementById('players-settings');
+            const containerGame = document.getElementById('players-game');
+            const sortedPlayers = getSortedPlayers();
+
+            const html = sortedPlayers.map((player) => `
+                <div class="player">
+                    <h3>${player.name}</h3>
+                    <p>Score: ${player.score}</p>
+                    <div class="inline-actions">
+                        <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
+                        <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
+                    </div>
+                    <div class="actions">
+                        <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
+                        <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
+                        <button onclick="deletePlayer('${player.name}');" class="btn-delete">🗑 Verwijderen</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render in beide schermen (settings + game)
+            if (containerSettings) containerSettings.innerHTML = html;
+            if (containerGame) containerGame.innerHTML = html;
         }
         
-
-        function resetGame() {
-            if (confirm("Weet je zeker dat je een nieuwe sessie wilt starten? Dit wist alle scores.")) {
-                players = [];
-                localStorage.removeItem(sessionID);
-                renderPlayers();
-            }
-        }
-
         renderPlayers();
     </script>
 </body>
