@@ -1,169 +1,470 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>SeshScore</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="static/image/seshscore_icon_512x512.png">
-    <meta name="theme-color" content="#f5f5dc">
-    <link rel="stylesheet" href="static/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>SeshScore</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="static/image/seshscore_icon_512x512.png" />
+  <meta name="theme-color" content="#f5f5dc" />
+
+  <link rel="stylesheet" href="static/style.css" />
 </head>
+
 <body>
-    <div class="splash-screen" id="splash">
-        <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
-    </div>
-    
-    <div class="container active" id="start">
-        <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo">
-        <button onclick="showScreen('settings')" class="btn-positive">Nieuwe sesh</button>
-        <button onclick="showScreen('game')" class="btn-reset">Vorige sesh</button>
+  <!-- Splash -->
+  <div class="splash-screen" id="splash" aria-hidden="true">
+    <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo" />
+  </div>
+
+  <!-- START -->
+  <section class="screen active" id="start">
+    <div class="app-header">
+      <img src="static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
+      <div>
+        <h1 class="app-title">SeshScore</h1>
+        <p class="app-subtitle">Mobile scoreboard</p>
+      </div>
     </div>
 
-    <div class="container" id="settings">
-        <h1>Spelerbeheer</h1>
-        <div class="player-input">
-            <input type="text" id="playerName" placeholder="Naam speler">
-            <button onclick="addPlayer()" class="btn-positive">Voeg speler toe</button>
-            <button onclick="deleteAllPlayers()" class="btn-delete">🗑 Verwijder alle spelers</button>
-            <button onclick="showScreen('game')" class="btn-reset">Start spel</button>
+    <div class="card">
+      <button class="btn primary" data-nav="settings">Nieuwe sesh</button>
+      <button class="btn ghost" data-nav="game">Vorige sesh</button>
+    </div>
+
+    <p class="hint">Tip: zet dit als PWA op je homescreen voor fullscreen “game mode”.</p>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="settings">
+    <div class="topbar">
+      <button class="icon-btn" data-nav="start" aria-label="Terug">←</button>
+      <div class="topbar-title">
+        <h2>Spelerbeheer</h2>
+        <p>Voeg spelers toe en bepaal volgorde.</p>
+      </div>
+      <button class="icon-btn" data-nav="game" aria-label="Start spel">▶</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <input type="text" id="playerName" placeholder="Naam speler" autocomplete="off" inputmode="text" />
+        <button class="btn primary" id="btnAddPlayer">+</button>
+      </div>
+
+      <div class="row row-split">
+        <button class="btn danger" id="btnDeleteAll">🗑 Verwijder alle spelers</button>
+        <button class="btn ghost" data-nav="game">Start spel</button>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h3>Spelers</h3>
+      <p>Gebruik ↑/↓ om de standaard volgorde te zetten.</p>
+    </div>
+
+    <div id="players-settings" class="players"></div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="game">
+    <div class="topbar">
+      <button class="icon-btn" data-nav="start" aria-label="Terug">←</button>
+      <div class="topbar-title">
+        <h2>SeshScore</h2>
+        <p>Tap snel + / −</p>
+      </div>
+      <button class="icon-btn" data-nav="settings" aria-label="Settings">⚙</button>
+    </div>
+
+    <div id="players-game" class="players"></div>
+
+    <!-- Sticky bottom bar -->
+    <div class="bottom-bar">
+      <label class="sr-only" for="sortOrder">Sorteer</label>
+      <select id="sortOrder">
+        <option value="custom">Ingevoerde volgorde</option>
+        <option value="desc">Hoogste eerst</option>
+        <option value="asc">Laagste eerst</option>
+      </select>
+
+      <button class="btn danger" id="btnResetScores">Reset</button>
+    </div>
+  </section>
+
+  <!-- Bottom Sheet: custom score -->
+  <div class="sheet-backdrop hidden" id="sheetBackdrop" aria-hidden="true"></div>
+
+  <div class="sheet hidden" id="scoreSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+
+    <div class="sheet-header">
+      <div>
+        <h3 id="sheetTitle">Score aanpassen</h3>
+        <p id="sheetSubtitle" class="muted"></p>
+      </div>
+      <button class="icon-btn" id="btnCloseSheet" aria-label="Sluiten">✕</button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="chip-row" id="chipRow">
+        <button class="chip" data-delta="-5">−5</button>
+        <button class="chip" data-delta="-2">−2</button>
+        <button class="chip" data-delta="+2">+2</button>
+        <button class="chip" data-delta="+5">+5</button>
+        <button class="chip" data-delta="+10">+10</button>
+      </div>
+
+      <div class="row">
+        <input type="number" id="customDelta" placeholder="Andere waarde (bv 7 of -3)" inputmode="numeric" />
+        <button class="btn primary" id="btnApplyDelta">Voeg toe</button>
+      </div>
+
+      <p class="hint small">Tip: tik eerst op een chip voor snelle +/−.</p>
+    </div>
+  </div>
+
+  <script>
+    // Service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+
+    // Splash hide
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('splash').style.display = 'none', 650);
+    });
+
+    // State
+    const sessionID = 'scoreboard_session_v2';
+    let players = JSON.parse(localStorage.getItem(sessionID)) || [];
+
+    // Backward compatible: order toevoegen indien ontbreekt
+    players = players.map((p, i) => ({
+      id: p.id ?? crypto?.randomUUID?.() ?? String(Date.now() + i),
+      name: p.name,
+      score: Number.isFinite(p.score) ? p.score : 0,
+      order: Number.isFinite(p.order) ? p.order : i
+    }));
+    persist();
+
+    // DOM
+    const screens = Array.from(document.querySelectorAll('.screen'));
+    const sortOrderEl = document.getElementById('sortOrder');
+    const playersSettingsEl = document.getElementById('players-settings');
+    const playersGameEl = document.getElementById('players-game');
+
+    const playerNameEl = document.getElementById('playerName');
+    const btnAddPlayer = document.getElementById('btnAddPlayer');
+    const btnDeleteAll = document.getElementById('btnDeleteAll');
+    const btnResetScores = document.getElementById('btnResetScores');
+
+    // Sheet
+    const sheetBackdrop = document.getElementById('sheetBackdrop');
+    const scoreSheet = document.getElementById('scoreSheet');
+    const btnCloseSheet = document.getElementById('btnCloseSheet');
+    const sheetSubtitle = document.getElementById('sheetSubtitle');
+    const customDeltaEl = document.getElementById('customDelta');
+    const btnApplyDelta = document.getElementById('btnApplyDelta');
+    const chipRow = document.getElementById('chipRow');
+
+    let activePlayerIdForSheet = null;
+
+    // Navigation via data-nav
+    document.body.addEventListener('click', (e) => {
+      const nav = e.target.closest('[data-nav]');
+      if (nav) {
+        showScreen(nav.getAttribute('data-nav'));
+        return;
+      }
+    });
+
+    function showScreen(id) {
+      screens.forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      render();
+    }
+
+    function persist() {
+      localStorage.setItem(sessionID, JSON.stringify(players));
+    }
+
+    function normalizeOrder() {
+      // Zorgt dat order netjes 0..n is (handig na up/down)
+      const sorted = [...players].sort((a,b) => a.order - b.order);
+      sorted.forEach((p, i) => p.order = i);
+      players = sorted;
+      persist();
+    }
+
+    // Add player
+    function addPlayer() {
+      const name = (playerNameEl.value || '').trim();
+      if (!name) return alert('Voer een naam in!');
+
+      if (players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        return alert('Deze speler bestaat al!');
+      }
+
+      const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
+      const p = {
+        id: crypto?.randomUUID?.() ?? String(Date.now()),
+        name,
+        score: 0,
+        order: maxOrder + 1
+      };
+      players.push(p);
+      persist();
+      playerNameEl.value = '';
+      render();
+
+      // mobile: keyboard sluiten
+      playerNameEl.blur();
+    }
+
+    btnAddPlayer.addEventListener('click', addPlayer);
+    playerNameEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addPlayer();
+    });
+
+    // Delete all
+    btnDeleteAll.addEventListener('click', () => {
+      if (!confirm('Weet je zeker dat je alle spelers wilt verwijderen?')) return;
+      players = [];
+      localStorage.removeItem(sessionID);
+      render();
+    });
+
+    // Reset scores
+    btnResetScores.addEventListener('click', () => {
+      if (!players.length) return;
+      if (!confirm('Scores resetten naar 0?')) return;
+      players.forEach(p => p.score = 0);
+      persist();
+      render();
+    });
+
+    // Sort change
+    sortOrderEl.addEventListener('change', render);
+
+    // Event delegation voor actions (sneller dan onclick strings)
+    document.body.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id');
+
+      if (action === 'inc') updateScore(id, +1);
+      if (action === 'dec') updateScore(id, -1);
+      if (action === 'custom') openSheet(id);
+      if (action === 'delete') deletePlayer(id);
+      if (action === 'up') movePlayer(id, -1);
+      if (action === 'down') movePlayer(id, +1);
+    });
+
+    function updateScore(id, delta) {
+      const p = players.find(x => x.id === id);
+      if (!p) return;
+      p.score += delta;
+      persist();
+      bumpScore(id);
+      render(); // render na bump call is ok; bump zoekt score element opnieuw
+    }
+
+    function deletePlayer(id) {
+      const p = players.find(x => x.id === id);
+      if (!p) return;
+      if (!confirm(`Weet je zeker dat je ${p.name} wilt verwijderen?`)) return;
+      players = players.filter(x => x.id !== id);
+      normalizeOrder();
+      render();
+    }
+
+    function movePlayer(id, dir) {
+      // dir -1 = omhoog, +1 = omlaag in order
+      const sorted = [...players].sort((a,b) => a.order - b.order);
+      const idx = sorted.findIndex(p => p.id === id);
+      if (idx < 0) return;
+
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= sorted.length) return;
+
+      // swap order
+      const a = sorted[idx];
+      const b = sorted[newIdx];
+      const tmp = a.order;
+      a.order = b.order;
+      b.order = tmp;
+
+      players = sorted;
+      normalizeOrder();
+      render();
+    }
+
+    function getSortedPlayersForGame() {
+      const mode = sortOrderEl?.value ?? 'custom';
+      const arr = [...players];
+
+      if (mode === 'custom') {
+        arr.sort((a,b) => a.order - b.order);
+      } else if (mode === 'desc') {
+        arr.sort((a,b) => b.score - a.score);
+      } else {
+        arr.sort((a,b) => a.score - b.score);
+      }
+      return arr;
+    }
+
+    function renderSettings() {
+      if (!playersSettingsEl) return;
+
+      const ordered = [...players].sort((a,b) => a.order - b.order);
+
+      if (!ordered.length) {
+        playersSettingsEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-emoji">👤</div>
+            <div>
+              <h4>Nog geen spelers</h4>
+              <p>Voeg bovenaan spelers toe.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      playersSettingsEl.innerHTML = ordered.map((p, i) => `
+        <div class="player-row">
+          <div class="player-row-main">
+            <div class="badge">#${i + 1}</div>
+            <div class="player-row-name">${escapeHtml(p.name)}</div>
+          </div>
+
+          <div class="player-row-actions">
+            <button class="mini" data-action="up" data-id="${p.id}" aria-label="Omhoog">↑</button>
+            <button class="mini" data-action="down" data-id="${p.id}" aria-label="Omlaag">↓</button>
+            <button class="mini danger" data-action="delete" data-id="${p.id}" aria-label="Verwijderen">🗑</button>
+          </div>
         </div>
-        <!-- unieke ID zodat dit niet botst met de game container -->
-        <div id="players-settings"></div>
-    </div>
-    
-    <div class="container" id="game">
-        <h1>
-            <img src="static/image/seshscore_icon_96x96.png" alt="SeshScore Logo">
-            SeshScore
-        </h1>
+      `).join('');
+    }
 
-        <div class="sort-container">
-            <label for="sortOrder">Sorteer scores:</label>
-            <select id="sortOrder" onchange="renderPlayers()">
-                <option value="custom">Ingevoerde volgorde</option>
-                <option value="desc">Hoogste eerst</option>
-                <option value="asc">Laagste eerst</option>
-            </select>
+    function renderGame() {
+      if (!playersGameEl) return;
+
+      const sorted = getSortedPlayersForGame();
+
+      if (!sorted.length) {
+        playersGameEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-emoji">🎮</div>
+            <div>
+              <h4>Geen spelers</h4>
+              <p>Ga naar settings en voeg spelers toe.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      playersGameEl.innerHTML = sorted.map((p, index) => `
+        <div class="player-card ${index === 0 && sorted.length > 1 && sortOrderEl.value !== 'asc' ? 'leader' : ''}" data-player="${p.id}">
+          <div class="player-top">
+            <div class="player-name">${escapeHtml(p.name)}</div>
+            <div class="player-rank">#${index + 1}</div>
+          </div>
+
+          <div class="player-score" data-score="${p.id}">${p.score}</div>
+
+          <div class="player-controls">
+            <button class="tap minus" data-action="dec" data-id="${p.id}" aria-label="Min 1">−</button>
+            <button class="tap custom" data-action="custom" data-id="${p.id}" aria-label="Andere waarde">±</button>
+            <button class="tap plus" data-action="inc" data-id="${p.id}" aria-label="Plus 1">+</button>
+          </div>
         </div>
+      `).join('');
+    }
 
-        <div id="players-game"></div>
-        <button onclick="showScreen('start')" class="btn-reset">Terug naar start</button>
-    </div>
-    
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js');
-        }
+    function render() {
+      const active = document.querySelector('.screen.active')?.id;
+      if (active === 'settings') renderSettings();
+      if (active === 'game') renderGame();
+    }
 
-        window.addEventListener('load', function() {
-            setTimeout(() => document.getElementById('splash').style.display = 'none', 1000);
-        });
+    // Sheet logic
+    function openSheet(playerId) {
+      const p = players.find(x => x.id === playerId);
+      if (!p) return;
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            renderPlayers();
-        }
-        
-        const sessionID = 'scoreboard_session';
-        let players = JSON.parse(localStorage.getItem(sessionID)) || [];
+      activePlayerIdForSheet = playerId;
+      sheetSubtitle.textContent = `${p.name} (score: ${p.score})`;
+      customDeltaEl.value = '';
 
-        // Zorg dat bestaande spelers (oude storage) ook een order krijgen
-        players = players.map((p, i) => ({ ...p, order: p.order ?? i }));
-        localStorage.setItem(sessionID, JSON.stringify(players));
+      sheetBackdrop.classList.remove('hidden');
+      scoreSheet.classList.remove('hidden');
 
-        function addPlayer() {
-            const name = document.getElementById('playerName').value.trim();
-            if (name === '') {
-                alert("Voer een naam in!");
-                return;
-            }
-            if (players.some(player => player.name.toLowerCase() === name.toLowerCase())) {
-                alert("Deze speler bestaat al!");
-                return;
-            }
+      sheetBackdrop.setAttribute('aria-hidden', 'false');
 
-            // bewaart invoervolgorde
-            const order = Date.now();
-            players.push({ name, score: 0, order });
+      // focus numeric
+      setTimeout(() => customDeltaEl.focus(), 50);
+    }
 
-            document.getElementById('playerName').value = '';
-            saveAndRender();
-        }
+    function closeSheet() {
+      activePlayerIdForSheet = null;
+      sheetBackdrop.classList.add('hidden');
+      scoreSheet.classList.add('hidden');
+      sheetBackdrop.setAttribute('aria-hidden', 'true');
+    }
 
-        function deleteAllPlayers() {
-            if (confirm("Weet je zeker dat je alle spelers wilt verwijderen?")) {
-                players = [];
-                localStorage.removeItem(sessionID);
-                renderPlayers();
-            }
-        }
+    btnCloseSheet.addEventListener('click', closeSheet);
+    sheetBackdrop.addEventListener('click', closeSheet);
 
-        function updateScore(name, change) {
-            let player = players.find(player => player.name === name);
-            if (player) {
-                player.score += change;
-                saveAndRender();
-            }
-        }
+    chipRow.addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      customDeltaEl.value = chip.getAttribute('data-delta').replace('+', '');
+      customDeltaEl.focus();
+    });
 
-        function deletePlayer(name) {
-            if (confirm(`Weet je zeker dat je ${name} wilt verwijderen?`)) {
-                players = players.filter(player => player.name !== name);
-                saveAndRender();
-            }
-        }
+    btnApplyDelta.addEventListener('click', () => {
+      if (!activePlayerIdForSheet) return;
+      const raw = (customDeltaEl.value || '').trim();
+      const val = parseInt(raw, 10);
+      if (!Number.isFinite(val) || val === 0) {
+        alert('Geef een geldige waarde (bv 7 of -3).');
+        return;
+      }
+      updateScore(activePlayerIdForSheet, val);
+      closeSheet();
+    });
 
-        function saveAndRender() {
-            localStorage.setItem(sessionID, JSON.stringify(players));
-            renderPlayers();
-        }
+    // bump anim
+    function bumpScore(id) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-player="${cssEscape(id)}"] .player-score`);
+        if (!el) return;
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+      });
+    }
 
-        function getSortedPlayers() {
-            const sortSelect = document.getElementById('sortOrder');
-            const sortOrder = sortSelect ? sortSelect.value : 'custom';
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-            let sortedPlayers = [...players];
+    function cssEscape(s) {
+      // minimal escape voor ids in querySelector
+      return String(s).replaceAll('"', '\\"');
+    }
 
-            if (sortOrder === 'custom') {
-                sortedPlayers.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-            } else if (sortOrder === 'desc') {
-                sortedPlayers.sort((a, b) => b.score - a.score);
-            } else { // 'asc'
-                sortedPlayers.sort((a, b) => a.score - b.score);
-            }
-
-            return sortedPlayers;
-        }
-
-        function renderPlayers() {
-            const containerSettings = document.getElementById('players-settings');
-            const containerGame = document.getElementById('players-game');
-            const sortedPlayers = getSortedPlayers();
-
-            const html = sortedPlayers.map((player) => `
-                <div class="player">
-                    <h3>${player.name}</h3>
-                    <p>Score: ${player.score}</p>
-                    <div class="inline-actions">
-                        <button onclick="updateScore('${player.name}', 1)" class="btn-positive">+1</button>
-                        <button onclick="updateScore('${player.name}', -1)" class="btn-negative">-1</button>
-                    </div>
-                    <div class="actions">
-                        <input type="number" id="custom-${player.name}" placeholder="Andere waarde">
-                        <button onclick="updateScore('${player.name}', parseInt(document.getElementById('custom-${player.name}').value) || 0)" class="btn-positive">Voeg toe</button>
-                        <button onclick="deletePlayer('${player.name}');" class="btn-delete">🗑 Verwijderen</button>
-                    </div>
-                </div>
-            `).join('');
-
-            // Render in beide schermen (settings + game)
-            if (containerSettings) containerSettings.innerHTML = html;
-            if (containerGame) containerGame.innerHTML = html;
-        }
-        
-        renderPlayers();
-    </script>
+    // Init
+    render();
+  </script>
 </body>
 </html>
