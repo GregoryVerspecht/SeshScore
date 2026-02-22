@@ -5,23 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>SeshScore</title>
 
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="static/image/seshscore_icon_512x512.png" />
-  <meta name="theme-color" content="#f5f5dc" />
 
-  <link rel="stylesheet" href="static/style.css" />
+  <meta name="theme-color" content="#f5f5dc" />
+  <link rel="stylesheet" href="./static/style.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./static/image/seshscore_icon_512x512.png">
+
+
 </head>
 
 <body>
   <!-- Splash -->
   <div class="splash-screen" id="splash" aria-hidden="true">
-    <img src="static/image/seshscore_icon_512x512.png" alt="SeshScore Logo" />
+    <img src="./static/image/seshscore_icon_512x512.png" alt="SeshScore Logo" />
   </div>
 
   <!-- START -->
   <section class="screen active" id="start">
     <div class="app-header">
-      <img src="static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
+      <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
       <div>
         <h1 class="app-title">SeshScore</h1>
         <p class="app-subtitle">Mobile scoreboard</p>
@@ -128,7 +130,7 @@
   <script>
     // Service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+      navigator.serviceWorker.register('./service-worker.js');
     }
 
     // Splash hide
