@@ -531,6 +531,25 @@ select option { background: #1a1d2e; color: var(--text); }
   color: var(--primary);
 }
 
+/* Sign toggle button in sheet */
+.sign-btn {
+  flex: 0 0 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--outline);
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: background .15s, color .15s;
+}
+.sign-btn.sign-neg {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.sign-btn:active { transform: translateY(1px); }
+
 .hidden { display: none !important; }
 
 .hint {

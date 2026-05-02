@@ -138,7 +138,8 @@
       </div>
 
       <div class="row">
-        <input type="number" id="customDelta" placeholder="Custom value (e.g. 7 or -3)" inputmode="numeric" />
+        <button class="sign-btn" id="btnToggleSign" aria-label="Toggle sign">+</button>
+        <input type="number" id="customDelta" placeholder="Value (e.g. 7)" inputmode="numeric" min="0" />
         <button class="btn primary" id="btnApplyDelta">Apply</button>
       </div>
     </div>
@@ -189,7 +190,16 @@
     const sheetSubtitle    = document.getElementById('sheetSubtitle');
     const customDeltaEl    = document.getElementById('customDelta');
     const btnApplyDelta    = document.getElementById('btnApplyDelta');
+    const btnToggleSign    = document.getElementById('btnToggleSign');
     const chipRow          = document.getElementById('chipRow');
+
+    let inputSign = 1;
+
+    btnToggleSign.addEventListener('click', () => {
+      inputSign *= -1;
+      btnToggleSign.textContent = inputSign === 1 ? '+' : '−';
+      btnToggleSign.classList.toggle('sign-neg', inputSign === -1);
+    });
 
     // ── Navigation ───────────────────────────────────────────
     document.body.addEventListener('click', (e) => {
@@ -422,6 +432,9 @@
       activePlayerIdForSheet = playerId;
       sheetSubtitle.textContent = `${p.name} — current score: ${p.score}`;
       customDeltaEl.value = '';
+      inputSign = 1;
+      btnToggleSign.textContent = '+';
+      btnToggleSign.classList.remove('sign-neg');
       sheetBackdrop.classList.remove('hidden');
       scoreSheet.classList.remove('hidden');
       sheetBackdrop.setAttribute('aria-hidden', 'false');
@@ -455,12 +468,12 @@
 
     function applyCustomDelta() {
       if (!activePlayerIdForSheet) return;
-      const val = parseInt((customDeltaEl.value || '').trim(), 10);
-      if (!Number.isFinite(val) || val === 0) {
-        alert('Enter a valid value (e.g. 7 or -3).');
+      const abs = parseInt((customDeltaEl.value || '').trim(), 10);
+      if (!Number.isFinite(abs) || abs === 0) {
+        alert('Enter a valid value (e.g. 7).');
         return;
       }
-      updateScore(activePlayerIdForSheet, val);
+      updateScore(activePlayerIdForSheet, Math.abs(abs) * inputSign);
       closeSheet();
     }
 
