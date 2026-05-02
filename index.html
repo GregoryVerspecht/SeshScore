@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>SeshScore</title>
 
-
-  <meta name="theme-color" content="#f5f5dc" />
+  <meta name="theme-color" content="#0f1117" />
 
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./static/image/seshscore_icon_512x512.png">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260222-1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="./static/style.css?v=20260503-1">
 </head>
 
 <body>
@@ -33,10 +35,10 @@
 
     <div class="card">
       <button class="btn primary" data-nav="settings">Nieuwe sesh</button>
-      <button class="btn ghost" data-nav="game">Vorige sesh</button>
+      <button class="btn ghost" style="margin-top:10px" data-nav="game">Vorige sesh</button>
     </div>
 
-    <p class="hint">Tip: zet dit als PWA op je homescreen voor fullscreen “game mode”.</p>
+    <p class="hint">Tip: zet dit als PWA op je homescreen voor fullscreen "game mode".</p>
   </section>
 
   <!-- SETTINGS -->
@@ -57,8 +59,8 @@
       </div>
 
       <div class="row row-split">
-        <button class="btn danger" id="btnDeleteAll">🗑 Verwijder alle spelers</button>
-        <button class="btn ghost" data-nav="game">Start spel</button>
+        <button class="btn danger" id="btnDeleteAll">🗑 Verwijder alle</button>
+        <button class="btn ghost" data-nav="game">Start spel ▶</button>
       </div>
     </div>
 
@@ -76,9 +78,19 @@
       <button class="icon-btn" data-nav="start" aria-label="Terug">←</button>
       <div class="topbar-title">
         <h2>SeshScore</h2>
-        <p>Tap snel + / −</p>
+        <p>Tap + / − om te scoren</p>
       </div>
       <button class="icon-btn" data-nav="settings" aria-label="Settings">⚙</button>
+    </div>
+
+    <div class="step-row">
+      <span class="step-label">Stap</span>
+      <div class="step-group" id="stepGroup">
+        <button class="step-btn active" data-step="1">±1</button>
+        <button class="step-btn" data-step="5">±5</button>
+        <button class="step-btn" data-step="10">±10</button>
+        <button class="step-btn" data-step="25">±25</button>
+      </div>
     </div>
 
     <div id="players-game" class="players"></div>
@@ -87,11 +99,11 @@
     <div class="bottom-bar">
       <label class="sr-only" for="sortOrder">Sorteer</label>
       <select id="sortOrder">
-        <option value="custom">Ingevoerde volgorde</option>
+        <option value="custom">Volgorde</option>
         <option value="desc">Hoogste eerst</option>
         <option value="asc">Laagste eerst</option>
       </select>
-
+      <button class="btn ghost" id="btnUndo" aria-label="Ongedaan maken" disabled>↩ Undo</button>
       <button class="btn danger" id="btnResetScores">Reset</button>
     </div>
   </section>
@@ -112,19 +124,23 @@
 
     <div class="sheet-body">
       <div class="chip-row" id="chipRow">
-        <button class="chip" data-delta="-5">−5</button>
-        <button class="chip" data-delta="-2">−2</button>
-        <button class="chip" data-delta="+2">+2</button>
-        <button class="chip" data-delta="+5">+5</button>
-        <button class="chip" data-delta="+10">+10</button>
+        <button class="chip chip-neg" data-delta="-25">−25</button>
+        <button class="chip chip-neg" data-delta="-10">−10</button>
+        <button class="chip chip-neg" data-delta="-5">−5</button>
+        <button class="chip chip-neg" data-delta="-2">−2</button>
+        <button class="chip chip-neg" data-delta="-1">−1</button>
+        <button class="chip chip-pos" data-delta="1">+1</button>
+        <button class="chip chip-pos" data-delta="2">+2</button>
+        <button class="chip chip-pos" data-delta="5">+5</button>
+        <button class="chip chip-pos" data-delta="10">+10</button>
+        <button class="chip chip-pos" data-delta="25">+25</button>
+        <button class="chip chip-pos" data-delta="50">+50</button>
       </div>
 
       <div class="row">
-        <input type="number" id="customDelta" placeholder="Andere waarde (bv 7 of -3)" inputmode="numeric" />
+        <input type="number" id="customDelta" placeholder="Eigen waarde (bv 7 of -3)" inputmode="numeric" />
         <button class="btn primary" id="btnApplyDelta">Voeg toe</button>
       </div>
-
-      <p class="hint small">Tip: tik eerst op een chip voor snelle +/−.</p>
     </div>
   </div>
 
@@ -139,11 +155,10 @@
       setTimeout(() => document.getElementById('splash').style.display = 'none', 650);
     });
 
-    // State
-    const sessionID = 'scoreboard_session_v2';
-    let players = JSON.parse(localStorage.getItem(sessionID)) || [];
+    // ── State ────────────────────────────────────────────────
+    const SESSION_KEY = 'scoreboard_session_v2';
+    let players = JSON.parse(localStorage.getItem(SESSION_KEY)) || [];
 
-    // Backward compatible: order toevoegen indien ontbreekt
     players = players.map((p, i) => ({
       id: p.id ?? crypto?.randomUUID?.() ?? String(Date.now() + i),
       name: p.name,
@@ -152,35 +167,34 @@
     }));
     persist();
 
-    // DOM
-    const screens = Array.from(document.querySelectorAll('.screen'));
-    const sortOrderEl = document.getElementById('sortOrder');
-    const playersSettingsEl = document.getElementById('players-settings');
-    const playersGameEl = document.getElementById('players-game');
-
-    const playerNameEl = document.getElementById('playerName');
-    const btnAddPlayer = document.getElementById('btnAddPlayer');
-    const btnDeleteAll = document.getElementById('btnDeleteAll');
-    const btnResetScores = document.getElementById('btnResetScores');
-
-    // Sheet
-    const sheetBackdrop = document.getElementById('sheetBackdrop');
-    const scoreSheet = document.getElementById('scoreSheet');
-    const btnCloseSheet = document.getElementById('btnCloseSheet');
-    const sheetSubtitle = document.getElementById('sheetSubtitle');
-    const customDeltaEl = document.getElementById('customDelta');
-    const btnApplyDelta = document.getElementById('btnApplyDelta');
-    const chipRow = document.getElementById('chipRow');
-
+    let stepSize = 1;
+    let undoStack = [];
     let activePlayerIdForSheet = null;
 
-    // Navigation via data-nav
+    // ── DOM refs ─────────────────────────────────────────────
+    const screens          = Array.from(document.querySelectorAll('.screen'));
+    const sortOrderEl      = document.getElementById('sortOrder');
+    const playersSettingsEl = document.getElementById('players-settings');
+    const playersGameEl    = document.getElementById('players-game');
+    const playerNameEl     = document.getElementById('playerName');
+    const btnAddPlayer     = document.getElementById('btnAddPlayer');
+    const btnDeleteAll     = document.getElementById('btnDeleteAll');
+    const btnResetScores   = document.getElementById('btnResetScores');
+    const btnUndo          = document.getElementById('btnUndo');
+    const stepGroup        = document.getElementById('stepGroup');
+
+    const sheetBackdrop    = document.getElementById('sheetBackdrop');
+    const scoreSheet       = document.getElementById('scoreSheet');
+    const btnCloseSheet    = document.getElementById('btnCloseSheet');
+    const sheetSubtitle    = document.getElementById('sheetSubtitle');
+    const customDeltaEl    = document.getElementById('customDelta');
+    const btnApplyDelta    = document.getElementById('btnApplyDelta');
+    const chipRow          = document.getElementById('chipRow');
+
+    // ── Navigation ───────────────────────────────────────────
     document.body.addEventListener('click', (e) => {
       const nav = e.target.closest('[data-nav]');
-      if (nav) {
-        showScreen(nav.getAttribute('data-nav'));
-        return;
-      }
+      if (nav) { showScreen(nav.getAttribute('data-nav')); return; }
     });
 
     function showScreen(id) {
@@ -189,150 +203,160 @@
       render();
     }
 
+    // ── Persistence & undo ───────────────────────────────────
     function persist() {
-      localStorage.setItem(sessionID, JSON.stringify(players));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(players));
     }
 
+    function pushUndo() {
+      undoStack.push(JSON.stringify(players));
+      if (undoStack.length > 20) undoStack.shift();
+      syncUndoBtn();
+    }
+
+    function syncUndoBtn() {
+      if (btnUndo) btnUndo.disabled = undoStack.length === 0;
+    }
+
+    btnUndo.addEventListener('click', () => {
+      if (!undoStack.length) return;
+      players = JSON.parse(undoStack.pop());
+      persist();
+      syncUndoBtn();
+      render();
+    });
+
+    // ── Player order ─────────────────────────────────────────
     function normalizeOrder() {
-      // Zorgt dat order netjes 0..n is (handig na up/down)
-      const sorted = [...players].sort((a,b) => a.order - b.order);
+      const sorted = [...players].sort((a, b) => a.order - b.order);
       sorted.forEach((p, i) => p.order = i);
       players = sorted;
       persist();
     }
 
-    // Add player
+    // ── Add player ───────────────────────────────────────────
     function addPlayer() {
       const name = (playerNameEl.value || '').trim();
       if (!name) return alert('Voer een naam in!');
-
-      if (players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+      if (players.some(p => p.name.toLowerCase() === name.toLowerCase()))
         return alert('Deze speler bestaat al!');
-      }
 
       const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
-      const p = {
+      players.push({
         id: crypto?.randomUUID?.() ?? String(Date.now()),
         name,
         score: 0,
         order: maxOrder + 1
-      };
-      players.push(p);
+      });
       persist();
       playerNameEl.value = '';
-      render();
-
-      // mobile: keyboard sluiten
       playerNameEl.blur();
+      render();
     }
 
     btnAddPlayer.addEventListener('click', addPlayer);
-    playerNameEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addPlayer();
-    });
+    playerNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer(); });
 
-    // Delete all
+    // ── Delete all ───────────────────────────────────────────
     btnDeleteAll.addEventListener('click', () => {
       if (!confirm('Weet je zeker dat je alle spelers wilt verwijderen?')) return;
       players = [];
-      localStorage.removeItem(sessionID);
+      undoStack = [];
+      syncUndoBtn();
+      localStorage.removeItem(SESSION_KEY);
       render();
     });
 
-    // Reset scores
+    // ── Reset scores ─────────────────────────────────────────
     btnResetScores.addEventListener('click', () => {
       if (!players.length) return;
       if (!confirm('Scores resetten naar 0?')) return;
+      pushUndo();
       players.forEach(p => p.score = 0);
       persist();
       render();
     });
 
-    // Sort change
+    // ── Sort ─────────────────────────────────────────────────
     sortOrderEl.addEventListener('change', render);
 
-    // Event delegation voor actions (sneller dan onclick strings)
+    // ── Step size ────────────────────────────────────────────
+    stepGroup.addEventListener('click', (e) => {
+      const btn = e.target.closest('.step-btn');
+      if (!btn) return;
+      stepSize = parseInt(btn.getAttribute('data-step'), 10);
+      stepGroup.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+
+    // ── Score actions (event delegation) ─────────────────────
     document.body.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
-
       const action = btn.getAttribute('data-action');
-      const id = btn.getAttribute('data-id');
-
-      if (action === 'inc') updateScore(id, +1);
-      if (action === 'dec') updateScore(id, -1);
+      const id     = btn.getAttribute('data-id');
+      if (action === 'inc')    updateScore(id, +stepSize);
+      if (action === 'dec')    updateScore(id, -stepSize);
       if (action === 'custom') openSheet(id);
       if (action === 'delete') deletePlayer(id);
-      if (action === 'up') movePlayer(id, -1);
-      if (action === 'down') movePlayer(id, +1);
+      if (action === 'up')     movePlayer(id, -1);
+      if (action === 'down')   movePlayer(id, +1);
     });
 
     function updateScore(id, delta) {
+      pushUndo();
       const p = players.find(x => x.id === id);
       if (!p) return;
       p.score += delta;
+      if ('vibrate' in navigator) navigator.vibrate(22);
       persist();
       bumpScore(id);
-      render(); // render na bump call is ok; bump zoekt score element opnieuw
+      render();
     }
 
     function deletePlayer(id) {
       const p = players.find(x => x.id === id);
       if (!p) return;
-      if (!confirm(`Weet je zeker dat je ${p.name} wilt verwijderen?`)) return;
+      if (!confirm(`${p.name} verwijderen?`)) return;
       players = players.filter(x => x.id !== id);
       normalizeOrder();
       render();
     }
 
     function movePlayer(id, dir) {
-      // dir -1 = omhoog, +1 = omlaag in order
-      const sorted = [...players].sort((a,b) => a.order - b.order);
+      const sorted = [...players].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex(p => p.id === id);
       if (idx < 0) return;
-
       const newIdx = idx + dir;
       if (newIdx < 0 || newIdx >= sorted.length) return;
-
-      // swap order
-      const a = sorted[idx];
-      const b = sorted[newIdx];
-      const tmp = a.order;
-      a.order = b.order;
-      b.order = tmp;
-
+      const tmp = sorted[idx].order;
+      sorted[idx].order = sorted[newIdx].order;
+      sorted[newIdx].order = tmp;
       players = sorted;
       normalizeOrder();
       render();
     }
 
+    // ── Render ───────────────────────────────────────────────
     function getSortedPlayersForGame() {
       const mode = sortOrderEl?.value ?? 'custom';
       const arr = [...players];
-
-      if (mode === 'custom') {
-        arr.sort((a,b) => a.order - b.order);
-      } else if (mode === 'desc') {
-        arr.sort((a,b) => b.score - a.score);
-      } else {
-        arr.sort((a,b) => a.score - b.score);
-      }
+      if (mode === 'custom') arr.sort((a, b) => a.order - b.order);
+      else if (mode === 'desc') arr.sort((a, b) => b.score - a.score);
+      else arr.sort((a, b) => a.score - b.score);
       return arr;
     }
 
     function renderSettings() {
       if (!playersSettingsEl) return;
-
-      const ordered = [...players].sort((a,b) => a.order - b.order);
+      const ordered = [...players].sort((a, b) => a.order - b.order);
 
       if (!ordered.length) {
         playersSettingsEl.innerHTML = `
           <div class="empty">
             <div class="empty-emoji">👤</div>
-            <div>
-              <h4>Nog geen spelers</h4>
-              <p>Voeg bovenaan spelers toe.</p>
-            </div>
+            <div><h4>Nog geen spelers</h4><p>Voeg bovenaan spelers toe.</p></div>
           </div>`;
         return;
       }
@@ -343,9 +367,8 @@
             <div class="badge">#${i + 1}</div>
             <div class="player-row-name">${escapeHtml(p.name)}</div>
           </div>
-
           <div class="player-row-actions">
-            <button class="mini" data-action="up" data-id="${p.id}" aria-label="Omhoog">↑</button>
+            <button class="mini" data-action="up"   data-id="${p.id}" aria-label="Omhoog">↑</button>
             <button class="mini" data-action="down" data-id="${p.id}" aria-label="Omlaag">↓</button>
             <button class="mini danger" data-action="delete" data-id="${p.id}" aria-label="Verwijderen">🗑</button>
           </div>
@@ -355,61 +378,54 @@
 
     function renderGame() {
       if (!playersGameEl) return;
-
       const sorted = getSortedPlayersForGame();
 
       if (!sorted.length) {
         playersGameEl.innerHTML = `
           <div class="empty">
             <div class="empty-emoji">🎮</div>
-            <div>
-              <h4>Geen spelers</h4>
-              <p>Ga naar settings en voeg spelers toe.</p>
-            </div>
+            <div><h4>Geen spelers</h4><p>Ga naar ⚙ en voeg spelers toe.</p></div>
           </div>`;
         return;
       }
 
-      playersGameEl.innerHTML = sorted.map((p, index) => `
-        <div class="player-card ${index === 0 && sorted.length > 1 && sortOrderEl.value !== 'asc' ? 'leader' : ''}" data-player="${p.id}">
-          <div class="player-top">
-            <div class="player-name">${escapeHtml(p.name)}</div>
-            <div class="player-rank">#${index + 1}</div>
-          </div>
+      const showLeader = sorted.length > 1 && sortOrderEl.value !== 'asc';
 
-          <div class="player-score" data-score="${p.id}">${p.score}</div>
-
-          <div class="player-controls">
-            <button class="tap minus" data-action="dec" data-id="${p.id}" aria-label="Min 1">−</button>
-            <button class="tap custom" data-action="custom" data-id="${p.id}" aria-label="Andere waarde">±</button>
-            <button class="tap plus" data-action="inc" data-id="${p.id}" aria-label="Plus 1">+</button>
-          </div>
-        </div>
-      `).join('');
+      playersGameEl.innerHTML = sorted.map((p, index) => {
+        const isLeader = showLeader && index === 0;
+        return `
+          <div class="player-card ${isLeader ? 'leader' : ''}" data-player="${p.id}">
+            <div class="player-top">
+              <div class="player-name">${isLeader ? '👑 ' : ''}${escapeHtml(p.name)}</div>
+              <div class="player-rank">#${index + 1}</div>
+            </div>
+            <div class="player-score" data-score="${p.id}">${p.score}</div>
+            <div class="player-controls">
+              <button class="tap minus"  data-action="dec"    data-id="${p.id}" aria-label="Min ${stepSize}">−${stepSize}</button>
+              <button class="tap custom" data-action="custom" data-id="${p.id}" aria-label="Andere waarde">±</button>
+              <button class="tap plus"   data-action="inc"    data-id="${p.id}" aria-label="Plus ${stepSize}">+${stepSize}</button>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function render() {
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
-      if (active === 'game') renderGame();
+      if (active === 'game')     renderGame();
     }
 
-    // Sheet logic
+    // ── Sheet ────────────────────────────────────────────────
     function openSheet(playerId) {
       const p = players.find(x => x.id === playerId);
       if (!p) return;
-
       activePlayerIdForSheet = playerId;
-      sheetSubtitle.textContent = `${p.name} (score: ${p.score})`;
+      sheetSubtitle.textContent = `${p.name} — huidige score: ${p.score}`;
       customDeltaEl.value = '';
-
       sheetBackdrop.classList.remove('hidden');
       scoreSheet.classList.remove('hidden');
-
       sheetBackdrop.setAttribute('aria-hidden', 'false');
-
-      // focus numeric
-      setTimeout(() => customDeltaEl.focus(), 50);
+      setTimeout(() => customDeltaEl.focus(), 60);
     }
 
     function closeSheet() {
@@ -422,26 +438,42 @@
     btnCloseSheet.addEventListener('click', closeSheet);
     sheetBackdrop.addEventListener('click', closeSheet);
 
+    // Chips apply immediately and close sheet
     chipRow.addEventListener('click', (e) => {
       const chip = e.target.closest('.chip');
-      if (!chip) return;
-      customDeltaEl.value = chip.getAttribute('data-delta').replace('+', '');
-      customDeltaEl.focus();
+      if (!chip || !activePlayerIdForSheet) return;
+      const delta = parseInt(chip.getAttribute('data-delta'), 10);
+      if (Number.isFinite(delta) && delta !== 0) {
+        updateScore(activePlayerIdForSheet, delta);
+        closeSheet();
+      }
     });
 
-    btnApplyDelta.addEventListener('click', () => {
+    // Custom value
+    btnApplyDelta.addEventListener('click', applyCustomDelta);
+    customDeltaEl.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomDelta(); });
+
+    function applyCustomDelta() {
       if (!activePlayerIdForSheet) return;
-      const raw = (customDeltaEl.value || '').trim();
-      const val = parseInt(raw, 10);
+      const val = parseInt((customDeltaEl.value || '').trim(), 10);
       if (!Number.isFinite(val) || val === 0) {
         alert('Geef een geldige waarde (bv 7 of -3).');
         return;
       }
       updateScore(activePlayerIdForSheet, val);
       closeSheet();
-    });
+    }
 
-    // bump anim
+    // Swipe down to dismiss sheet
+    let swipeStartY = 0;
+    scoreSheet.addEventListener('touchstart', e => {
+      swipeStartY = e.touches[0].clientY;
+    }, { passive: true });
+    scoreSheet.addEventListener('touchend', e => {
+      if (e.changedTouches[0].clientY - swipeStartY > 80) closeSheet();
+    }, { passive: true });
+
+    // ── Animations ───────────────────────────────────────────
     function bumpScore(id) {
       requestAnimationFrame(() => {
         const el = document.querySelector(`[data-player="${cssEscape(id)}"] .player-score`);
@@ -452,6 +484,7 @@
       });
     }
 
+    // ── Helpers ──────────────────────────────────────────────
     function escapeHtml(s) {
       return String(s)
         .replaceAll('&', '&amp;')
@@ -462,11 +495,11 @@
     }
 
     function cssEscape(s) {
-      // minimal escape voor ids in querySelector
       return String(s).replaceAll('"', '\\"');
     }
 
-    // Init
+    // ── Init ─────────────────────────────────────────────────
+    syncUndoBtn();
     render();
   </script>
 </body>
