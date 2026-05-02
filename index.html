@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260503-3">
+  <link rel="stylesheet" href="./static/style.css?v=20260503-5">
 </head>
 
 <body>
@@ -34,8 +34,9 @@
     </div>
 
     <div class="card">
-      <button class="btn primary" data-nav="settings">New sesh</button>
+      <button class="btn primary" id="btnNewSesh">New sesh</button>
       <button class="btn ghost" style="margin-top:10px" data-nav="game">Last sesh</button>
+      <button class="btn ghost" style="margin-top:10px" data-nav="history">📋 History</button>
     </div>
 
     <p class="hint">Tip: add this as a PWA to your home screen for fullscreen game mode.</p>
@@ -57,11 +58,23 @@
         <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
         <button class="btn primary" id="btnAddPlayer">+</button>
       </div>
-
       <div class="row row-split">
         <button class="btn danger" id="btnDeleteAll">🗑 Remove all</button>
         <button class="btn ghost" data-nav="game">Start game ▶</button>
       </div>
+    </div>
+
+    <div class="section-title">
+      <h3>Win target</h3>
+      <p>First player to reach this score wins.</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <input type="number" id="winTargetInput" placeholder="e.g. 100 (leave empty for none)" inputmode="numeric" min="1" />
+        <button class="btn primary" id="btnSetWinTarget">Set</button>
+      </div>
+      <p id="winTargetStatus" class="muted" style="margin-top:8px;font-size:.88rem"></p>
     </div>
 
     <div class="section-title">
@@ -83,6 +96,12 @@
       <button class="icon-btn" data-nav="settings" aria-label="Settings">⚙</button>
     </div>
 
+    <div class="round-row">
+      <span class="round-label">Round <strong id="roundNum">1</strong></span>
+      <span class="win-target-label" id="winTargetLabel"></span>
+      <button class="btn ghost round-next-btn" id="btnNextRound">Next round →</button>
+    </div>
+
     <div class="step-row">
       <span class="step-label">Step</span>
       <div class="step-group" id="stepGroup">
@@ -95,7 +114,6 @@
 
     <div id="players-game" class="players"></div>
 
-    <!-- Sticky bottom bar -->
     <div class="bottom-bar">
       <label class="sr-only" for="sortOrder">Sort</label>
       <select id="sortOrder">
@@ -108,12 +126,25 @@
     </div>
   </section>
 
-  <!-- Bottom Sheet: custom score -->
+  <!-- HISTORY -->
+  <section class="screen" id="history">
+    <div class="topbar">
+      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
+      <div class="topbar-title">
+        <h2>History</h2>
+        <p>Past games</p>
+      </div>
+      <button class="icon-btn" id="btnClearHistory" aria-label="Clear history">🗑</button>
+    </div>
+    <div id="history-list" class="players"></div>
+  </section>
+
+  <!-- Backdrop (shared) -->
   <div class="sheet-backdrop hidden" id="sheetBackdrop" aria-hidden="true"></div>
 
+  <!-- Score sheet -->
   <div class="sheet hidden" id="scoreSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle" aria-hidden="true"></div>
-
     <div class="sheet-header">
       <div>
         <h3 id="sheetTitle">Adjust score</h3>
@@ -121,7 +152,6 @@
       </div>
       <button class="icon-btn" id="btnCloseSheet" aria-label="Close">✕</button>
     </div>
-
     <div class="sheet-body">
       <div class="chip-row" id="chipRow">
         <button class="chip chip-neg" data-delta="-25">−25</button>
@@ -136,75 +166,124 @@
         <button class="chip chip-pos" data-delta="25">+25</button>
         <button class="chip chip-pos" data-delta="50">+50</button>
       </div>
-
       <div class="row">
         <button class="sign-btn" id="btnToggleSign" aria-label="Toggle sign">+</button>
-        <input type="number" id="customDelta" placeholder="Value (e.g. 7)" inputmode="numeric" min="0" />
+        <input type="number" id="customDelta" placeholder="Custom value (e.g. 7)" inputmode="numeric" min="0" />
         <button class="btn primary" id="btnApplyDelta">Apply</button>
       </div>
     </div>
   </div>
 
+  <!-- Log sheet -->
+  <div class="sheet hidden" id="logSheet" role="dialog" aria-modal="true" aria-labelledby="logSheetTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-header">
+      <div>
+        <h3 id="logSheetTitle">Score log</h3>
+        <p id="logSheetSubtitle" class="muted"></p>
+      </div>
+      <button class="icon-btn" id="btnCloseLogSheet" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="logList" class="log-list"></div>
+    </div>
+  </div>
+
   <script>
-    // Service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js');
     }
 
-    // Splash hide
     window.addEventListener('load', () => {
       setTimeout(() => document.getElementById('splash').style.display = 'none', 650);
     });
 
-    // ── State ────────────────────────────────────────────────
-    const SESSION_KEY = 'scoreboard_session_v2';
-    let players = JSON.parse(localStorage.getItem(SESSION_KEY)) || [];
+    // ── Storage keys ─────────────────────────────────────────
+    const SESSION_KEY = 'scoreboard_session_v3';
+    const HISTORY_KEY = 'seshscore_history';
 
-    players = players.map((p, i) => ({
-      id: p.id ?? crypto?.randomUUID?.() ?? String(Date.now() + i),
-      name: p.name,
+    // ── Load session (migrates from v2 array format) ─────────
+    function loadSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s && !Array.isArray(s) && Array.isArray(s.players)) return s;
+        }
+      } catch(e) {}
+      try {
+        const old = JSON.parse(localStorage.getItem('scoreboard_session_v2') || 'null');
+        if (Array.isArray(old)) {
+          return { players: old, round: 1, winTarget: null };
+        }
+      } catch(e) {}
+      return { players: [], round: 1, winTarget: null };
+    }
+
+    const _s = loadSession();
+    let round     = Number.isFinite(_s.round) ? _s.round : 1;
+    let winTarget = Number.isFinite(_s.winTarget) ? _s.winTarget : null;
+    let players   = (_s.players || []).map((p, i) => ({
+      id:    p.id    ?? crypto?.randomUUID?.() ?? String(Date.now() + i),
+      name:  p.name,
       score: Number.isFinite(p.score) ? p.score : 0,
-      order: Number.isFinite(p.order) ? p.order : i
+      order: Number.isFinite(p.order) ? p.order : i,
+      log:   Array.isArray(p.log) ? p.log : []
     }));
     persist();
 
     let stepSize = 1;
     let undoStack = [];
     let activePlayerIdForSheet = null;
-
-    // ── DOM refs ─────────────────────────────────────────────
-    const screens          = Array.from(document.querySelectorAll('.screen'));
-    const sortOrderEl      = document.getElementById('sortOrder');
-    const playersSettingsEl = document.getElementById('players-settings');
-    const playersGameEl    = document.getElementById('players-game');
-    const playerNameEl     = document.getElementById('playerName');
-    const btnAddPlayer     = document.getElementById('btnAddPlayer');
-    const btnDeleteAll     = document.getElementById('btnDeleteAll');
-    const btnResetScores   = document.getElementById('btnResetScores');
-    const btnUndo          = document.getElementById('btnUndo');
-    const stepGroup        = document.getElementById('stepGroup');
-
-    const sheetBackdrop    = document.getElementById('sheetBackdrop');
-    const scoreSheet       = document.getElementById('scoreSheet');
-    const btnCloseSheet    = document.getElementById('btnCloseSheet');
-    const sheetSubtitle    = document.getElementById('sheetSubtitle');
-    const customDeltaEl    = document.getElementById('customDelta');
-    const btnApplyDelta    = document.getElementById('btnApplyDelta');
-    const btnToggleSign    = document.getElementById('btnToggleSign');
-    const chipRow          = document.getElementById('chipRow');
-
     let inputSign = 1;
 
-    btnToggleSign.addEventListener('click', () => {
-      inputSign *= -1;
-      btnToggleSign.textContent = inputSign === 1 ? '+' : '−';
-      btnToggleSign.classList.toggle('sign-neg', inputSign === -1);
-    });
+    // ── DOM refs ─────────────────────────────────────────────
+    const screens           = Array.from(document.querySelectorAll('.screen'));
+    const sortOrderEl       = document.getElementById('sortOrder');
+    const playersSettingsEl = document.getElementById('players-settings');
+    const playersGameEl     = document.getElementById('players-game');
+    const playerNameEl      = document.getElementById('playerName');
+    const btnAddPlayer      = document.getElementById('btnAddPlayer');
+    const btnDeleteAll      = document.getElementById('btnDeleteAll');
+    const btnResetScores    = document.getElementById('btnResetScores');
+    const btnUndo           = document.getElementById('btnUndo');
+    const stepGroup         = document.getElementById('stepGroup');
+    const roundNumEl        = document.getElementById('roundNum');
+    const winTargetLabelEl  = document.getElementById('winTargetLabel');
+    const btnNextRound      = document.getElementById('btnNextRound');
+    const winTargetInputEl  = document.getElementById('winTargetInput');
+    const btnSetWinTarget   = document.getElementById('btnSetWinTarget');
+    const winTargetStatus   = document.getElementById('winTargetStatus');
+
+    const sheetBackdrop     = document.getElementById('sheetBackdrop');
+    const scoreSheet        = document.getElementById('scoreSheet');
+    const btnCloseSheet     = document.getElementById('btnCloseSheet');
+    const sheetSubtitle     = document.getElementById('sheetSubtitle');
+    const customDeltaEl     = document.getElementById('customDelta');
+    const btnApplyDelta     = document.getElementById('btnApplyDelta');
+    const btnToggleSign     = document.getElementById('btnToggleSign');
+    const chipRow           = document.getElementById('chipRow');
+
+    const logSheet          = document.getElementById('logSheet');
+    const btnCloseLogSheet  = document.getElementById('btnCloseLogSheet');
+    const logSheetTitle     = document.getElementById('logSheetTitle');
+    const logSheetSubtitle  = document.getElementById('logSheetSubtitle');
+    const logList           = document.getElementById('logList');
 
     // ── Navigation ───────────────────────────────────────────
     document.body.addEventListener('click', (e) => {
       const nav = e.target.closest('[data-nav]');
       if (nav) { showScreen(nav.getAttribute('data-nav')); return; }
+    });
+
+    document.getElementById('btnNewSesh').addEventListener('click', () => {
+      saveToHistory();
+      players.forEach(p => { p.score = 0; p.log = []; });
+      round = 1;
+      undoStack = [];
+      syncUndoBtn();
+      persist();
+      showScreen('settings');
     });
 
     function showScreen(id) {
@@ -213,11 +292,12 @@
       render();
     }
 
-    // ── Persistence & undo ───────────────────────────────────
+    // ── Persistence ──────────────────────────────────────────
     function persist() {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(players));
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget }));
     }
 
+    // ── Undo ─────────────────────────────────────────────────
     function pushUndo() {
       undoStack.push(JSON.stringify(players));
       if (undoStack.length > 20) undoStack.shift();
@@ -234,6 +314,45 @@
       persist();
       syncUndoBtn();
       render();
+    });
+
+    // ── Round counter ─────────────────────────────────────────
+    function syncRoundUI() {
+      if (roundNumEl) roundNumEl.textContent = round;
+      if (winTargetLabelEl) {
+        winTargetLabelEl.textContent = winTarget !== null ? `🎯 ${winTarget}` : '';
+      }
+    }
+
+    btnNextRound.addEventListener('click', () => {
+      round++;
+      persist();
+      syncRoundUI();
+    });
+
+    // ── Win target ────────────────────────────────────────────
+    function syncWinTargetUI() {
+      if (!winTargetInputEl) return;
+      winTargetInputEl.value = winTarget !== null ? winTarget : '';
+      winTargetStatus.textContent = winTarget !== null
+        ? `Win target active: ${winTarget} points`
+        : 'No win target — game runs until you stop.';
+    }
+
+    btnSetWinTarget.addEventListener('click', () => {
+      const raw = (winTargetInputEl.value || '').trim();
+      if (raw === '') {
+        winTarget = null;
+      } else {
+        const val = parseInt(raw, 10);
+        if (!Number.isFinite(val) || val < 1) {
+          alert('Enter a valid target score (e.g. 100) or leave empty to remove.');
+          return;
+        }
+        winTarget = val;
+      }
+      persist();
+      syncWinTargetUI();
     });
 
     // ── Player order ─────────────────────────────────────────
@@ -254,9 +373,9 @@
       const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
       players.push({
         id: crypto?.randomUUID?.() ?? String(Date.now()),
-        name,
-        score: 0,
-        order: maxOrder + 1
+        name, score: 0,
+        order: maxOrder + 1,
+        log: []
       });
       persist();
       playerNameEl.value = '';
@@ -282,7 +401,7 @@
       if (!players.length) return;
       if (!confirm('Reset all scores to 0?')) return;
       pushUndo();
-      players.forEach(p => p.score = 0);
+      players.forEach(p => { p.score = 0; p.log = []; });
       persist();
       render();
     });
@@ -309,6 +428,7 @@
       if (action === 'inc')    updateScore(id, +stepSize);
       if (action === 'dec')    updateScore(id, -stepSize);
       if (action === 'custom') openSheet(id);
+      if (action === 'log')    openLogSheet(id);
       if (action === 'delete') deletePlayer(id);
       if (action === 'up')     movePlayer(id, -1);
       if (action === 'down')   movePlayer(id, +1);
@@ -319,6 +439,7 @@
       const p = players.find(x => x.id === id);
       if (!p) return;
       p.score += delta;
+      p.log.push({ delta, score: p.score, ts: Date.now() });
       if ('vibrate' in navigator) navigator.vibrate(22);
       persist();
       bumpScore(id);
@@ -348,6 +469,34 @@
       render();
     }
 
+    // ── Game history ─────────────────────────────────────────
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+      catch(e) { return []; }
+    }
+
+    function saveToHistory() {
+      if (!players.length) return;
+      if (players.every(p => p.score === 0 && p.log.length === 0)) return;
+      const history = getHistory();
+      history.unshift({
+        id:      crypto?.randomUUID?.() ?? String(Date.now()),
+        date:    Date.now(),
+        rounds:  round,
+        players: [...players]
+          .sort((a, b) => b.score - a.score)
+          .map(p => ({ name: p.name, score: p.score }))
+      });
+      if (history.length > 30) history.pop();
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    document.getElementById('btnClearHistory').addEventListener('click', () => {
+      if (!confirm('Clear all history?')) return;
+      localStorage.removeItem(HISTORY_KEY);
+      render();
+    });
+
     // ── Render ───────────────────────────────────────────────
     function getSortedPlayersForGame() {
       const mode = sortOrderEl?.value ?? 'custom';
@@ -360,6 +509,7 @@
 
     function renderSettings() {
       if (!playersSettingsEl) return;
+      syncWinTargetUI();
       const ordered = [...players].sort((a, b) => a.order - b.order);
 
       if (!ordered.length) {
@@ -378,8 +528,8 @@
             <div class="player-row-name">${escapeHtml(p.name)}</div>
           </div>
           <div class="player-row-actions">
-            <button class="mini" data-action="up"   data-id="${p.id}" aria-label="Move up">↑</button>
-            <button class="mini" data-action="down" data-id="${p.id}" aria-label="Move down">↓</button>
+            <button class="mini" data-action="up"     data-id="${p.id}" aria-label="Move up">↑</button>
+            <button class="mini" data-action="down"   data-id="${p.id}" aria-label="Move down">↓</button>
             <button class="mini danger" data-action="delete" data-id="${p.id}" aria-label="Delete">🗑</button>
           </div>
         </div>
@@ -388,6 +538,7 @@
 
     function renderGame() {
       if (!playersGameEl) return;
+      syncRoundUI();
       const sorted = getSortedPlayersForGame();
 
       if (!sorted.length) {
@@ -399,15 +550,23 @@
         return;
       }
 
-      const maxScore = sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
+      const maxScore   = sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
+      const hasWinner  = winTarget !== null && sorted.some(p => p.score >= winTarget);
 
       playersGameEl.innerHTML = sorted.map((p, index) => {
-        const isLeader = maxScore !== null && p.score === maxScore;
+        const isWinner = winTarget !== null && p.score >= winTarget;
+        const isLeader = !hasWinner && maxScore !== null && p.score === maxScore;
+        const icon     = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
+        const cardCls  = isWinner ? 'winner' : isLeader ? 'leader' : '';
+
         return `
-          <div class="player-card ${isLeader ? 'leader' : ''}" data-player="${p.id}">
+          <div class="player-card ${cardCls}" data-player="${p.id}">
             <div class="player-top">
-              <div class="player-name">${isLeader ? '👑 ' : ''}${escapeHtml(p.name)}</div>
-              <div class="player-rank">#${index + 1}</div>
+              <div class="player-name">${icon}${escapeHtml(p.name)}</div>
+              <div class="player-top-right">
+                <button class="log-btn" data-action="log" data-id="${p.id}" aria-label="Score log">📋</button>
+                <div class="player-rank">#${index + 1}</div>
+              </div>
             </div>
             <div class="player-score" data-score="${p.id}">${p.score}</div>
             <div class="player-controls">
@@ -419,13 +578,52 @@
       }).join('');
     }
 
+    function renderHistory() {
+      const listEl = document.getElementById('history-list');
+      if (!listEl) return;
+      const history = getHistory();
+
+      if (!history.length) {
+        listEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-emoji">📋</div>
+            <div><h4>No history yet</h4><p>Start a new sesh after a game to save it here.</p></div>
+          </div>`;
+        return;
+      }
+
+      listEl.innerHTML = history.map(game => {
+        const d = new Date(game.date);
+        const dateStr = d.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = d.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+        const roundStr = `${game.rounds} round${game.rounds !== 1 ? 's' : ''}`;
+
+        return `
+          <div class="history-item">
+            <div class="history-header">
+              <span class="history-date">${dateStr} · ${timeStr}</span>
+              <span class="history-rounds">${roundStr}</span>
+            </div>
+            <div class="history-players">
+              ${game.players.map((p, i) => `
+                <div class="history-player">
+                  <span class="history-player-name">${i === 0 ? '🏆 ' : ''}${escapeHtml(p.name)}</span>
+                  <span class="history-player-score">${p.score}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
     function render() {
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
       if (active === 'game')     renderGame();
+      if (active === 'history')  renderHistory();
     }
 
-    // ── Sheet ────────────────────────────────────────────────
+    // ── Score sheet ──────────────────────────────────────────
     function openSheet(playerId) {
       const p = players.find(x => x.id === playerId);
       if (!p) return;
@@ -435,23 +633,19 @@
       inputSign = 1;
       btnToggleSign.textContent = '+';
       btnToggleSign.classList.remove('sign-neg');
-      sheetBackdrop.classList.remove('hidden');
+      showBackdrop();
       scoreSheet.classList.remove('hidden');
-      sheetBackdrop.setAttribute('aria-hidden', 'false');
       setTimeout(() => customDeltaEl.focus(), 60);
     }
 
     function closeSheet() {
       activePlayerIdForSheet = null;
-      sheetBackdrop.classList.add('hidden');
       scoreSheet.classList.add('hidden');
-      sheetBackdrop.setAttribute('aria-hidden', 'true');
+      if (logSheet.classList.contains('hidden')) hideBackdrop();
     }
 
     btnCloseSheet.addEventListener('click', closeSheet);
-    sheetBackdrop.addEventListener('click', closeSheet);
 
-    // Chips apply immediately and close sheet
     chipRow.addEventListener('click', (e) => {
       const chip = e.target.closest('.chip');
       if (!chip || !activePlayerIdForSheet) return;
@@ -462,7 +656,12 @@
       }
     });
 
-    // Custom value
+    btnToggleSign.addEventListener('click', () => {
+      inputSign *= -1;
+      btnToggleSign.textContent = inputSign === 1 ? '+' : '−';
+      btnToggleSign.classList.toggle('sign-neg', inputSign === -1);
+    });
+
     btnApplyDelta.addEventListener('click', applyCustomDelta);
     customDeltaEl.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomDelta(); });
 
@@ -477,14 +676,62 @@
       closeSheet();
     }
 
-    // Swipe down to dismiss sheet
     let swipeStartY = 0;
-    scoreSheet.addEventListener('touchstart', e => {
-      swipeStartY = e.touches[0].clientY;
-    }, { passive: true });
-    scoreSheet.addEventListener('touchend', e => {
-      if (e.changedTouches[0].clientY - swipeStartY > 80) closeSheet();
-    }, { passive: true });
+    scoreSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    scoreSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeSheet(); }, { passive: true });
+
+    // ── Log sheet ────────────────────────────────────────────
+    function openLogSheet(playerId) {
+      const p = players.find(x => x.id === playerId);
+      if (!p) return;
+      logSheetTitle.textContent   = `${p.name}'s score log`;
+      logSheetSubtitle.textContent = `Current score: ${p.score}`;
+
+      const entries = p.log || [];
+      if (!entries.length) {
+        logList.innerHTML = `<div class="log-empty">No score changes yet.</div>`;
+      } else {
+        logList.innerHTML = [...entries].reverse().map(entry => {
+          const sign  = entry.delta > 0 ? '+' : '';
+          const cls   = entry.delta > 0 ? 'pos' : 'neg';
+          const time  = new Date(entry.ts).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          return `
+            <div class="log-item">
+              <span class="log-delta ${cls}">${sign}${entry.delta}</span>
+              <span class="log-score">→ ${entry.score}</span>
+              <span class="log-time">${time}</span>
+            </div>`;
+        }).join('');
+      }
+
+      showBackdrop();
+      logSheet.classList.remove('hidden');
+    }
+
+    function closeLogSheet() {
+      logSheet.classList.add('hidden');
+      if (scoreSheet.classList.contains('hidden')) hideBackdrop();
+    }
+
+    btnCloseLogSheet.addEventListener('click', closeLogSheet);
+
+    logSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    logSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeLogSheet(); }, { passive: true });
+
+    // ── Backdrop ─────────────────────────────────────────────
+    function showBackdrop() {
+      sheetBackdrop.classList.remove('hidden');
+      sheetBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    function hideBackdrop() {
+      sheetBackdrop.classList.add('hidden');
+      sheetBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    sheetBackdrop.addEventListener('click', () => {
+      closeSheet();
+      closeLogSheet();
+    });
 
     // ── Animations ───────────────────────────────────────────
     function bumpScore(id) {
@@ -500,16 +747,11 @@
     // ── Helpers ──────────────────────────────────────────────
     function escapeHtml(s) {
       return String(s)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
+        .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;').replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
-
-    function cssEscape(s) {
-      return String(s).replaceAll('"', '\\"');
-    }
+    function cssEscape(s) { return String(s).replaceAll('"', '\\"'); }
 
     // ── Init ─────────────────────────────────────────────────
     syncUndoBtn();
