@@ -1,9 +1,9 @@
-const CACHE_NAME = "seshscore-cache-v4";
+const CACHE_NAME = "seshscore-cache-v5";
 const urlsToCache = [
     "/",
     "/index.html",
     "/manifest.json",
-    "/static/style.css?v=20260503-2",
+    "/static/style.css?v=20260503-3",
     "/static/image/seshscore_icon_512x512.png",
     "/static/image/seshscore_icon_192x192.png",
     "/static/image/seshscore_icon_144x144.png",

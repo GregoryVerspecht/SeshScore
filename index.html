@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260503-2">
+  <link rel="stylesheet" href="./static/style.css?v=20260503-3">
 </head>
 
 <body>
@@ -399,10 +399,10 @@
         return;
       }
 
-      const showLeader = sorted.length > 1 && sortOrderEl.value !== 'asc';
+      const maxScore = sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
 
       playersGameEl.innerHTML = sorted.map((p, index) => {
-        const isLeader = showLeader && index === 0;
+        const isLeader = maxScore !== null && p.score === maxScore;
         return `
           <div class="player-card ${isLeader ? 'leader' : ''}" data-player="${p.id}">
             <div class="player-top">
