@@ -718,6 +718,13 @@ select option { background: #1a1d2e; color: var(--text); }
   font-size: .88rem;
   margin-top: 10px;
 }
+.kofi-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  transition: color .15s;
+}
+.kofi-link:hover, .kofi-link:active { color: #FF5E5B; }
 
 /* Install banner */
 .install-banner {

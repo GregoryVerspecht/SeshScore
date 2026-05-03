@@ -344,6 +344,24 @@
     }
     .footer-copy { color: var(--muted); font-size: .82rem; }
     .footer-link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: .82rem; }
+    .btn-kofi {
+      height: 44px;
+      padding: 0 22px;
+      border-radius: 14px;
+      background: #FF5E5B;
+      color: #fff;
+      font-weight: 800;
+      font-size: .9rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-kofi:active { opacity: .85; transform: translateY(1px); }
+    .kofi-note { color: var(--muted); font-size: .8rem; margin-top: 14px; }
   </style>
 </head>
 <body>
@@ -484,12 +502,19 @@
       <button class="btn-primary" id="btnInstallBottom">📲 Install App</button>
       <a href="./app.html" class="btn-ghost">Open in Browser →</a>
     </div>
+    <div style="margin-top:32px; border-top:1px solid var(--outline); padding-top:28px;">
+      <p style="color:var(--muted); font-size:.9rem; margin-bottom:14px;">SeshScore is free and always will be.<br>If it saves you from arguing about the score, consider buying me a coffee ☕</p>
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener" class="btn-kofi">☕ Buy me a coffee</a>
+    </div>
   </section>
 
   <hr>
   <footer>
     <span class="footer-copy">© 2026 SeshScore</span>
-    <a href="./app.html" class="footer-link">Open App →</a>
+    <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener" class="footer-link">☕ Ko-fi</a>
+      <a href="./app.html" class="footer-link">Open App →</a>
+    </div>
   </footer>
 
   <script>
