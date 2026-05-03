@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260504-1">
+  <link rel="stylesheet" href="./static/style.css?v=20260504-2">
 </head>
 
 <body>
@@ -103,16 +103,22 @@
     </div>
 
     <div class="section-title">
-      <h3>Win target</h3>
-      <p>First player to reach this score wins.</p>
+      <h3>Game profile</h3>
     </div>
+    <div class="preset-row" id="presetRow"></div>
 
-    <div class="card">
-      <div class="row">
-        <input type="number" id="winTargetInput" placeholder="e.g. 100 (leave empty for none)" inputmode="numeric" min="1" />
-        <button class="btn primary" id="btnSetWinTarget">Set</button>
+    <div id="winTargetSection">
+      <div class="section-title">
+        <h3>Win target</h3>
+        <p>First player to reach this score wins.</p>
       </div>
-      <p id="winTargetStatus" class="muted" style="margin-top:8px;font-size:.88rem"></p>
+      <div class="card">
+        <div class="row">
+          <input type="number" id="winTargetInput" placeholder="e.g. 100 (leave empty for none)" inputmode="numeric" min="1" />
+          <button class="btn primary" id="btnSetWinTarget">Set</button>
+        </div>
+        <p id="winTargetStatus" class="muted" style="margin-top:8px;font-size:.88rem"></p>
+      </div>
     </div>
 
     <div class="section-title">
@@ -191,19 +197,7 @@
       <button class="icon-btn" id="btnCloseSheet" aria-label="Close">✕</button>
     </div>
     <div class="sheet-body">
-      <div class="chip-row" id="chipRow">
-        <button class="chip chip-neg" data-delta="-25">−25</button>
-        <button class="chip chip-neg" data-delta="-10">−10</button>
-        <button class="chip chip-neg" data-delta="-5">−5</button>
-        <button class="chip chip-neg" data-delta="-2">−2</button>
-        <button class="chip chip-neg" data-delta="-1">−1</button>
-        <button class="chip chip-pos" data-delta="1">+1</button>
-        <button class="chip chip-pos" data-delta="2">+2</button>
-        <button class="chip chip-pos" data-delta="5">+5</button>
-        <button class="chip chip-pos" data-delta="10">+10</button>
-        <button class="chip chip-pos" data-delta="25">+25</button>
-        <button class="chip chip-pos" data-delta="50">+50</button>
-      </div>
+      <div class="chip-row" id="chipRow"></div>
       <div class="row">
         <button class="sign-btn" id="btnToggleSign" aria-label="Toggle sign">+</button>
         <input type="number" id="customDelta" placeholder="Custom value (e.g. 7)" inputmode="numeric" min="0" />
@@ -308,8 +302,11 @@
     }
 
     const _s = loadSession();
-    let round     = Number.isFinite(_s.round) ? _s.round : 1;
-    let winTarget = Number.isFinite(_s.winTarget) ? _s.winTarget : null;
+    let round      = Number.isFinite(_s.round)      ? _s.round      : 1;
+    let winTarget  = Number.isFinite(_s.winTarget)  ? _s.winTarget  : null;
+    let gameMode   = _s.gameMode === 'darts'         ? 'darts'       : 'standard';
+    let startScore = Number.isFinite(_s.startScore) ? _s.startScore : 0;
+    let presetId   = _s.presetId || 'custom';
     let players   = (_s.players || []).map((p, i) => ({
       id:    p.id    ?? generateId(),
       name:  p.name,
@@ -321,6 +318,56 @@
 
     let stepSize = 1;
     let undoStack = [];
+
+    // ── Game presets ─────────────────────────────────────────
+    const PRESETS = [
+      { id: 'custom',   label: 'Custom',    icon: '🎮', stepSize: 1,  winTarget: null, gameMode: 'standard', startScore: 0   },
+      { id: 'cribbage', label: 'Cribbage',  icon: '🃏', stepSize: 1,  winTarget: 121,  gameMode: 'standard', startScore: 0   },
+      { id: 'uno',      label: 'Uno',       icon: '🎴', stepSize: 10, winTarget: 500,  gameMode: 'standard', startScore: 0   },
+      { id: 'rummy',    label: 'Rummy',     icon: '♠️', stepSize: 5,  winTarget: 500,  gameMode: 'standard', startScore: 0   },
+      { id: 'darts501', label: 'Darts 501', icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 501 },
+      { id: 'darts301', label: 'Darts 301', icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 301 },
+    ];
+
+    function applyPreset(id) {
+      const preset = PRESETS.find(p => p.id === id);
+      if (!preset) return;
+      const hasScores = players.some(p => p.log.length > 0);
+      if (hasScores && !confirm('Changing game profile will reset all scores. Continue?')) return;
+      presetId   = preset.id;
+      gameMode   = preset.gameMode;
+      startScore = preset.startScore;
+      winTarget  = preset.winTarget;
+      stepSize   = preset.stepSize;
+      stepGroup.querySelectorAll('.step-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.getAttribute('data-step'), 10) === stepSize);
+      });
+      if (sortOrderEl) sortOrderEl.value = gameMode === 'darts' ? 'asc' : 'desc';
+      pushUndo();
+      players.forEach(p => { p.score = startScore; p.log = []; });
+      persist();
+      render();
+    }
+
+    function renderPresets() {
+      const el = document.getElementById('presetRow');
+      if (!el) return;
+      el.innerHTML = PRESETS.map(p => `
+        <button class="preset-btn${p.id === presetId ? ' active' : ''}" data-preset="${escapeHtml(p.id)}">${p.icon} ${escapeHtml(p.label)}</button>
+      `).join('');
+      const wtSection = document.getElementById('winTargetSection');
+      if (wtSection) wtSection.classList.toggle('hidden', gameMode === 'darts');
+    }
+
+    function renderChips() {
+      if (!chipRow) return;
+      const chips = gameMode === 'darts'
+        ? [[-180,'180'],[-140,'140'],[-100,'100'],[-85,'85'],[-60,'60'],[-45,'45'],[-41,'41'],[-26,'26']]
+        : [[-25,'−25'],[-10,'−10'],[-5,'−5'],[-2,'−2'],[-1,'−1'],[1,'+1'],[2,'+2'],[5,'+5'],[10,'+10'],[25,'+25'],[50,'+50']];
+      chipRow.innerHTML = chips.map(([delta, label]) =>
+        `<button class="chip ${delta < 0 ? 'chip-neg' : 'chip-pos'}" data-delta="${delta}">${escapeHtml(String(label))}</button>`
+      ).join('');
+    }
     let activePlayerIdForSheet = null;
     let inputSign = 1;
 
@@ -365,7 +412,7 @@
 
     document.getElementById('btnNewSesh').addEventListener('click', () => {
       saveToHistory();
-      players.forEach(p => { p.score = 0; p.log = []; });
+      players.forEach(p => { p.score = startScore; p.log = []; });
       round = 1;
       undoStack = [];
       syncUndoBtn();
@@ -381,7 +428,7 @@
 
     // ── Persistence ──────────────────────────────────────────
     function persist() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget })); }
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId })); }
       catch(e) {}
     }
 
@@ -408,7 +455,9 @@
     function syncRoundUI() {
       if (roundNumEl) roundNumEl.textContent = round;
       if (winTargetLabelEl) {
-        winTargetLabelEl.textContent = winTarget !== null ? `🎯 ${winTarget}` : '';
+        winTargetLabelEl.textContent = gameMode === 'darts'
+          ? `🎯 ${startScore}`
+          : winTarget !== null ? `🎯 ${winTarget}` : '';
       }
     }
 
@@ -461,7 +510,7 @@
       const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
       players.push({
         id: generateId(),
-        name, score: 0,
+        name, score: startScore,
         order: maxOrder + 1,
         log: []
       });
@@ -487,9 +536,9 @@
     // ── Reset scores ─────────────────────────────────────────
     btnResetScores.addEventListener('click', () => {
       if (!players.length) return;
-      if (!confirm('Reset all scores to 0?')) return;
+      if (!confirm(`Reset all scores to ${startScore}?`)) return;
       pushUndo();
-      players.forEach(p => { p.score = 0; p.log = []; });
+      players.forEach(p => { p.score = startScore; p.log = []; });
       persist();
       render();
     });
@@ -505,6 +554,11 @@
       stepGroup.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       render();
+    });
+
+    document.getElementById('presetRow')?.addEventListener('click', e => {
+      const btn = e.target.closest('.preset-btn');
+      if (btn) applyPreset(btn.getAttribute('data-preset'));
     });
 
     // ── Score actions (event delegation) ─────────────────────
@@ -572,7 +626,7 @@
         date:    Date.now(),
         rounds:  round,
         players: [...players]
-          .sort((a, b) => b.score - a.score)
+          .sort((a, b) => gameMode === 'darts' ? a.score - b.score : b.score - a.score)
           .map(p => ({ name: p.name, score: p.score }))
       });
       if (history.length > 30) history.pop();
@@ -598,6 +652,7 @@
 
     function renderSettings() {
       if (!playersSettingsEl) return;
+      renderPresets();
       syncWinTargetUI();
       const ordered = [...players].sort((a, b) => a.order - b.order);
 
@@ -639,14 +694,20 @@
         return;
       }
 
-      const maxScore   = sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
-      const hasWinner  = winTarget !== null && sorted.some(p => p.score >= winTarget);
+      const isDarts   = gameMode === 'darts';
+      const maxScore  = !isDarts && sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
+      const minScore  = isDarts  && sorted.length > 1 ? Math.min(...sorted.map(p => p.score)) : null;
+      const hasWinner = isDarts
+        ? sorted.some(p => p.score <= 0)
+        : winTarget !== null && sorted.some(p => p.score >= winTarget);
 
       playersGameEl.innerHTML = sorted.map((p, index) => {
-        const isWinner = winTarget !== null && p.score >= winTarget;
-        const isLeader = !hasWinner && maxScore !== null && p.score === maxScore;
-        const icon     = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
-        const cardCls  = isWinner ? 'winner' : isLeader ? 'leader' : '';
+        const isWinner = isDarts ? p.score <= 0 : winTarget !== null && p.score >= winTarget;
+        const isLeader = isDarts
+          ? (!hasWinner && minScore !== null && p.score === minScore)
+          : (!hasWinner && maxScore !== null && p.score === maxScore);
+        const icon    = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
+        const cardCls = (isWinner ? 'winner' : isLeader ? 'leader' : '') + (isDarts ? ' darts-mode' : '');
 
         return `
           <div class="player-card ${cardCls}" data-player="${escapeHtml(p.id)}">
@@ -658,6 +719,7 @@
               </div>
             </div>
             <div class="player-score" data-score="${escapeHtml(p.id)}">${Number(p.score)}</div>
+            ${isDarts ? '<div class="darts-remaining-label">remaining</div>' : ''}
             <div class="player-controls">
               <button class="tap minus"  data-action="dec"    data-id="${escapeHtml(p.id)}" aria-label="Minus ${stepSize}">−${stepSize}</button>
               <button class="tap custom" data-action="custom" data-id="${escapeHtml(p.id)}" aria-label="Custom value">±</button>
@@ -708,7 +770,7 @@
     function render() {
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
-      if (active === 'game')     renderGame();
+      if (active === 'game')     { renderGame(); renderChips(); }
       if (active === 'history')  renderHistory();
     }
 
@@ -717,11 +779,14 @@
       const p = players.find(x => x.id === playerId);
       if (!p) return;
       activePlayerIdForSheet = playerId;
-      sheetSubtitle.textContent = `${p.name} — current score: ${p.score}`;
+      sheetSubtitle.textContent = gameMode === 'darts'
+        ? `${p.name} — remaining: ${p.score}`
+        : `${p.name} — current score: ${p.score}`;
       customDeltaEl.value = '';
-      inputSign = 1;
-      btnToggleSign.textContent = '+';
-      btnToggleSign.classList.remove('sign-neg');
+      inputSign = gameMode === 'darts' ? -1 : 1;
+      btnToggleSign.textContent = inputSign === 1 ? '+' : '−';
+      btnToggleSign.classList.toggle('sign-neg', inputSign === -1);
+      renderChips();
       showBackdrop();
       scoreSheet.classList.remove('hidden');
       setTimeout(() => customDeltaEl.focus(), 60);
