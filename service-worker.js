@@ -1,9 +1,9 @@
-const CACHE_NAME = "seshscore-cache-v6";
+const CACHE_NAME = "seshscore-cache-v7";
 const urlsToCache = [
     "/",
     "/index.html",
     "/manifest.json",
-    "/static/style.css?v=20260503-5",
+    "/static/style.css",
     "/static/image/seshscore_icon_512x512.png",
     "/static/image/seshscore_icon_192x192.png",
     "/static/image/seshscore_icon_144x144.png",
@@ -24,7 +24,7 @@ self.addEventListener("install", (event) => {
 // Fetch verzoeken uit cache halen
 self.addEventListener("fetch", (event) => {
     event.respondWith(
-        caches.match(event.request).then((response) => {
+        caches.match(event.request, { ignoreSearch: true }).then((response) => {
             return response || fetch(event.request);
         })
     );
