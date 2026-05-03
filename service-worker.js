@@ -1,7 +1,6 @@
-const CACHE_NAME = "seshscore-cache-v8";
+const CACHE_NAME = "seshscore-cache-v9";
 const urlsToCache = [
-    "/",
-    "/index.html",
+    "/app.html",
     "/manifest.json",
     "/static/style.css",
     "/static/image/seshscore_icon_512x512.png",
