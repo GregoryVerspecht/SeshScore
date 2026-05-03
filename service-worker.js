@@ -1,4 +1,4 @@
-const CACHE_NAME = "seshscore-cache-v7";
+const CACHE_NAME = "seshscore-cache-v8";
 const urlsToCache = [
     "/",
     "/index.html",
