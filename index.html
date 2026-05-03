@@ -3,19 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SeshScore — Keep score for any game</title>
-  <meta name="description" content="Free mobile scoreboard for any game. No app store, no account, works offline. Just open and play." />
+  <title>SeshScore — Free Score Tracker App for Any Game</title>
+  <meta name="description" content="SeshScore is a free mobile score tracker for card games, board games, dice games and more. No download, no account, works offline. Track scores instantly on any phone." />
+  <meta name="keywords" content="score tracker app, mobile scoreboard, free score keeper, card game score tracker, board game scoreboard, offline score tracker, multiplayer score counter, game score app, Uno score tracker, Yahtzee scorecard" />
+  <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0f1117" />
 
   <link rel="icon" href="./static/image/seshscore_icon_96x96.png" />
+  <link rel="canonical" href="https://seshscore.gv-tech.eu/" />
 
-  <meta property="og:title"       content="SeshScore — Keep score for any game" />
-  <meta property="og:description" content="Free mobile scoreboard. No app store, no account, works offline." />
-  <meta property="og:image"       content="./static/image/seshscore_icon_512x512.png" />
+  <meta property="og:title"       content="SeshScore — Free Score Tracker App for Any Game" />
+  <meta property="og:description" content="Free mobile score tracker for card games, board games and more. No app store, no account, works offline." />
+  <meta property="og:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore_icon_512x512.png" />
   <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://seshscore.gv-tech.eu/" />
+
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="SeshScore — Free Score Tracker for Any Game" />
+  <meta name="twitter:description" content="Free mobile scoreboard. No app store, no account, works offline. Card games, board games, any game." />
+  <meta name="twitter:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore_icon_512x512.png" />
 
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; frame-ancestors 'none';">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SeshScore",
+    "description": "Free mobile score tracker for card games, board games, dice games and more. No download, no account, works offline.",
+    "url": "https://seshscore.gv-tech.eu/app.html",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires a modern web browser",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "featureList": ["Offline support", "No account required", "Game history", "Multiplayer", "Undo", "PWA installable"]
+  }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -344,6 +368,15 @@
     }
     .footer-copy { color: var(--muted); font-size: .82rem; }
     .footer-link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: .82rem; }
+    .game-tag {
+      background: var(--card);
+      border: 1px solid var(--outline);
+      border-radius: 100px;
+      padding: 7px 16px;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
     .btn-kofi {
       height: 44px;
       padding: 0 22px;
@@ -380,7 +413,7 @@
     <div>
       <div class="hero-badge">✦ Free &middot; No account &middot; Works offline</div>
       <h1>Keep score.<br><em>Any game.</em><br>Any phone.</h1>
-      <p class="hero-sub">The instant mobile scoreboard — add players, tap to score, see who's winning. No app store, no login, no fuss.</p>
+      <p class="hero-sub">The free mobile score tracker for card games, board games, dice games and more — add players, tap to score, see who's winning. No app store, no login, no fuss.</p>
       <div class="hero-actions">
         <button class="btn-primary" id="btnInstallHero">📲 Install App</button>
         <a href="./app.html" class="btn-ghost">Open in Browser →</a>
@@ -466,6 +499,28 @@
         <div class="feature-title">Game history</div>
         <div class="feature-desc">Save results after each game. Browse your last 30 sessions anytime.</div>
       </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- Perfect for — long-tail keyword section -->
+  <section class="section" style="padding-bottom: 48px;">
+    <div class="section-eyebrow">Perfect for</div>
+    <h2 class="section-heading">Any game that needs a score</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:640px; margin:0 auto;">
+      <span class="game-tag">🃏 Card games</span>
+      <span class="game-tag">🎲 Dice games</span>
+      <span class="game-tag">🎯 Darts</span>
+      <span class="game-tag">🧩 Board games</span>
+      <span class="game-tag">🎉 Party games</span>
+      <span class="game-tag">🍺 Drinking games</span>
+      <span class="game-tag">🀄 Dominoes</span>
+      <span class="game-tag">🎴 Uno</span>
+      <span class="game-tag">📊 Yahtzee</span>
+      <span class="game-tag">♠️ Poker</span>
+      <span class="game-tag">🃏 Rummy</span>
+      <span class="game-tag">🎮 Any game</span>
     </div>
   </section>
 
