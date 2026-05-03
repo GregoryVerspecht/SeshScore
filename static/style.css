@@ -719,6 +719,73 @@ select option { background: #1a1d2e; color: var(--text); }
   margin-top: 10px;
 }
 
+/* Install banner */
+.install-banner {
+  margin-top: 12px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--outline);
+  padding: 14px 14px 14px 14px;
+  position: relative;
+}
+.install-banner-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-right: 24px;
+}
+.install-banner-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.install-banner-title {
+  font-weight: 800;
+  font-size: .95rem;
+}
+.install-banner-sub {
+  color: var(--muted);
+  font-size: .8rem;
+  margin: 3px 0 0;
+}
+.install-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: .95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.install-dismiss:active { background: var(--outline); }
+.install-btn-row { margin-top: 12px; }
+.install-steps {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: .88rem;
+  line-height: 1.85;
+  color: var(--text);
+}
+.install-steps li { margin: 0; }
+.install-share-icon {
+  display: inline-block;
+  background: var(--primary-bg);
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;

@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260503-5">
+  <link rel="stylesheet" href="./static/style.css?v=20260503-6">
 </head>
 
 <body>
@@ -42,7 +42,40 @@
       <button class="btn ghost" style="margin-top:10px" data-nav="history">📋 History</button>
     </div>
 
-    <p class="hint">Tip: add this as a PWA to your home screen for fullscreen game mode.</p>
+    <!-- PWA install banner (shown by JS when applicable) -->
+    <div class="install-banner hidden" id="installBanner">
+      <button class="install-dismiss" id="btnDismissInstall" aria-label="Dismiss">✕</button>
+
+      <!-- Android / Chrome: native prompt -->
+      <div id="installBannerAndroid" class="hidden">
+        <div class="install-banner-header">
+          <span class="install-banner-icon">📲</span>
+          <div>
+            <div class="install-banner-title">Install SeshScore</div>
+            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+          </div>
+        </div>
+        <div class="install-btn-row">
+          <button class="btn primary" id="btnInstallApp">Add to Home Screen</button>
+        </div>
+      </div>
+
+      <!-- iOS Safari: manual steps -->
+      <div id="installBannerIOS" class="hidden">
+        <div class="install-banner-header">
+          <span class="install-banner-icon">📲</span>
+          <div>
+            <div class="install-banner-title">Install SeshScore</div>
+            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+          </div>
+        </div>
+        <ol class="install-steps">
+          <li>Tap the <span class="install-share-icon">Share</span> button at the bottom of Safari</li>
+          <li>Tap <strong>Add to Home Screen</strong></li>
+          <li>Tap <strong>Add</strong></li>
+        </ol>
+      </div>
+    </div>
   </section>
 
   <!-- SETTINGS -->
@@ -195,6 +228,55 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js');
+    }
+
+    // ── PWA install prompt ────────────────────────────────────
+    let _deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      _deferredInstallPrompt = e;
+      _showInstallBanner('android');
+    });
+    window.addEventListener('appinstalled', () => {
+      _hideInstallBanner();
+      _deferredInstallPrompt = null;
+    });
+
+    function _isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
+    }
+    function _isIOSSafari() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent)
+        && /safari/i.test(navigator.userAgent)
+        && !/crios|fxios|chrome/i.test(navigator.userAgent);
+    }
+    function _showInstallBanner(type) {
+      if (_isStandalone()) return;
+      if (localStorage.getItem('pwa_install_dismissed')) return;
+      const banner  = document.getElementById('installBanner');
+      const android = document.getElementById('installBannerAndroid');
+      const ios     = document.getElementById('installBannerIOS');
+      if (!banner) return;
+      android.classList.toggle('hidden', type !== 'android');
+      ios.classList.toggle('hidden',     type !== 'ios');
+      banner.classList.remove('hidden');
+    }
+    function _hideInstallBanner() {
+      document.getElementById('installBanner')?.classList.add('hidden');
+      try { localStorage.setItem('pwa_install_dismissed', '1'); } catch(e) {}
+    }
+    function initInstallBanner() {
+      if (_isStandalone()) return;
+      if (localStorage.getItem('pwa_install_dismissed')) return;
+      if (_isIOSSafari()) _showInstallBanner('ios');
+      document.getElementById('btnDismissInstall')?.addEventListener('click', _hideInstallBanner);
+      document.getElementById('btnInstallApp')?.addEventListener('click', async () => {
+        if (!_deferredInstallPrompt) return;
+        _deferredInstallPrompt.prompt();
+        const { outcome } = await _deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') _hideInstallBanner();
+        _deferredInstallPrompt = null;
+      });
     }
 
     window.addEventListener('load', () => {
@@ -769,6 +851,7 @@
     // ── Init ─────────────────────────────────────────────────
     syncUndoBtn();
     render();
+    initInstallBanner();
   </script>
 </body>
 </html>
