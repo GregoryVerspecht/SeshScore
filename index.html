@@ -2,856 +2,518 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>SeshScore</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SeshScore — Keep score for any game</title>
+  <meta name="description" content="Free mobile scoreboard for any game. No app store, no account, works offline. Just open and play." />
   <meta name="theme-color" content="#0f1117" />
 
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; object-src 'none'; frame-ancestors 'none';">
+  <link rel="icon" href="./static/image/seshscore_icon_96x96.png" />
 
-  <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./static/image/seshscore_icon_512x512.png">
+  <meta property="og:title"       content="SeshScore — Keep score for any game" />
+  <meta property="og:description" content="Free mobile scoreboard. No app store, no account, works offline." />
+  <meta property="og:image"       content="./static/image/seshscore_icon_512x512.png" />
+  <meta property="og:type"        content="website" />
+
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; frame-ancestors 'none';">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260503-6">
+  <style>
+    :root {
+      --bg:         #0f1117;
+      --card:       #1a1d2e;
+      --card-2:     #1e2235;
+      --text:       #e8eaf0;
+      --muted:      rgba(232,234,240,.5);
+      --primary:    #4ade80;
+      --primary-bg: rgba(74,222,128,.14);
+      --outline:    rgba(255,255,255,.08);
+      --radius:     18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .nav-logo img { width: 30px; height: 30px; border-radius: 8px; }
+    .btn-nav {
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: 1px solid var(--outline);
+      background: var(--card-2);
+      color: var(--text);
+      font-weight: 700;
+      font-size: .875rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-nav:active { opacity: .7; }
+
+    /* ── Buttons ──────────────────────────────────────────── */
+    .btn-primary {
+      height: 52px;
+      padding: 0 28px;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #0f1117;
+      font-weight: 800;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-primary:active { opacity: .85; transform: translateY(1px); }
+    .btn-ghost {
+      height: 52px;
+      padding: 0 24px;
+      border-radius: 16px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1rem;
+      border: 1px solid var(--outline);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-ghost:active { background: var(--outline); }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    @media (min-width: 760px) {
+      .hero { grid-template-columns: 1fr 1fr; padding: 80px 40px 100px; gap: 40px; }
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -.025em;
+      margin-bottom: 18px;
+    }
+    h1 em { font-style: normal; color: var(--primary); }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 440px;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    /* ── Phone mockup ─────────────────────────────────────── */
+    .phone-wrap {
+      display: flex;
+      justify-content: center;
+    }
+    .phone {
+      width: 256px;
+      background: #0b0d16;
+      border-radius: 40px;
+      border: 6px solid #252840;
+      box-shadow:
+        0 40px 100px rgba(0,0,0,.7),
+        0 0 0 1px rgba(255,255,255,.05),
+        inset 0 1px 0 rgba(255,255,255,.06);
+      overflow: hidden;
+    }
+    .phone-notch {
+      width: 76px;
+      height: 22px;
+      background: #0b0d16;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+    }
+    .phone-screen { padding: 6px 12px 20px; }
+    .phone-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 4px 0;
+    }
+    .phone-app-name { font-size: .78rem; font-weight: 900; }
+    .phone-round-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      background: var(--card);
+      border: 1px solid var(--outline);
+      border-radius: 6px;
+      padding: 2px 7px;
+      color: var(--muted);
+    }
+    .phone-player {
+      background: var(--card);
+      border-radius: 13px;
+      border: 1px solid var(--outline);
+      padding: 9px 11px;
+      margin-bottom: 7px;
+    }
+    .phone-player.leader {
+      border-color: rgba(74,222,128,.3);
+      background: rgba(74,222,128,.05);
+    }
+    .phone-player-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .phone-player-name { font-size: .72rem; font-weight: 700; }
+    .phone-player-rank { font-size: .62rem; color: var(--muted); font-weight: 700; }
+    .phone-score {
+      font-size: 1.55rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 7px;
+    }
+    .phone-player.leader .phone-score { color: var(--primary); }
+    .phone-btns { display: flex; gap: 4px; }
+    .phone-btn {
+      flex: 1;
+      height: 24px;
+      border-radius: 7px;
+      border: 1px solid var(--outline);
+      background: var(--card-2);
+      font-size: .6rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-btn.plus  { background: var(--primary-bg); color: var(--primary); border-color: rgba(74,222,128,.2); }
+    .phone-btn.minus { background: rgba(248,113,113,.1); color: #f87171;     border-color: rgba(248,113,113,.2); }
+
+    /* ── Divider ──────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid var(--outline); }
+
+    /* ── Sections ─────────────────────────────────────────── */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 72px 24px;
+    }
+    .section-eyebrow {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .section-heading {
+      text-align: center;
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
+      font-weight: 900;
+      letter-spacing: -.02em;
+      line-height: 1.15;
+      margin-bottom: 48px;
+    }
+
+    /* ── Feature grid ─────────────────────────────────────── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 720px) { .features { grid-template-columns: repeat(4, 1fr); } }
+    .feature {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--outline);
+      padding: 22px 18px;
+    }
+    .feature-icon  { font-size: 1.7rem; margin-bottom: 12px; display: block; }
+    .feature-title { font-weight: 800; font-size: .92rem; margin-bottom: 5px; }
+    .feature-desc  { color: var(--muted); font-size: .82rem; line-height: 1.55; }
+
+    /* ── Steps ────────────────────────────────────────────── */
+    .steps {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 600px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+    .step {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--outline);
+      padding: 26px 22px;
+    }
+    .step-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-weight: 900;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step-title { font-weight: 800; font-size: 1rem; margin-bottom: 7px; }
+    .step-desc  { color: var(--muted); font-size: .85rem; line-height: 1.6; }
+
+    /* ── CTA section ──────────────────────────────────────── */
+    .cta-section {
+      text-align: center;
+      padding: 88px 24px;
+      background: linear-gradient(180deg, transparent, rgba(74,222,128,.05));
+      border-top: 1px solid var(--outline);
+    }
+    .cta-section h2 {
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -.025em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .cta-section p  { color: var(--muted); font-size: 1rem; margin-bottom: 36px; }
+    .cta-actions    { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-copy { color: var(--muted); font-size: .82rem; }
+    .footer-link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: .82rem; }
+  </style>
 </head>
-
 <body>
-  <!-- Splash -->
-  <div class="splash-screen" id="splash" aria-hidden="true">
-    <img src="./static/image/seshscore_icon_512x512.png" alt="SeshScore Logo" />
-  </div>
 
-  <!-- START -->
-  <section class="screen active" id="start">
-    <div class="app-header">
-      <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
-      <div>
-        <h1 class="app-title">SeshScore</h1>
-        <p class="app-subtitle">Mobile scoreboard</p>
+  <!-- Nav -->
+  <nav>
+    <a href="./" class="nav-logo">
+      <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore">
+      SeshScore
+    </a>
+    <a href="./app.html" class="btn-nav">Open App →</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div>
+      <div class="hero-badge">✦ Free &middot; No account &middot; Works offline</div>
+      <h1>Keep score.<br><em>Any game.</em><br>Any phone.</h1>
+      <p class="hero-sub">The instant mobile scoreboard — add players, tap to score, see who's winning. No app store, no login, no fuss.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" id="btnInstallHero">📲 Install App</button>
+        <a href="./app.html" class="btn-ghost">Open in Browser →</a>
       </div>
     </div>
 
-    <div class="card">
-      <button class="btn primary" id="btnNewSesh">New sesh</button>
-      <button class="btn ghost" style="margin-top:10px" data-nav="game">Last sesh</button>
-      <button class="btn ghost" style="margin-top:10px" data-nav="history">📋 History</button>
-    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-topbar">
+            <span class="phone-app-name">SeshScore</span>
+            <span class="phone-round-badge">Round 3</span>
+          </div>
 
-    <!-- PWA install banner (shown by JS when applicable) -->
-    <div class="install-banner hidden" id="installBanner">
-      <button class="install-dismiss" id="btnDismissInstall" aria-label="Dismiss">✕</button>
+          <div class="phone-player leader">
+            <div class="phone-player-top">
+              <span class="phone-player-name">👑 Alice</span>
+              <span class="phone-player-rank">#1</span>
+            </div>
+            <div class="phone-score">47</div>
+            <div class="phone-btns">
+              <div class="phone-btn minus">−1</div>
+              <div class="phone-btn">±</div>
+              <div class="phone-btn plus">+1</div>
+            </div>
+          </div>
 
-      <!-- Android / Chrome: native prompt -->
-      <div id="installBannerAndroid" class="hidden">
-        <div class="install-banner-header">
-          <span class="install-banner-icon">📲</span>
-          <div>
-            <div class="install-banner-title">Install SeshScore</div>
-            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+          <div class="phone-player">
+            <div class="phone-player-top">
+              <span class="phone-player-name">Bob</span>
+              <span class="phone-player-rank">#2</span>
+            </div>
+            <div class="phone-score">31</div>
+            <div class="phone-btns">
+              <div class="phone-btn minus">−1</div>
+              <div class="phone-btn">±</div>
+              <div class="phone-btn plus">+1</div>
+            </div>
+          </div>
+
+          <div class="phone-player">
+            <div class="phone-player-top">
+              <span class="phone-player-name">Charlie</span>
+              <span class="phone-player-rank">#3</span>
+            </div>
+            <div class="phone-score">12</div>
+            <div class="phone-btns">
+              <div class="phone-btn minus">−1</div>
+              <div class="phone-btn">±</div>
+              <div class="phone-btn plus">+1</div>
+            </div>
           </div>
         </div>
-        <div class="install-btn-row">
-          <button class="btn primary" id="btnInstallApp">Add to Home Screen</button>
-        </div>
-      </div>
-
-      <!-- iOS Safari: manual steps -->
-      <div id="installBannerIOS" class="hidden">
-        <div class="install-banner-header">
-          <span class="install-banner-icon">📲</span>
-          <div>
-            <div class="install-banner-title">Install SeshScore</div>
-            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
-          </div>
-        </div>
-        <ol class="install-steps">
-          <li>Tap the <span class="install-share-icon">Share</span> button at the bottom of Safari</li>
-          <li>Tap <strong>Add to Home Screen</strong></li>
-          <li>Tap <strong>Add</strong></li>
-        </ol>
       </div>
     </div>
   </section>
 
-  <!-- SETTINGS -->
-  <section class="screen" id="settings">
-    <div class="topbar">
-      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
-      <div class="topbar-title">
-        <h2>Players</h2>
-        <p>Add players and set the order.</p>
+  <hr>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="section-eyebrow">Why SeshScore</div>
+    <h2 class="section-heading">Everything you need.<br>Nothing you don't.</h2>
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">🆓</span>
+        <div class="feature-title">Completely free</div>
+        <div class="feature-desc">No ads, no premium tier, no subscriptions. Ever.</div>
       </div>
-      <button class="icon-btn" data-nav="game" aria-label="Start game">▶</button>
-    </div>
-
-    <div class="card">
-      <div class="row">
-        <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
-        <button class="btn primary" id="btnAddPlayer">+</button>
+      <div class="feature">
+        <span class="feature-icon">📵</span>
+        <div class="feature-title">Works offline</div>
+        <div class="feature-desc">No signal? No problem. Scores live on your device, not a server.</div>
       </div>
-      <div class="row row-split">
-        <button class="btn danger" id="btnDeleteAll">🗑 Remove all</button>
-        <button class="btn ghost" data-nav="game">Start game ▶</button>
+      <div class="feature">
+        <span class="feature-icon">👤</span>
+        <div class="feature-title">No account</div>
+        <div class="feature-desc">Open and play. Nothing to sign up for, nothing to remember.</div>
       </div>
-    </div>
-
-    <div class="section-title">
-      <h3>Win target</h3>
-      <p>First player to reach this score wins.</p>
-    </div>
-
-    <div class="card">
-      <div class="row">
-        <input type="number" id="winTargetInput" placeholder="e.g. 100 (leave empty for none)" inputmode="numeric" min="1" />
-        <button class="btn primary" id="btnSetWinTarget">Set</button>
+      <div class="feature">
+        <span class="feature-icon">📋</span>
+        <div class="feature-title">Game history</div>
+        <div class="feature-desc">Save results after each game. Browse your last 30 sessions anytime.</div>
       </div>
-      <p id="winTargetStatus" class="muted" style="margin-top:8px;font-size:.88rem"></p>
-    </div>
-
-    <div class="section-title">
-      <h3>Players</h3>
-      <p>Use ↑/↓ to set the default order.</p>
-    </div>
-
-    <div id="players-settings" class="players"></div>
-  </section>
-
-  <!-- GAME -->
-  <section class="screen" id="game">
-    <div class="topbar">
-      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
-      <div class="topbar-title">
-        <h2>SeshScore</h2>
-        <p>Tap + / − to score</p>
-      </div>
-      <button class="icon-btn" data-nav="settings" aria-label="Settings">⚙</button>
-    </div>
-
-    <div class="round-row">
-      <span class="round-label">Round <strong id="roundNum">1</strong></span>
-      <span class="win-target-label" id="winTargetLabel"></span>
-      <button class="btn ghost round-next-btn" id="btnNextRound">Next round →</button>
-    </div>
-
-    <div class="step-row">
-      <span class="step-label">Step</span>
-      <div class="step-group" id="stepGroup">
-        <button class="step-btn active" data-step="1">±1</button>
-        <button class="step-btn" data-step="5">±5</button>
-        <button class="step-btn" data-step="10">±10</button>
-        <button class="step-btn" data-step="25">±25</button>
-      </div>
-    </div>
-
-    <div id="players-game" class="players"></div>
-
-    <div class="bottom-bar">
-      <label class="sr-only" for="sortOrder">Sort</label>
-      <select id="sortOrder">
-        <option value="custom">Order</option>
-        <option value="desc">Highest first</option>
-        <option value="asc">Lowest first</option>
-      </select>
-      <button class="btn ghost" id="btnUndo" aria-label="Undo" disabled>↩ Undo</button>
-      <button class="btn danger" id="btnResetScores">Reset</button>
     </div>
   </section>
 
-  <!-- HISTORY -->
-  <section class="screen" id="history">
-    <div class="topbar">
-      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
-      <div class="topbar-title">
-        <h2>History</h2>
-        <p>Past games</p>
+  <hr>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-eyebrow">How it works</div>
+    <h2 class="section-heading">Up and running<br>in 30 seconds</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Add your players</div>
+        <div class="step-desc">Type each name. Set your step size — 1, 5, 10 — and an optional win target to end the game automatically.</div>
       </div>
-      <button class="icon-btn" id="btnClearHistory" aria-label="Clear history">🗑</button>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Tap to score</div>
+        <div class="step-desc">Hit +/− on each player's card or enter a custom value. Made a mistake? Undo it instantly.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Save and rematch</div>
+        <div class="step-desc">Start a new sesh to save results to history. Your last 30 games are always a tap away.</div>
+      </div>
     </div>
-    <div id="history-list" class="players"></div>
   </section>
 
-  <!-- Backdrop (shared) -->
-  <div class="sheet-backdrop hidden" id="sheetBackdrop" aria-hidden="true"></div>
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to play?</h2>
+    <p>Install it once, use it forever — no updates, no maintenance, no fuss.</p>
+    <div class="cta-actions">
+      <button class="btn-primary" id="btnInstallBottom">📲 Install App</button>
+      <a href="./app.html" class="btn-ghost">Open in Browser →</a>
+    </div>
+  </section>
 
-  <!-- Score sheet -->
-  <div class="sheet hidden" id="scoreSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-header">
-      <div>
-        <h3 id="sheetTitle">Adjust score</h3>
-        <p id="sheetSubtitle" class="muted"></p>
-      </div>
-      <button class="icon-btn" id="btnCloseSheet" aria-label="Close">✕</button>
-    </div>
-    <div class="sheet-body">
-      <div class="chip-row" id="chipRow">
-        <button class="chip chip-neg" data-delta="-25">−25</button>
-        <button class="chip chip-neg" data-delta="-10">−10</button>
-        <button class="chip chip-neg" data-delta="-5">−5</button>
-        <button class="chip chip-neg" data-delta="-2">−2</button>
-        <button class="chip chip-neg" data-delta="-1">−1</button>
-        <button class="chip chip-pos" data-delta="1">+1</button>
-        <button class="chip chip-pos" data-delta="2">+2</button>
-        <button class="chip chip-pos" data-delta="5">+5</button>
-        <button class="chip chip-pos" data-delta="10">+10</button>
-        <button class="chip chip-pos" data-delta="25">+25</button>
-        <button class="chip chip-pos" data-delta="50">+50</button>
-      </div>
-      <div class="row">
-        <button class="sign-btn" id="btnToggleSign" aria-label="Toggle sign">+</button>
-        <input type="number" id="customDelta" placeholder="Custom value (e.g. 7)" inputmode="numeric" min="0" />
-        <button class="btn primary" id="btnApplyDelta">Apply</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Log sheet -->
-  <div class="sheet hidden" id="logSheet" role="dialog" aria-modal="true" aria-labelledby="logSheetTitle">
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-header">
-      <div>
-        <h3 id="logSheetTitle">Score log</h3>
-        <p id="logSheetSubtitle" class="muted"></p>
-      </div>
-      <button class="icon-btn" id="btnCloseLogSheet" aria-label="Close">✕</button>
-    </div>
-    <div class="sheet-body">
-      <div id="logList" class="log-list"></div>
-    </div>
-  </div>
+  <hr>
+  <footer>
+    <span class="footer-copy">© 2026 SeshScore</span>
+    <a href="./app.html" class="footer-link">Open App →</a>
+  </footer>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
-    }
+    let _deferredPrompt = null;
 
-    // ── PWA install prompt ────────────────────────────────────
-    let _deferredInstallPrompt = null;
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
-      _deferredInstallPrompt = e;
-      _showInstallBanner('android');
+      _deferredPrompt = e;
     });
-    window.addEventListener('appinstalled', () => {
-      _hideInstallBanner();
-      _deferredInstallPrompt = null;
-    });
+    window.addEventListener('appinstalled', () => { _deferredPrompt = null; });
 
-    function _isStandalone() {
-      return window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
-    }
-    function _isIOSSafari() {
-      return /iphone|ipad|ipod/i.test(navigator.userAgent)
-        && /safari/i.test(navigator.userAgent)
-        && !/crios|fxios|chrome/i.test(navigator.userAgent);
-    }
-    function _showInstallBanner(type) {
-      if (_isStandalone()) return;
-      if (localStorage.getItem('pwa_install_dismissed')) return;
-      const banner  = document.getElementById('installBanner');
-      const android = document.getElementById('installBannerAndroid');
-      const ios     = document.getElementById('installBannerIOS');
-      if (!banner) return;
-      android.classList.toggle('hidden', type !== 'android');
-      ios.classList.toggle('hidden',     type !== 'ios');
-      banner.classList.remove('hidden');
-    }
-    function _hideInstallBanner() {
-      document.getElementById('installBanner')?.classList.add('hidden');
-      try { localStorage.setItem('pwa_install_dismissed', '1'); } catch(e) {}
-    }
-    function initInstallBanner() {
-      if (_isStandalone()) return;
-      if (localStorage.getItem('pwa_install_dismissed')) return;
-      if (_isIOSSafari()) _showInstallBanner('ios');
-      document.getElementById('btnDismissInstall')?.addEventListener('click', _hideInstallBanner);
-      document.getElementById('btnInstallApp')?.addEventListener('click', async () => {
-        if (!_deferredInstallPrompt) return;
-        _deferredInstallPrompt.prompt();
-        const { outcome } = await _deferredInstallPrompt.userChoice;
-        if (outcome === 'accepted') _hideInstallBanner();
-        _deferredInstallPrompt = null;
-      });
-    }
-
-    window.addEventListener('load', () => {
-      setTimeout(() => document.getElementById('splash').style.display = 'none', 650);
-    });
-
-    // ── Storage keys ─────────────────────────────────────────
-    const SESSION_KEY = 'scoreboard_session_v3';
-    const HISTORY_KEY = 'seshscore_history';
-
-    // ── Load session (migrates from v2 array format) ─────────
-    function loadSession() {
-      try {
-        const raw = localStorage.getItem(SESSION_KEY);
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s && !Array.isArray(s) && Array.isArray(s.players)) return s;
-        }
-      } catch(e) {}
-      try {
-        const old = JSON.parse(localStorage.getItem('scoreboard_session_v2') || 'null');
-        if (Array.isArray(old)) {
-          return { players: old, round: 1, winTarget: null };
-        }
-      } catch(e) {}
-      return { players: [], round: 1, winTarget: null };
-    }
-
-    const _s = loadSession();
-    let round     = Number.isFinite(_s.round) ? _s.round : 1;
-    let winTarget = Number.isFinite(_s.winTarget) ? _s.winTarget : null;
-    let players   = (_s.players || []).map((p, i) => ({
-      id:    p.id    ?? generateId(),
-      name:  p.name,
-      score: Number.isFinite(p.score) ? p.score : 0,
-      order: Number.isFinite(p.order) ? p.order : i,
-      log:   Array.isArray(p.log) ? p.log : []
-    }));
-    persist();
-
-    let stepSize = 1;
-    let undoStack = [];
-    let activePlayerIdForSheet = null;
-    let inputSign = 1;
-
-    // ── DOM refs ─────────────────────────────────────────────
-    const screens           = Array.from(document.querySelectorAll('.screen'));
-    const sortOrderEl       = document.getElementById('sortOrder');
-    const playersSettingsEl = document.getElementById('players-settings');
-    const playersGameEl     = document.getElementById('players-game');
-    const playerNameEl      = document.getElementById('playerName');
-    const btnAddPlayer      = document.getElementById('btnAddPlayer');
-    const btnDeleteAll      = document.getElementById('btnDeleteAll');
-    const btnResetScores    = document.getElementById('btnResetScores');
-    const btnUndo           = document.getElementById('btnUndo');
-    const stepGroup         = document.getElementById('stepGroup');
-    const roundNumEl        = document.getElementById('roundNum');
-    const winTargetLabelEl  = document.getElementById('winTargetLabel');
-    const btnNextRound      = document.getElementById('btnNextRound');
-    const winTargetInputEl  = document.getElementById('winTargetInput');
-    const btnSetWinTarget   = document.getElementById('btnSetWinTarget');
-    const winTargetStatus   = document.getElementById('winTargetStatus');
-
-    const sheetBackdrop     = document.getElementById('sheetBackdrop');
-    const scoreSheet        = document.getElementById('scoreSheet');
-    const btnCloseSheet     = document.getElementById('btnCloseSheet');
-    const sheetSubtitle     = document.getElementById('sheetSubtitle');
-    const customDeltaEl     = document.getElementById('customDelta');
-    const btnApplyDelta     = document.getElementById('btnApplyDelta');
-    const btnToggleSign     = document.getElementById('btnToggleSign');
-    const chipRow           = document.getElementById('chipRow');
-
-    const logSheet          = document.getElementById('logSheet');
-    const btnCloseLogSheet  = document.getElementById('btnCloseLogSheet');
-    const logSheetTitle     = document.getElementById('logSheetTitle');
-    const logSheetSubtitle  = document.getElementById('logSheetSubtitle');
-    const logList           = document.getElementById('logList');
-
-    // ── Navigation ───────────────────────────────────────────
-    document.body.addEventListener('click', (e) => {
-      const nav = e.target.closest('[data-nav]');
-      if (nav) { showScreen(nav.getAttribute('data-nav')); return; }
-    });
-
-    document.getElementById('btnNewSesh').addEventListener('click', () => {
-      saveToHistory();
-      players.forEach(p => { p.score = 0; p.log = []; });
-      round = 1;
-      undoStack = [];
-      syncUndoBtn();
-      persist();
-      showScreen('settings');
-    });
-
-    function showScreen(id) {
-      screens.forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      render();
-    }
-
-    // ── Persistence ──────────────────────────────────────────
-    function persist() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget })); }
-      catch(e) {}
-    }
-
-    // ── Undo ─────────────────────────────────────────────────
-    function pushUndo() {
-      undoStack.push(JSON.stringify(players));
-      if (undoStack.length > 20) undoStack.shift();
-      syncUndoBtn();
-    }
-
-    function syncUndoBtn() {
-      if (btnUndo) btnUndo.disabled = undoStack.length === 0;
-    }
-
-    btnUndo.addEventListener('click', () => {
-      if (!undoStack.length) return;
-      players = JSON.parse(undoStack.pop());
-      persist();
-      syncUndoBtn();
-      render();
-    });
-
-    // ── Round counter ─────────────────────────────────────────
-    function syncRoundUI() {
-      if (roundNumEl) roundNumEl.textContent = round;
-      if (winTargetLabelEl) {
-        winTargetLabelEl.textContent = winTarget !== null ? `🎯 ${winTarget}` : '';
-      }
-    }
-
-    btnNextRound.addEventListener('click', () => {
-      round++;
-      persist();
-      syncRoundUI();
-    });
-
-    // ── Win target ────────────────────────────────────────────
-    function syncWinTargetUI() {
-      if (!winTargetInputEl) return;
-      winTargetInputEl.value = winTarget !== null ? winTarget : '';
-      winTargetStatus.textContent = winTarget !== null
-        ? `Win target active: ${winTarget} points`
-        : 'No win target — game runs until you stop.';
-    }
-
-    btnSetWinTarget.addEventListener('click', () => {
-      const raw = (winTargetInputEl.value || '').trim();
-      if (raw === '') {
-        winTarget = null;
+    async function triggerInstall() {
+      if (_deferredPrompt) {
+        _deferredPrompt.prompt();
+        await _deferredPrompt.userChoice;
+        _deferredPrompt = null;
       } else {
-        const val = parseInt(raw, 10);
-        if (!Number.isFinite(val) || val < 1) {
-          alert('Enter a valid target score (e.g. 100) or leave empty to remove.');
-          return;
-        }
-        winTarget = val;
+        window.location.href = './app.html';
       }
-      persist();
-      syncWinTargetUI();
-    });
-
-    // ── Player order ─────────────────────────────────────────
-    function normalizeOrder() {
-      const sorted = [...players].sort((a, b) => a.order - b.order);
-      sorted.forEach((p, i) => p.order = i);
-      players = sorted;
-      persist();
     }
 
-    // ── Add player ───────────────────────────────────────────
-    function addPlayer() {
-      const name = (playerNameEl.value || '').trim();
-      if (!name) return alert('Please enter a name!');
-      if (players.some(p => p.name.toLowerCase() === name.toLowerCase()))
-        return alert('This player already exists!');
-
-      const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
-      players.push({
-        id: generateId(),
-        name, score: 0,
-        order: maxOrder + 1,
-        log: []
-      });
-      persist();
-      playerNameEl.value = '';
-      playerNameEl.blur();
-      render();
-    }
-
-    btnAddPlayer.addEventListener('click', addPlayer);
-    playerNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer(); });
-
-    // ── Delete all ───────────────────────────────────────────
-    btnDeleteAll.addEventListener('click', () => {
-      if (!confirm('Are you sure you want to remove all players?')) return;
-      players = [];
-      undoStack = [];
-      syncUndoBtn();
-      localStorage.removeItem(SESSION_KEY);
-      render();
-    });
-
-    // ── Reset scores ─────────────────────────────────────────
-    btnResetScores.addEventListener('click', () => {
-      if (!players.length) return;
-      if (!confirm('Reset all scores to 0?')) return;
-      pushUndo();
-      players.forEach(p => { p.score = 0; p.log = []; });
-      persist();
-      render();
-    });
-
-    // ── Sort ─────────────────────────────────────────────────
-    sortOrderEl.addEventListener('change', render);
-
-    // ── Step size ────────────────────────────────────────────
-    stepGroup.addEventListener('click', (e) => {
-      const btn = e.target.closest('.step-btn');
-      if (!btn) return;
-      stepSize = parseInt(btn.getAttribute('data-step'), 10);
-      stepGroup.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      render();
-    });
-
-    // ── Score actions (event delegation) ─────────────────────
-    document.body.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const action = btn.getAttribute('data-action');
-      const id     = btn.getAttribute('data-id');
-      if (action === 'inc')    updateScore(id, +stepSize);
-      if (action === 'dec')    updateScore(id, -stepSize);
-      if (action === 'custom') openSheet(id);
-      if (action === 'log')    openLogSheet(id);
-      if (action === 'delete') deletePlayer(id);
-      if (action === 'up')     movePlayer(id, -1);
-      if (action === 'down')   movePlayer(id, +1);
-    });
-
-    function updateScore(id, delta) {
-      pushUndo();
-      const p = players.find(x => x.id === id);
-      if (!p) return;
-      p.score += delta;
-      p.log.push({ delta, score: p.score, ts: Date.now() });
-      if ('vibrate' in navigator) navigator.vibrate(22);
-      persist();
-      bumpScore(id);
-      render();
-    }
-
-    function deletePlayer(id) {
-      const p = players.find(x => x.id === id);
-      if (!p) return;
-      if (!confirm(`Remove ${p.name}?`)) return;
-      players = players.filter(x => x.id !== id);
-      normalizeOrder();
-      render();
-    }
-
-    function movePlayer(id, dir) {
-      const sorted = [...players].sort((a, b) => a.order - b.order);
-      const idx = sorted.findIndex(p => p.id === id);
-      if (idx < 0) return;
-      const newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= sorted.length) return;
-      const tmp = sorted[idx].order;
-      sorted[idx].order = sorted[newIdx].order;
-      sorted[newIdx].order = tmp;
-      players = sorted;
-      normalizeOrder();
-      render();
-    }
-
-    // ── Game history ─────────────────────────────────────────
-    function getHistory() {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-      catch(e) { return []; }
-    }
-
-    function saveToHistory() {
-      if (!players.length) return;
-      if (players.every(p => p.score === 0 && p.log.length === 0)) return;
-      const history = getHistory();
-      history.unshift({
-        id:      generateId(),
-        date:    Date.now(),
-        rounds:  round,
-        players: [...players]
-          .sort((a, b) => b.score - a.score)
-          .map(p => ({ name: p.name, score: p.score }))
-      });
-      if (history.length > 30) history.pop();
-      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
-      catch(e) {}
-    }
-
-    document.getElementById('btnClearHistory').addEventListener('click', () => {
-      if (!confirm('Clear all history?')) return;
-      localStorage.removeItem(HISTORY_KEY);
-      render();
-    });
-
-    // ── Render ───────────────────────────────────────────────
-    function getSortedPlayersForGame() {
-      const mode = sortOrderEl?.value ?? 'custom';
-      const arr = [...players];
-      if (mode === 'custom') arr.sort((a, b) => a.order - b.order);
-      else if (mode === 'desc') arr.sort((a, b) => b.score - a.score);
-      else arr.sort((a, b) => a.score - b.score);
-      return arr;
-    }
-
-    function renderSettings() {
-      if (!playersSettingsEl) return;
-      syncWinTargetUI();
-      const ordered = [...players].sort((a, b) => a.order - b.order);
-
-      if (!ordered.length) {
-        playersSettingsEl.innerHTML = `
-          <div class="empty">
-            <div class="empty-emoji">👤</div>
-            <div><h4>No players yet</h4><p>Add players above.</p></div>
-          </div>`;
-        return;
-      }
-
-      playersSettingsEl.innerHTML = ordered.map((p, i) => `
-        <div class="player-row">
-          <div class="player-row-main">
-            <div class="badge">#${i + 1}</div>
-            <div class="player-row-name">${escapeHtml(p.name)}</div>
-          </div>
-          <div class="player-row-actions">
-            <button class="mini" data-action="up"     data-id="${escapeHtml(p.id)}" aria-label="Move up">↑</button>
-            <button class="mini" data-action="down"   data-id="${escapeHtml(p.id)}" aria-label="Move down">↓</button>
-            <button class="mini danger" data-action="delete" data-id="${escapeHtml(p.id)}" aria-label="Delete">🗑</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderGame() {
-      if (!playersGameEl) return;
-      syncRoundUI();
-      const sorted = getSortedPlayersForGame();
-
-      if (!sorted.length) {
-        playersGameEl.innerHTML = `
-          <div class="empty">
-            <div class="empty-emoji">🎮</div>
-            <div><h4>No players</h4><p>Go to ⚙ and add players.</p></div>
-          </div>`;
-        return;
-      }
-
-      const maxScore   = sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
-      const hasWinner  = winTarget !== null && sorted.some(p => p.score >= winTarget);
-
-      playersGameEl.innerHTML = sorted.map((p, index) => {
-        const isWinner = winTarget !== null && p.score >= winTarget;
-        const isLeader = !hasWinner && maxScore !== null && p.score === maxScore;
-        const icon     = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
-        const cardCls  = isWinner ? 'winner' : isLeader ? 'leader' : '';
-
-        return `
-          <div class="player-card ${cardCls}" data-player="${escapeHtml(p.id)}">
-            <div class="player-top">
-              <div class="player-name">${icon}${escapeHtml(p.name)}</div>
-              <div class="player-top-right">
-                <button class="log-btn" data-action="log" data-id="${escapeHtml(p.id)}" aria-label="Score log">📋</button>
-                <div class="player-rank">#${index + 1}</div>
-              </div>
-            </div>
-            <div class="player-score" data-score="${escapeHtml(p.id)}">${Number(p.score)}</div>
-            <div class="player-controls">
-              <button class="tap minus"  data-action="dec"    data-id="${escapeHtml(p.id)}" aria-label="Minus ${stepSize}">−${stepSize}</button>
-              <button class="tap custom" data-action="custom" data-id="${escapeHtml(p.id)}" aria-label="Custom value">±</button>
-              <button class="tap plus"   data-action="inc"    data-id="${escapeHtml(p.id)}" aria-label="Plus ${stepSize}">+${stepSize}</button>
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    function renderHistory() {
-      const listEl = document.getElementById('history-list');
-      if (!listEl) return;
-      const history = getHistory();
-
-      if (!history.length) {
-        listEl.innerHTML = `
-          <div class="empty">
-            <div class="empty-emoji">📋</div>
-            <div><h4>No history yet</h4><p>Start a new sesh after a game to save it here.</p></div>
-          </div>`;
-        return;
-      }
-
-      listEl.innerHTML = history.map(game => {
-        const d = new Date(game.date);
-        const dateStr = d.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' });
-        const timeStr = d.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
-        const roundStr = `${Number(game.rounds)} round${game.rounds !== 1 ? 's' : ''}`;
-
-        return `
-          <div class="history-item">
-            <div class="history-header">
-              <span class="history-date">${dateStr} · ${timeStr}</span>
-              <span class="history-rounds">${roundStr}</span>
-            </div>
-            <div class="history-players">
-              ${game.players.map((p, i) => `
-                <div class="history-player">
-                  <span class="history-player-name">${i === 0 ? '🏆 ' : ''}${escapeHtml(p.name)}</span>
-                  <span class="history-player-score">${Number(p.score)}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    function render() {
-      const active = document.querySelector('.screen.active')?.id;
-      if (active === 'settings') renderSettings();
-      if (active === 'game')     renderGame();
-      if (active === 'history')  renderHistory();
-    }
-
-    // ── Score sheet ──────────────────────────────────────────
-    function openSheet(playerId) {
-      const p = players.find(x => x.id === playerId);
-      if (!p) return;
-      activePlayerIdForSheet = playerId;
-      sheetSubtitle.textContent = `${p.name} — current score: ${p.score}`;
-      customDeltaEl.value = '';
-      inputSign = 1;
-      btnToggleSign.textContent = '+';
-      btnToggleSign.classList.remove('sign-neg');
-      showBackdrop();
-      scoreSheet.classList.remove('hidden');
-      setTimeout(() => customDeltaEl.focus(), 60);
-    }
-
-    function closeSheet() {
-      activePlayerIdForSheet = null;
-      scoreSheet.classList.add('hidden');
-      if (logSheet.classList.contains('hidden')) hideBackdrop();
-    }
-
-    btnCloseSheet.addEventListener('click', closeSheet);
-
-    chipRow.addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip');
-      if (!chip || !activePlayerIdForSheet) return;
-      const delta = parseInt(chip.getAttribute('data-delta'), 10);
-      if (Number.isFinite(delta) && delta !== 0) {
-        updateScore(activePlayerIdForSheet, delta);
-        closeSheet();
-      }
-    });
-
-    btnToggleSign.addEventListener('click', () => {
-      inputSign *= -1;
-      btnToggleSign.textContent = inputSign === 1 ? '+' : '−';
-      btnToggleSign.classList.toggle('sign-neg', inputSign === -1);
-    });
-
-    btnApplyDelta.addEventListener('click', applyCustomDelta);
-    customDeltaEl.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomDelta(); });
-
-    function applyCustomDelta() {
-      if (!activePlayerIdForSheet) return;
-      const abs = parseInt((customDeltaEl.value || '').trim(), 10);
-      if (!Number.isFinite(abs) || abs === 0) {
-        alert('Enter a valid value (e.g. 7).');
-        return;
-      }
-      updateScore(activePlayerIdForSheet, Math.abs(abs) * inputSign);
-      closeSheet();
-    }
-
-    let swipeStartY = 0;
-    scoreSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
-    scoreSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeSheet(); }, { passive: true });
-
-    // ── Log sheet ────────────────────────────────────────────
-    function openLogSheet(playerId) {
-      const p = players.find(x => x.id === playerId);
-      if (!p) return;
-      logSheetTitle.textContent   = `${p.name}'s score log`;
-      logSheetSubtitle.textContent = `Current score: ${p.score}`;
-
-      const entries = p.log || [];
-      if (!entries.length) {
-        logList.innerHTML = `<div class="log-empty">No score changes yet.</div>`;
-      } else {
-        logList.innerHTML = [...entries].reverse().map(entry => {
-          const delta = Number(entry.delta);
-          const score = Number(entry.score);
-          const sign  = delta > 0 ? '+' : '';
-          const cls   = delta > 0 ? 'pos' : 'neg';
-          const time  = new Date(entry.ts).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          return `
-            <div class="log-item">
-              <span class="log-delta ${cls}">${sign}${delta}</span>
-              <span class="log-score">→ ${score}</span>
-              <span class="log-time">${time}</span>
-            </div>`;
-        }).join('');
-      }
-
-      showBackdrop();
-      logSheet.classList.remove('hidden');
-    }
-
-    function closeLogSheet() {
-      logSheet.classList.add('hidden');
-      if (scoreSheet.classList.contains('hidden')) hideBackdrop();
-    }
-
-    btnCloseLogSheet.addEventListener('click', closeLogSheet);
-
-    logSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
-    logSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeLogSheet(); }, { passive: true });
-
-    // ── Backdrop ─────────────────────────────────────────────
-    function showBackdrop() {
-      sheetBackdrop.classList.remove('hidden');
-      sheetBackdrop.setAttribute('aria-hidden', 'false');
-    }
-    function hideBackdrop() {
-      sheetBackdrop.classList.add('hidden');
-      sheetBackdrop.setAttribute('aria-hidden', 'true');
-    }
-
-    sheetBackdrop.addEventListener('click', () => {
-      closeSheet();
-      closeLogSheet();
-    });
-
-    // ── Animations ───────────────────────────────────────────
-    function bumpScore(id) {
-      requestAnimationFrame(() => {
-        const el = document.querySelector(`[data-player="${cssEscape(id)}"] .player-score`);
-        if (!el) return;
-        el.classList.remove('bump');
-        void el.offsetWidth;
-        el.classList.add('bump');
-      });
-    }
-
-    // ── Helpers ──────────────────────────────────────────────
-    function generateId() {
-      if (crypto?.randomUUID) return crypto.randomUUID();
-      const bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
-      return [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;').replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-    function cssEscape(s) { return String(s).replaceAll('"', '\\"'); }
-
-    // ── Init ─────────────────────────────────────────────────
-    syncUndoBtn();
-    render();
-    initInstallBanner();
+    document.getElementById('btnInstallHero').addEventListener('click', triggerInstall);
+    document.getElementById('btnInstallBottom').addEventListener('click', triggerInstall);
   </script>
+
 </body>
 </html>

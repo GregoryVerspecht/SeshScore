@@ -1,7 +1,7 @@
 {
     "name": "SeshScore",
     "short_name": "SeshScore",
-    "start_url": "index.html",
+    "start_url": "app.html",
     "display": "standalone",
     "background_color": "#f5f5dc",
     "theme_color": "#f5f5dc",
