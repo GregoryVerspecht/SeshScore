@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260504-2">
+  <link rel="stylesheet" href="./static/style.css?v=20260504-3">
 </head>
 
 <body>
@@ -165,6 +165,7 @@
         <option value="desc">Highest first</option>
         <option value="asc">Lowest first</option>
       </select>
+      <button class="btn ghost" id="btnScoreAll" aria-label="Score all players">± All</button>
       <button class="btn ghost" id="btnUndo" aria-label="Undo" disabled>↩ Undo</button>
       <button class="btn danger" id="btnResetScores">Reset</button>
     </div>
@@ -218,6 +219,27 @@
     </div>
     <div class="sheet-body">
       <div id="logList" class="log-list"></div>
+    </div>
+  </div>
+
+  <!-- Score All sheet -->
+  <div class="sheet hidden" id="scoreAllSheet" role="dialog" aria-modal="true" aria-labelledby="scoreAllTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-header">
+      <div>
+        <h3 id="scoreAllTitle">Score all players</h3>
+        <p class="muted">Tap a name to skip one player</p>
+      </div>
+      <button class="icon-btn" id="btnCloseScoreAllSheet" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="chip-row" id="scoreAllExcludeRow"></div>
+      <div class="chip-row" id="scoreAllChipRow"></div>
+      <div class="row">
+        <button class="sign-btn" id="btnScoreAllSign">+</button>
+        <input type="number" id="scoreAllDelta" placeholder="Custom value" inputmode="numeric" min="0" />
+        <button class="btn primary" id="btnApplyScoreAll">Apply</button>
+      </div>
     </div>
   </div>
 
@@ -369,6 +391,8 @@
     }
     let activePlayerIdForSheet = null;
     let inputSign = 1;
+    let excludedPlayerIdForScoreAll = null;
+    let scoreAllInputSign = 1;
 
     // ── DOM refs ─────────────────────────────────────────────
     const screens           = Array.from(document.querySelectorAll('.screen'));
@@ -401,7 +425,14 @@
     const btnCloseLogSheet  = document.getElementById('btnCloseLogSheet');
     const logSheetTitle     = document.getElementById('logSheetTitle');
     const logSheetSubtitle  = document.getElementById('logSheetSubtitle');
-    const logList           = document.getElementById('logList');
+    const logList              = document.getElementById('logList');
+
+    const scoreAllSheet        = document.getElementById('scoreAllSheet');
+    const scoreAllExcludeRow   = document.getElementById('scoreAllExcludeRow');
+    const scoreAllChipRow      = document.getElementById('scoreAllChipRow');
+    const scoreAllDeltaEl      = document.getElementById('scoreAllDelta');
+    const btnScoreAllSign      = document.getElementById('btnScoreAllSign');
+    const btnApplyScoreAll     = document.getElementById('btnApplyScoreAll');
 
     // ── Navigation ───────────────────────────────────────────
     document.body.addEventListener('click', (e) => {
@@ -794,7 +825,7 @@
     function closeSheet() {
       activePlayerIdForSheet = null;
       scoreSheet.classList.add('hidden');
-      if (logSheet.classList.contains('hidden')) hideBackdrop();
+      if (logSheet.classList.contains('hidden') && scoreAllSheet.classList.contains('hidden')) hideBackdrop();
     }
 
     btnCloseSheet.addEventListener('click', closeSheet);
@@ -865,13 +896,100 @@
 
     function closeLogSheet() {
       logSheet.classList.add('hidden');
-      if (scoreSheet.classList.contains('hidden')) hideBackdrop();
+      if (scoreSheet.classList.contains('hidden') && scoreAllSheet.classList.contains('hidden')) hideBackdrop();
     }
 
     btnCloseLogSheet.addEventListener('click', closeLogSheet);
 
     logSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
     logSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeLogSheet(); }, { passive: true });
+
+    // ── Score All sheet ───────────────────────────────────
+    document.getElementById('btnScoreAll').addEventListener('click', openScoreAllSheet);
+    document.getElementById('btnCloseScoreAllSheet').addEventListener('click', closeScoreAllSheet);
+
+    function openScoreAllSheet() {
+      excludedPlayerIdForScoreAll = null;
+      scoreAllInputSign = gameMode === 'darts' ? -1 : 1;
+      btnScoreAllSign.textContent = scoreAllInputSign === 1 ? '+' : '−';
+      btnScoreAllSign.classList.toggle('sign-neg', scoreAllInputSign === -1);
+      scoreAllDeltaEl.value = '';
+      renderScoreAllExcludeChips();
+      renderScoreAllChips();
+      showBackdrop();
+      scoreAllSheet.classList.remove('hidden');
+      setTimeout(() => scoreAllDeltaEl.focus(), 60);
+    }
+
+    function closeScoreAllSheet() {
+      scoreAllSheet.classList.add('hidden');
+      if (scoreSheet.classList.contains('hidden') && logSheet.classList.contains('hidden')) hideBackdrop();
+    }
+
+    function renderScoreAllExcludeChips() {
+      if (!scoreAllExcludeRow) return;
+      const ordered = [...players].sort((a, b) => a.order - b.order);
+      if (ordered.length <= 1) { scoreAllExcludeRow.innerHTML = ''; return; }
+      scoreAllExcludeRow.innerHTML = ordered.map(p =>
+        `<button class="chip exclude-chip${p.id === excludedPlayerIdForScoreAll ? ' excluded' : ''}" data-exclude="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>`
+      ).join('');
+    }
+
+    function renderScoreAllChips() {
+      if (!scoreAllChipRow) return;
+      const chips = gameMode === 'darts'
+        ? [[-180,'180'],[-140,'140'],[-100,'100'],[-85,'85'],[-60,'60'],[-45,'45'],[-41,'41'],[-26,'26']]
+        : [[-25,'−25'],[-10,'−10'],[-5,'−5'],[-2,'−2'],[-1,'−1'],[1,'+1'],[2,'+2'],[5,'+5'],[10,'+10'],[25,'+25'],[50,'+50']];
+      scoreAllChipRow.innerHTML = chips.map(([delta, label]) =>
+        `<button class="chip ${delta < 0 ? 'chip-neg' : 'chip-pos'}" data-all-delta="${delta}">${escapeHtml(String(label))}</button>`
+      ).join('');
+    }
+
+    scoreAllExcludeRow.addEventListener('click', e => {
+      const chip = e.target.closest('.exclude-chip');
+      if (!chip) return;
+      const id = chip.getAttribute('data-exclude');
+      excludedPlayerIdForScoreAll = (excludedPlayerIdForScoreAll === id) ? null : id;
+      renderScoreAllExcludeChips();
+    });
+
+    scoreAllChipRow.addEventListener('click', e => {
+      const chip = e.target.closest('[data-all-delta]');
+      if (!chip) return;
+      const delta = parseInt(chip.getAttribute('data-all-delta'), 10);
+      if (Number.isFinite(delta) && delta !== 0) { applyScoreAll(delta); closeScoreAllSheet(); }
+    });
+
+    btnScoreAllSign.addEventListener('click', () => {
+      scoreAllInputSign *= -1;
+      btnScoreAllSign.textContent = scoreAllInputSign === 1 ? '+' : '−';
+      btnScoreAllSign.classList.toggle('sign-neg', scoreAllInputSign === -1);
+    });
+
+    btnApplyScoreAll.addEventListener('click', applyScoreAllCustom);
+    scoreAllDeltaEl.addEventListener('keydown', e => { if (e.key === 'Enter') applyScoreAllCustom(); });
+
+    function applyScoreAllCustom() {
+      const abs = parseInt((scoreAllDeltaEl.value || '').trim(), 10);
+      if (!Number.isFinite(abs) || abs === 0) { alert('Enter a valid value (e.g. 7).'); return; }
+      applyScoreAll(Math.abs(abs) * scoreAllInputSign);
+      closeScoreAllSheet();
+    }
+
+    function applyScoreAll(delta) {
+      pushUndo();
+      players.forEach(p => {
+        if (p.id === excludedPlayerIdForScoreAll) return;
+        p.score += delta;
+        p.log.push({ delta, score: p.score, ts: Date.now() });
+      });
+      if ('vibrate' in navigator) navigator.vibrate(22);
+      persist();
+      render();
+    }
+
+    scoreAllSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    scoreAllSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeScoreAllSheet(); }, { passive: true });
 
     // ── Backdrop ─────────────────────────────────────────────
     function showBackdrop() {
@@ -886,6 +1004,7 @@
     sheetBackdrop.addEventListener('click', () => {
       closeSheet();
       closeLogSheet();
+      closeScoreAllSheet();
     });
 
     // ── Animations ───────────────────────────────────────────
