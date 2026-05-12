@@ -531,6 +531,18 @@ select option { background: #1a1d2e; color: var(--text); }
   color: var(--primary);
 }
 
+.exclude-chip {
+  background: rgba(255,255,255,.06);
+  border-color: var(--outline);
+  color: var(--text);
+}
+.exclude-chip.excluded {
+  background: var(--danger-bg);
+  border-color: rgba(248,113,113,.3);
+  color: var(--danger);
+  text-decoration: line-through;
+}
+
 /* Sign toggle button in sheet */
 .sign-btn {
   flex: 0 0 48px;
