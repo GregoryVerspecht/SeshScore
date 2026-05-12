@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260512-2">
+  <link rel="stylesheet" href="./static/style.css?v=20260512-3">
 </head>
 
 <body>
@@ -45,7 +45,22 @@
     </div>
 
     <div class="start-footer">
-      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="hint kofi-link">☕ Enjoying SeshScore? Buy me a coffee</a>
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="hint kofi-link" id="kofiTextLink">☕ Enjoying SeshScore? Buy me a coffee</a>
+
+      <!-- Ko-fi support banner (shown after 3 completed games) -->
+      <div class="install-banner hidden" id="kofiBanner">
+        <button class="install-dismiss" id="btnDismissKofi" aria-label="Dismiss">✕</button>
+        <div class="install-banner-header">
+          <span class="install-banner-icon">☕</span>
+          <div>
+            <div class="install-banner-title">Enjoying SeshScore?</div>
+            <div class="install-banner-sub">Free forever. If it saves you from arguing about the score, maybe buy me a coffee?</div>
+          </div>
+        </div>
+        <div class="install-btn-row">
+          <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="btn kofi-btn" id="btnKofiSupport">☕ Buy me a coffee</a>
+        </div>
+      </div>
 
       <!-- PWA install banner (shown by JS when applicable) -->
       <div class="install-banner hidden" id="installBanner">
@@ -722,6 +737,10 @@
       if (history.length > 30) history.pop();
       try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
       catch(e) {}
+      try {
+        const n = parseInt(localStorage.getItem('kofi_session_count') || '0', 10);
+        localStorage.setItem('kofi_session_count', String(n + 1));
+      } catch(e) {}
     }
 
     document.getElementById('btnClearHistory').addEventListener('click', () => {
@@ -1168,11 +1187,32 @@
     }
     function cssEscape(s) { return String(s).replaceAll('"', '\\"'); }
 
+    function initKofiBanner() {
+      if (localStorage.getItem('kofi_dismissed')) return;
+      const count = parseInt(localStorage.getItem('kofi_session_count') || '0', 10);
+      if (count < 3) return;
+      const banner   = document.getElementById('kofiBanner');
+      const textLink = document.getElementById('kofiTextLink');
+      if (!banner) return;
+      banner.classList.remove('hidden');
+      if (textLink) textLink.classList.add('hidden');
+
+      document.getElementById('btnDismissKofi')?.addEventListener('click', () => {
+        banner.classList.add('hidden');
+        if (textLink) textLink.classList.remove('hidden');
+        try { localStorage.setItem('kofi_dismissed', '1'); } catch(e) {}
+      });
+      document.getElementById('btnKofiSupport')?.addEventListener('click', () => {
+        try { localStorage.setItem('kofi_dismissed', '1'); } catch(e) {}
+      });
+    }
+
     // ── Init ─────────────────────────────────────────────────
     syncUndoBtn();
     syncLastSeshBtn();
     render();
     initInstallBanner();
+    initKofiBanner();
   </script>
 </body>
 </html>
