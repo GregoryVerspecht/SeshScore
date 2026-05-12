@@ -1,4 +1,4 @@
-const CACHE_NAME = "seshscore-cache-v12";
+const CACHE_NAME = "seshscore-cache-v13";
 const urlsToCache = [
     "/app.html",
     "/manifest.json",
@@ -20,13 +20,22 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
     event.waitUntil(
-        caches.keys().then((cacheNames) =>
-            Promise.all(
-                cacheNames
-                    .filter((name) => name !== CACHE_NAME)
-                    .map((name) => caches.delete(name))
+        caches.keys()
+            .then((cacheNames) =>
+                Promise.all(
+                    cacheNames
+                        .filter((name) => name !== CACHE_NAME)
+                        .map((name) => caches.delete(name))
+                )
             )
-        ).then(() => self.clients.claim())
+            .then(() => self.clients.claim())
+            .then(() =>
+                self.clients.matchAll({ type: "window" }).then((clients) =>
+                    clients.forEach((client) => {
+                        if ("navigate" in client) client.navigate(client.url);
+                    })
+                )
+            )
     );
 });
 
