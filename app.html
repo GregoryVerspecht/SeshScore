@@ -284,6 +284,10 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js');
+      // When a new SW takes over, reload once so the fresh HTML is served
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
     }
 
     // ── PWA install prompt ────────────────────────────────────
