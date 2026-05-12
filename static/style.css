@@ -781,6 +781,18 @@ select option { background: #111827; color: var(--text); }
 }
 .kofi-link:hover, .kofi-link:active { color: #FF5E5B; }
 
+.btn.kofi-btn {
+  background: linear-gradient(135deg, #FF7A18, #FF5E5B);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 800;
+  box-shadow: 0 0 24px rgba(255,94,91,.28);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Preset row */
 .preset-row {
   display: flex;
