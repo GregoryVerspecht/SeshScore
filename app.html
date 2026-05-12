@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260512-3">
+  <link rel="stylesheet" href="./static/style.css?v=20260512-7">
 </head>
 
 <body>
@@ -104,26 +104,13 @@
     <div class="topbar">
       <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
       <div class="topbar-title">
-        <h2>Players</h2>
-        <p>Add players and set the order.</p>
+        <h2>New Session</h2>
+        <p>Set up your game</p>
       </div>
-      <button class="icon-btn" data-nav="game" aria-label="Start game">▶</button>
+      <button class="icon-btn" data-nav="game" id="btnStartGameTopbar" aria-label="Start game">▶</button>
     </div>
 
-    <div class="card">
-      <div class="row">
-        <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
-        <button class="btn primary" id="btnAddPlayer">+</button>
-      </div>
-      <div class="row row-split">
-        <button class="btn danger" id="btnDeleteAll">🗑 Remove all</button>
-        <button class="btn ghost" data-nav="game">Start game ▶</button>
-      </div>
-    </div>
-
-    <div class="section-title">
-      <h3>Game profile</h3>
-    </div>
+    <div class="section-title"><h3>Game profile</h3></div>
     <div class="preset-row" id="presetRow"></div>
 
     <div id="winTargetSection">
@@ -140,12 +127,24 @@
       </div>
     </div>
 
-    <div class="section-title">
-      <h3>Players</h3>
-      <p>Use ↑/↓ to set the default order.</p>
+    <div class="section-title section-title-row">
+      <div>
+        <h3>Players</h3>
+        <p>Use ↑/↓ to set the order.</p>
+      </div>
+      <button class="btn ghost btn-sm" id="btnDeleteAll">🗑 Clear all</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
+        <button class="btn primary" id="btnAddPlayer">+</button>
+      </div>
     </div>
 
     <div id="players-settings" class="players"></div>
+
+    <button class="btn primary btn-start-game" id="btnStartGame" data-nav="game">Start game ▶</button>
   </section>
 
   <!-- GAME -->
@@ -505,9 +504,14 @@
       showScreen('settings');
     });
 
+    const SCREEN_LEVEL = { start: 0, settings: 1, game: 2, history: 1 };
+
     function showScreen(id) {
-      screens.forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+      const currentId = document.querySelector('.screen.active')?.id;
+      const goBack = (SCREEN_LEVEL[id] ?? 0) < (SCREEN_LEVEL[currentId] ?? 0);
+      screens.forEach(s => s.classList.remove('active', 'screen-forward', 'screen-back'));
+      const next = document.getElementById(id);
+      next.classList.add('active', goBack ? 'screen-back' : 'screen-forward');
       if (id === 'start') syncLastSeshBtn();
       render();
     }
