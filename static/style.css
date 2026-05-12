@@ -208,8 +208,8 @@ img { max-width: 100%; height: auto; display: block; }
   border: 1px solid var(--outline);
 }
 .step-btn {
-  height: 32px;
-  padding: 0 12px;
+  height: 38px;
+  padding: 0 14px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -935,6 +935,12 @@ select option { background: #111827; color: var(--text); }
   margin: 4px 0;
 }
 
+/* Body scroll lock when sheets open */
+body.sheet-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
 /* Toast notification */
 .toast {
   position: fixed;
@@ -953,6 +959,12 @@ select option { background: #111827; color: var(--text); }
   box-shadow: var(--shadow-strong);
   pointer-events: none;
   animation: toastIn .18s ease;
+}
+.toast.toast-win {
+  background: linear-gradient(135deg, rgba(24,183,255,.18), rgba(124,59,255,.22));
+  border-color: rgba(124,59,255,.4);
+  font-size: .95rem;
+  padding: 12px 24px;
 }
 @keyframes toastIn {
   from { opacity: 0; transform: translateX(-50%) translateY(6px); }

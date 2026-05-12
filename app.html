@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260512-1">
+  <link rel="stylesheet" href="./static/style.css?v=20260512-2">
 </head>
 
 <body>
@@ -45,7 +45,7 @@
     </div>
 
     <div class="start-footer">
-      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener" class="hint kofi-link">☕ Enjoying SeshScore? Buy me a coffee</a>
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="hint kofi-link">☕ Enjoying SeshScore? Buy me a coffee</a>
 
       <!-- PWA install banner (shown by JS when applicable) -->
       <div class="install-banner hidden" id="installBanner">
@@ -364,6 +364,7 @@
 
     let stepSize = 1;
     let undoStack = [];
+    let _announcedWinners = new Set();
 
     // ── Game presets ─────────────────────────────────────────
     const PRESETS = [
@@ -395,6 +396,7 @@
       });
       if (sortOrderEl) sortOrderEl.value = gameMode === 'darts' ? 'asc' : 'desc';
       pushUndo();
+      _announcedWinners.clear();
       players.forEach(p => { p.score = startScore; p.log = []; });
       persist();
       render();
@@ -482,6 +484,7 @@
       players.forEach(p => { p.score = startScore; p.log = []; });
       round = 1;
       undoStack = [];
+      _announcedWinners.clear();
       syncUndoBtn();
       persist();
       showScreen('settings');
@@ -595,7 +598,7 @@
     }
 
     btnAddPlayer.addEventListener('click', addPlayer);
-    playerNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer(); });
+    playerNameEl.addEventListener('keydown', e => { if (e.key === 'Enter' && (playerNameEl.value || '').trim()) addPlayer(); });
 
     // ── Delete all ───────────────────────────────────────────
     btnDeleteAll.addEventListener('click', () => {
@@ -614,6 +617,7 @@
       if (!players.length) return;
       showConfirm('Reset all scores?', `Scores will return to ${startScore}.`, 'Reset', () => {
         pushUndo();
+        _announcedWinners.clear();
         players.forEach(p => { p.score = startScore; p.log = []; });
         persist();
         render();
@@ -654,11 +658,19 @@
     });
 
     function updateScore(id, delta) {
-      pushUndo();
       const p = players.find(x => x.id === id);
       if (!p) return;
+      if (gameMode === 'darts') {
+        if (p.score <= 0) return;
+        if (p.score + delta < 0) {
+          showToast(`Bust! ${p.name} needs exactly ${p.score}.`);
+          return;
+        }
+      }
+      pushUndo();
       p.score += delta;
       p.log.push({ delta, score: p.score, ts: Date.now() });
+      if (p.log.length > 200) p.log = p.log.slice(-200);
       if ('vibrate' in navigator) navigator.vibrate(22);
       persist();
       bumpScore(id);
@@ -733,6 +745,9 @@
       if (!playersSettingsEl) return;
       renderPresets();
       syncWinTargetUI();
+      document.querySelectorAll('#settings [data-nav="game"]').forEach(btn => {
+        btn.disabled = players.length === 0;
+      });
       const ordered = [...players].sort((a, b) => a.order - b.order);
 
       if (!ordered.length) {
@@ -849,7 +864,7 @@
     function render() {
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
-      if (active === 'game')     { renderGame(); renderChips(); }
+      if (active === 'game')     { renderGame(); renderChips(); checkAndAnnounceWinners(); }
       if (active === 'history')  renderHistory();
     }
 
@@ -1031,6 +1046,7 @@
         if (p.id === excludedPlayerIdForScoreAll) return;
         p.score += delta;
         p.log.push({ delta, score: p.score, ts: Date.now() });
+        if (p.log.length > 200) p.log = p.log.slice(-200);
       });
       if ('vibrate' in navigator) navigator.vibrate(22);
       persist();
@@ -1044,10 +1060,12 @@
     function showBackdrop() {
       sheetBackdrop.classList.remove('hidden');
       sheetBackdrop.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('sheet-open');
     }
     function hideBackdrop() {
       sheetBackdrop.classList.add('hidden');
       sheetBackdrop.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('sheet-open');
     }
     function _noSheetsOpen() {
       return scoreSheet.classList.contains('hidden') &&
@@ -1063,13 +1081,42 @@
       closeConfirm(false);
     });
 
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (!confirmSheet.classList.contains('hidden'))  { closeConfirm(false);    return; }
+      if (!scoreSheet.classList.contains('hidden'))    { closeSheet();           return; }
+      if (!logSheet.classList.contains('hidden'))      { closeLogSheet();        return; }
+      if (!scoreAllSheet.classList.contains('hidden')) { closeScoreAllSheet();   return; }
+    });
+
     // ── Toast ─────────────────────────────────────────────────
     let _toastTimer = null;
-    function showToast(msg) {
+    function showToast(msg, isWin = false) {
       toastEl.textContent = msg;
       toastEl.classList.remove('hidden');
+      toastEl.classList.toggle('toast-win', isWin);
       clearTimeout(_toastTimer);
-      _toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 2600);
+      _toastTimer = setTimeout(() => toastEl.classList.add('hidden'), isWin ? 4000 : 2600);
+    }
+
+    function checkAndAnnounceWinners() {
+      if (gameMode === 'darts') {
+        players.forEach(p => {
+          if (p.score <= 0 && !_announcedWinners.has(p.id)) {
+            _announcedWinners.add(p.id);
+            showToast(`🏆 ${p.name} wins! Checkout!`, true);
+            if ('vibrate' in navigator) navigator.vibrate([80, 40, 80]);
+          }
+        });
+      } else if (winTarget !== null) {
+        players.forEach(p => {
+          if (p.score >= winTarget && !_announcedWinners.has(p.id)) {
+            _announcedWinners.add(p.id);
+            showToast(`🏆 ${p.name} wins with ${p.score}!`, true);
+            if ('vibrate' in navigator) navigator.vibrate([80, 40, 80]);
+          }
+        });
+      }
     }
 
     // ── Confirm sheet ─────────────────────────────────────────
@@ -1081,6 +1128,7 @@
       _confirmCallback = onConfirm;
       showBackdrop();
       confirmSheet.classList.remove('hidden');
+      setTimeout(() => btnConfirmCancel.focus(), 60);
     }
     function closeConfirm(runCallback) {
       confirmSheet.classList.add('hidden');
