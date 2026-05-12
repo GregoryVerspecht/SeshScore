@@ -3,37 +3,42 @@
     "short_name": "SeshScore",
     "start_url": "app.html",
     "display": "standalone",
-    "background_color": "#0f1117",
-    "theme_color": "#0f1117",
+    "background_color": "#090B12",
+    "theme_color": "#090B12",
     "icons": [
       {
-        "src": "static/image/seshscore_icon_512x512.png",
+        "src": "static/image/seshscore-icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml"
+      },
+      {
+        "src": "static/image/seshscore-icon-512x512.png",
         "sizes": "512x512",
         "type": "image/png",
         "purpose": "any maskable"
       },
       {
-        "src": "static/image/seshscore_icon_192x192.png",
+        "src": "static/image/seshscore-icon-384x384.png",
+        "sizes": "384x384",
+        "type": "image/png"
+      },
+      {
+        "src": "static/image/seshscore-icon-192x192.png",
         "sizes": "192x192",
         "type": "image/png"
       },
       {
-        "src": "static/image/seshscore_icon_144x144.png",
-        "sizes": "144x144",
+        "src": "static/image/seshscore-icon-128x128.png",
+        "sizes": "128x128",
         "type": "image/png"
       },
       {
-        "src": "static/image/seshscore_icon_96x96.png",
-        "sizes": "96x96",
+        "src": "static/image/seshscore-icon-64x64.png",
+        "sizes": "64x64",
         "type": "image/png"
       },
       {
-        "src": "static/image/seshscore_icon_72x72.png",
-        "sizes": "72x72",
-        "type": "image/png"
-      },
-      {
-        "src": "static/image/seshscore_icon_48x48.png",
+        "src": "static/image/seshscore-icon-48x48.png",
         "sizes": "48x48",
         "type": "image/png"
       }

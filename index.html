@@ -7,23 +7,24 @@
   <meta name="description" content="SeshScore is a free mobile score tracker for card games, board games, dice games and more. No download, no account, works offline. Track scores instantly on any phone." />
   <meta name="keywords" content="score tracker app, mobile scoreboard, free score keeper, card game score tracker, board game scoreboard, offline score tracker, multiplayer score counter, game score app, Uno score tracker, Yahtzee scorecard" />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#0f1117" />
+  <meta name="theme-color" content="#090B12" />
 
-  <link rel="icon" href="./static/image/seshscore_icon_96x96.png" />
+  <link rel="icon" href="./favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="./static/image/seshscore-icon.svg" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./static/image/seshscore_icon_512x512.png" />
+  <link rel="apple-touch-icon" href="./static/image/seshscore-icon-180x180.png" />
   <link rel="canonical" href="https://seshscore.gv-tech.eu/" />
 
   <meta property="og:title"       content="SeshScore — Free Score Tracker App for Any Game" />
   <meta property="og:description" content="Free mobile score tracker for card games, board games and more. No app store, no account, works offline." />
-  <meta property="og:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore_icon_512x512.png" />
+  <meta property="og:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore-icon-512x512.png" />
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="https://seshscore.gv-tech.eu/" />
 
   <meta name="twitter:card"        content="summary" />
   <meta name="twitter:title"       content="SeshScore — Free Score Tracker for Any Game" />
   <meta name="twitter:description" content="Free mobile scoreboard. No app store, no account, works offline. Card games, board games, any game." />
-  <meta name="twitter:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore_icon_512x512.png" />
+  <meta name="twitter:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore-icon-512x512.png" />
 
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none';">
@@ -45,26 +46,33 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg:         #0f1117;
-      --card:       #1a1d2e;
-      --card-2:     #1e2235;
-      --text:       #e8eaf0;
-      --muted:      rgba(232,234,240,.5);
-      --primary:    #4ade80;
-      --primary-bg: rgba(74,222,128,.14);
+      --bg:         #090B12;
+      --card:       #111827;
+      --card-2:     #151A26;
+      --text:       #F8FAFC;
+      --muted:      #94A3B8;
+      --blue:       #18B7FF;
+      --purple:     #7C3BFF;
+      --magenta:    #D94CFF;
+      --orange:     #FF7A18;
+      --gradient:   linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
       --outline:    rgba(255,255,255,.08);
-      --radius:     18px;
+      --radius:     22px;
+      --shadow:     0 10px 30px rgba(0,0,0,.5);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(24,183,255,.14), transparent 32%),
+        radial-gradient(circle at 92% 20%, rgba(124,59,255,.18), transparent 30%),
+        var(--bg);
       color: var(--text);
       line-height: 1.5;
       overflow-x: hidden;
@@ -75,43 +83,40 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 24px;
+      padding: 20px 24px;
       max-width: 1100px;
       margin: 0 auto;
     }
     .nav-logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 1.05rem;
       text-decoration: none;
-      color: var(--text);
     }
-    .nav-logo img { width: 30px; height: 30px; border-radius: 8px; }
+    .nav-logo img { height: 28px; width: auto; }
     .btn-nav {
       height: 38px;
-      padding: 0 18px;
+      padding: 0 20px;
       border-radius: 12px;
-      border: 1px solid var(--outline);
-      background: var(--card-2);
-      color: var(--text);
+      background: var(--gradient);
+      color: #fff;
       font-weight: 700;
       font-size: .875rem;
       cursor: pointer;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
+      box-shadow: 0 0 22px rgba(124,59,255,.3);
+      transition: opacity .15s;
     }
-    .btn-nav:active { opacity: .7; }
+    .btn-nav:hover { opacity: .85; }
 
     /* ── Buttons ──────────────────────────────────────────── */
     .btn-primary {
       height: 52px;
       padding: 0 28px;
       border-radius: 16px;
-      background: var(--primary);
-      color: #0f1117;
+      background: var(--gradient);
+      color: #fff;
       font-weight: 800;
       font-size: 1rem;
       border: none;
@@ -120,14 +125,16 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      box-shadow: 0 0 28px rgba(124,59,255,.32);
       transition: opacity .15s, transform .1s;
     }
+    .btn-primary:hover  { opacity: .88; }
     .btn-primary:active { opacity: .85; transform: translateY(1px); }
     .btn-ghost {
       height: 52px;
       padding: 0 24px;
       border-radius: 16px;
-      background: transparent;
+      background: rgba(255,255,255,.05);
       color: var(--text);
       font-weight: 700;
       font-size: 1rem;
@@ -137,8 +144,10 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      transition: background .15s;
     }
-    .btn-ghost:active { background: var(--outline); }
+    .btn-ghost:hover  { background: rgba(255,255,255,.09); }
+    .btn-ghost:active { background: rgba(255,255,255,.12); }
 
     /* ── Hero ─────────────────────────────────────────────── */
     .hero {
@@ -156,24 +165,31 @@
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      background: var(--primary-bg);
-      color: var(--primary);
+      background: rgba(24,183,255,.1);
+      color: var(--blue);
+      border: 1px solid rgba(24,183,255,.2);
       border-radius: 100px;
-      padding: 5px 14px;
+      padding: 6px 16px;
       font-size: .75rem;
       font-weight: 700;
       letter-spacing: .5px;
       text-transform: uppercase;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
     h1 {
       font-size: clamp(2.4rem, 6vw, 3.6rem);
       font-weight: 900;
-      line-height: 1.08;
-      letter-spacing: -.025em;
-      margin-bottom: 18px;
+      font-family: 'Sora', sans-serif;
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      margin-bottom: 20px;
     }
-    h1 em { font-style: normal; color: var(--primary); }
+    h1 .grad {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
     .hero-sub {
       color: var(--muted);
       font-size: 1.05rem;
@@ -190,9 +206,9 @@
     }
     .phone {
       width: 256px;
-      background: #0b0d16;
-      border-radius: 40px;
-      border: 6px solid #252840;
+      background: #070A12;
+      border-radius: 42px;
+      border: 6px solid #1a1f2e;
       box-shadow:
         0 40px 100px rgba(0,0,0,.7),
         0 0 0 1px rgba(255,255,255,.05),
@@ -202,7 +218,7 @@
     .phone-notch {
       width: 76px;
       height: 22px;
-      background: #0b0d16;
+      background: #070A12;
       border-radius: 0 0 14px 14px;
       margin: 0 auto;
     }
@@ -214,7 +230,7 @@
       margin-bottom: 10px;
       padding: 4px 0;
     }
-    .phone-app-name { font-size: .78rem; font-weight: 900; }
+    .phone-app-name { font-size: .78rem; font-weight: 900; font-family: 'Sora', sans-serif; }
     .phone-round-badge {
       font-size: .65rem;
       font-weight: 700;
@@ -226,14 +242,14 @@
     }
     .phone-player {
       background: var(--card);
-      border-radius: 13px;
+      border-radius: 14px;
       border: 1px solid var(--outline);
       padding: 9px 11px;
       margin-bottom: 7px;
     }
     .phone-player.leader {
-      border-color: rgba(74,222,128,.3);
-      background: rgba(74,222,128,.05);
+      border-color: rgba(24,183,255,.28);
+      background: linear-gradient(145deg, #131826, #0e1420);
     }
     .phone-player-top {
       display: flex;
@@ -246,10 +262,12 @@
     .phone-score {
       font-size: 1.55rem;
       font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
       line-height: 1;
       margin-bottom: 7px;
+      letter-spacing: -1px;
     }
-    .phone-player.leader .phone-score { color: var(--primary); }
+    .phone-player.leader .phone-score { color: var(--blue); }
     .phone-btns { display: flex; gap: 4px; }
     .phone-btn {
       flex: 1;
@@ -264,8 +282,8 @@
       align-items: center;
       justify-content: center;
     }
-    .phone-btn.plus  { background: var(--primary-bg); color: var(--primary); border-color: rgba(74,222,128,.2); }
-    .phone-btn.minus { background: rgba(248,113,113,.1); color: #f87171;     border-color: rgba(248,113,113,.2); }
+    .phone-btn.plus  { background: rgba(24,183,255,.14); color: var(--blue); border-color: rgba(24,183,255,.2); }
+    .phone-btn.minus { background: rgba(248,113,113,.1); color: #f87171; border-color: rgba(248,113,113,.2); }
 
     /* ── Divider ──────────────────────────────────────────── */
     hr { border: none; border-top: 1px solid var(--outline); }
@@ -282,14 +300,15 @@
       font-weight: 700;
       letter-spacing: .8px;
       text-transform: uppercase;
-      color: var(--primary);
+      color: var(--blue);
       margin-bottom: 10px;
     }
     .section-heading {
       text-align: center;
       font-size: clamp(1.7rem, 4vw, 2.3rem);
       font-weight: 900;
-      letter-spacing: -.02em;
+      font-family: 'Sora', sans-serif;
+      letter-spacing: -.03em;
       line-height: 1.15;
       margin-bottom: 48px;
     }
@@ -305,7 +324,12 @@
       background: var(--card);
       border-radius: var(--radius);
       border: 1px solid var(--outline);
-      padding: 22px 18px;
+      padding: 24px 20px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .feature:hover {
+      border-color: rgba(24,183,255,.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
     }
     .feature-icon  { font-size: 1.7rem; margin-bottom: 12px; display: block; }
     .feature-title { font-weight: 800; font-size: .92rem; margin-bottom: 5px; }
@@ -328,8 +352,8 @@
       width: 34px;
       height: 34px;
       border-radius: 10px;
-      background: var(--primary-bg);
-      color: var(--primary);
+      background: var(--gradient);
+      color: #fff;
       font-weight: 900;
       font-size: .9rem;
       display: flex;
@@ -344,13 +368,14 @@
     .cta-section {
       text-align: center;
       padding: 88px 24px;
-      background: linear-gradient(180deg, transparent, rgba(74,222,128,.05));
+      background: linear-gradient(180deg, transparent, rgba(124,59,255,.06));
       border-top: 1px solid var(--outline);
     }
     .cta-section h2 {
       font-size: clamp(1.9rem, 5vw, 2.8rem);
       font-weight: 900;
-      letter-spacing: -.025em;
+      font-family: 'Sora', sans-serif;
+      letter-spacing: -.035em;
       line-height: 1.1;
       margin-bottom: 14px;
     }
@@ -369,7 +394,15 @@
       gap: 12px;
     }
     .footer-copy { color: var(--muted); font-size: .82rem; }
-    .footer-link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: .82rem; }
+    .footer-link {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .82rem;
+    }
     .game-tag {
       background: var(--card);
       border: 1px solid var(--outline);
@@ -378,7 +411,9 @@
       font-size: .85rem;
       font-weight: 600;
       color: var(--text);
+      transition: border-color .15s;
     }
+    .game-tag:hover { border-color: rgba(24,183,255,.25); }
     .btn-kofi {
       height: 44px;
       padding: 0 22px;
@@ -395,6 +430,7 @@
       gap: 7px;
       transition: opacity .15s, transform .1s;
     }
+    .btn-kofi:hover  { opacity: .88; }
     .btn-kofi:active { opacity: .85; transform: translateY(1px); }
     .kofi-note { color: var(--muted); font-size: .8rem; margin-top: 14px; }
   </style>
@@ -404,8 +440,7 @@
   <!-- Nav -->
   <nav>
     <a href="./" class="nav-logo">
-      <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore">
-      SeshScore
+      <img src="./static/image/seshscore-horizontal-dark.svg" alt="SeshScore">
     </a>
     <a href="./app.html" class="btn-nav">Open App →</a>
   </nav>
@@ -414,7 +449,7 @@
   <section class="hero">
     <div>
       <div class="hero-badge">✦ Free &middot; No account &middot; Works offline</div>
-      <h1>Keep score.<br><em>Any game.</em><br>Any phone.</h1>
+      <h1>Keep score.<br><span class="grad">Any game.</span><br>Any phone.</h1>
       <p class="hero-sub">The free mobile score tracker for card games, board games, darts and more — pick a game profile, add players, tap to score. No app store, no login, no fuss.</p>
       <div class="hero-actions">
         <button class="btn-primary" id="btnInstallHero">📲 Install App</button>
@@ -506,12 +541,17 @@
         <div class="feature-title">Game profiles</div>
         <div class="feature-desc">Built-in presets for Uno, Rummy and Darts 501/301. Pick one and it configures itself.</div>
       </div>
+      <div class="feature">
+        <span class="feature-icon">↩️</span>
+        <div class="feature-title">Undo mistakes</div>
+        <div class="feature-desc">Made a fat-finger? Undo the last change on any player instantly.</div>
+      </div>
     </div>
   </section>
 
   <hr>
 
-  <!-- Perfect for — long-tail keyword section -->
+  <!-- Perfect for -->
   <section class="section" style="padding-bottom: 48px;">
     <div class="section-eyebrow">Perfect for</div>
     <h2 class="section-heading">Any game that needs a score</h2>

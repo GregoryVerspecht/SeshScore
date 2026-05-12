@@ -1,18 +1,24 @@
 /* ====== Mobile-first base ====== */
 :root {
-  --bg: #0f1117;
-  --card: #1a1d2e;
-  --card-2: #1e2235;
-  --text: #e8eaf0;
-  --muted: rgba(232,234,240,.48);
+  --bg: #090B12;
+  --card: #111827;
+  --card-2: #151A26;
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+
+  --blue: #18B7FF;
+  --purple: #7C3BFF;
+  --magenta: #D94CFF;
+  --orange: #FF7A18;
+  --gradient: linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
 
   --shadow: 0 10px 25px rgba(0,0,0,.45);
   --shadow-strong: 0 16px 40px rgba(0,0,0,.65);
 
-  --radius: 18px;
+  --radius: 22px;
 
-  --primary: #4ade80;
-  --primary-bg: rgba(74,222,128,.14);
+  --primary: #18B7FF;
+  --primary-bg: rgba(24,183,255,.14);
   --danger: #f87171;
   --danger-bg: rgba(248,113,113,.14);
   --outline: rgba(255,255,255,.08);
@@ -27,7 +33,10 @@ body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(24,183,255,.10), transparent 35%),
+    radial-gradient(circle at 90% 85%, rgba(124,59,255,.12), transparent 35%),
+    var(--bg);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -123,8 +132,9 @@ img { max-width: 100%; height: auto; display: block; }
 .app-title {
   margin: 0;
   font-size: 2rem;
-  letter-spacing: -.3px;
+  letter-spacing: -.5px;
   font-weight: 900;
+  font-family: 'Sora', 'Space Grotesk', sans-serif;
 }
 .app-subtitle {
   margin: 4px 0 0;
@@ -210,7 +220,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .step-btn.active {
   background: var(--primary);
-  color: #0f1117;
+  color: var(--bg);
 }
 
 /* Buttons */
@@ -226,10 +236,11 @@ img { max-width: 100%; height: auto; display: block; }
 .btn:active { transform: translateY(1px); }
 
 .btn.primary {
-  background: var(--primary);
-  color: #0f1117;
+  background: var(--gradient);
+  color: #fff;
   border-color: transparent;
   font-weight: 800;
+  box-shadow: 0 0 28px rgba(124,59,255,.28);
 }
 .btn.ghost {
   background: transparent;
@@ -280,7 +291,7 @@ input[type="text"], input[type="number"], select {
   box-shadow: inset 0 2px 0 rgba(0,0,0,.12);
 }
 input::placeholder { color: var(--muted); }
-select option { background: #1a1d2e; color: var(--text); }
+select option { background: #111827; color: var(--text); }
 
 #btnAddPlayer {
   width: 56px;
@@ -393,19 +404,20 @@ select option { background: #1a1d2e; color: var(--text); }
 .player-score {
   font-size: 4rem;
   font-weight: 900;
+  font-family: 'JetBrains Mono', 'Geist Mono', monospace;
   text-align: center;
   line-height: 1.05;
   margin: 10px 0 16px;
-  letter-spacing: -1px;
+  letter-spacing: -2px;
 }
 
 /* Leader highlight */
 .leader {
-  background: linear-gradient(145deg, #1e2030, #28240e);
-  border-color: rgba(251,191,36,.32);
-  box-shadow: 0 14px 40px rgba(251,191,36,.12), var(--shadow);
+  background: linear-gradient(145deg, #131826, #0e1420);
+  border-color: rgba(24,183,255,.28);
+  box-shadow: 0 14px 40px rgba(24,183,255,.08), var(--shadow);
 }
-.leader .player-score { color: #fbbf24; }
+.leader .player-score { color: var(--blue); }
 
 /* Controls: 3 buttons */
 .player-controls {
@@ -435,7 +447,7 @@ select option { background: #1a1d2e; color: var(--text); }
 }
 .tap.plus {
   background: var(--primary-bg);
-  border-color: rgba(74,222,128,.18);
+  border-color: rgba(24,183,255,.18);
   color: var(--primary);
 }
 .tap.custom {
@@ -458,7 +470,7 @@ select option { background: #1a1d2e; color: var(--text); }
   right: 0;
   bottom: 0;
   padding: 10px 12px calc(10px + var(--safe-bottom)) 12px;
-  background: rgba(15,17,23,.94);
+  background: rgba(9,11,18,.94);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-top: 1px solid var(--outline);
@@ -497,7 +509,7 @@ select option { background: #1a1d2e; color: var(--text); }
   right: 0;
   bottom: 0;
   z-index: 60;
-  background: #1a1d2e;
+  background: #111827;
   border-radius: 22px 22px 0 0;
   box-shadow: var(--shadow-strong);
   padding: 10px 16px calc(18px + var(--safe-bottom)) 16px;
@@ -558,7 +570,7 @@ select option { background: #1a1d2e; color: var(--text); }
 }
 .chip.chip-pos {
   background: var(--primary-bg);
-  border-color: rgba(74,222,128,.22);
+  border-color: rgba(24,183,255,.22);
   color: var(--primary);
 }
 
@@ -632,11 +644,11 @@ select option { background: #1a1d2e; color: var(--text); }
 
 /* ── Winner card ────────────────────────────────────────── */
 .winner {
-  background: linear-gradient(145deg, #1a2a1e, #1e2a1a);
-  border-color: rgba(74,222,128,.38);
-  box-shadow: 0 14px 40px rgba(74,222,128,.14), var(--shadow);
+  background: linear-gradient(145deg, #131826, #150e26);
+  border-color: rgba(124,59,255,.38);
+  box-shadow: 0 14px 40px rgba(124,59,255,.14), var(--shadow);
 }
-.winner .player-score { color: var(--primary); }
+.winner .player-score { color: var(--purple); }
 
 /* ── Log button on player card ──────────────────────────── */
 .player-top-right {
@@ -682,7 +694,7 @@ select option { background: #1a1d2e; color: var(--text); }
   font-size: 1.05rem;
   min-width: 48px;
 }
-.log-delta.pos { color: var(--primary); }
+.log-delta.pos { color: var(--blue); }
 .log-delta.neg { color: var(--danger); }
 .log-score {
   font-size: .9rem;
@@ -791,7 +803,7 @@ select option { background: #1a1d2e; color: var(--text); }
 .preset-btn.active {
   background: var(--primary-bg);
   color: var(--primary);
-  border-color: rgba(74,222,128,.3);
+  border-color: rgba(24,183,255,.3);
 }
 .preset-btn:active { opacity: .75; }
 
@@ -807,7 +819,7 @@ select option { background: #1a1d2e; color: var(--text); }
 .darts-mode .tap.minus {
   background: var(--primary-bg);
   color: var(--primary);
-  border-color: rgba(74,222,128,.25);
+  border-color: rgba(24,183,255,.25);
 }
 .darts-mode .tap.plus {
   background: transparent;
@@ -929,7 +941,7 @@ select option { background: #1a1d2e; color: var(--text); }
   bottom: calc(72px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
-  background: #2a2d40;
+  background: #111827;
   border: 1px solid var(--outline);
   border-radius: 12px;
   padding: 10px 20px;
