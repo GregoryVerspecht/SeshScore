@@ -74,24 +74,60 @@ img { max-width: 100%; height: auto; display: block; }
   box-shadow: var(--shadow);
 }
 
-/* Header */
-.app-header {
+/* ── Start screen layout ────────────────────────────────── */
+#start.active {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 10px 0 22px;
+  flex-direction: column;
+  padding-top: calc(32px + var(--safe-top));
+  padding-bottom: calc(24px + var(--safe-bottom));
 }
+
+.start-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+}
+
+.start-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#start .btn {
+  height: 56px;
+  font-size: 1rem;
+}
+
+.start-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 24px;
+}
+
+/* Header (shared styles reused in start-header) */
 .app-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
   box-shadow: var(--shadow);
   background: var(--card);
   padding: 6px;
 }
 .app-title {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 2rem;
   letter-spacing: -.3px;
   font-weight: 900;
 }
@@ -863,4 +899,81 @@ select option { background: #1a1d2e; color: var(--text); }
 
 @media (min-width: 600px) {
   .screen { padding-top: calc(20px + var(--safe-top)); }
+}
+
+/* ── Game screen fills available height ─────────────────── */
+#game.active {
+  display: flex;
+  flex-direction: column;
+}
+
+#game .players {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#game .player-card {
+  flex: 1;
+  min-height: 150px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#game .player-score {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible) { outline: none; }
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: calc(72px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2a2d40;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text);
+  z-index: 200;
+  white-space: nowrap;
+  box-shadow: var(--shadow-strong);
+  pointer-events: none;
+  animation: toastIn .18s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Hover states for desktop (not triggered on touch) */
+@media (hover: hover) {
+  .btn:not(:disabled):hover { opacity: .82; }
+  .tap:hover { opacity: .82; }
+  .icon-btn:hover { background: var(--card-2); }
+  .step-btn:not(.active):hover { background: rgba(255,255,255,.08); color: var(--text); }
+  .preset-btn:not(.active):hover { background: rgba(255,255,255,.08); color: var(--text); }
+  .chip:hover { opacity: .82; }
+  .mini:hover { background: rgba(255,255,255,.1); }
+  .sign-btn:hover { opacity: .85; }
+  .log-btn:hover { opacity: .7; }
 }

@@ -28,24 +28,25 @@
 
   <!-- START -->
   <section class="screen active" id="start">
-    <div class="app-header">
-      <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
-      <div>
+    <div class="start-main">
+      <div class="start-header">
+        <img src="./static/image/seshscore_icon_96x96.png" alt="SeshScore" class="app-logo" />
         <h1 class="app-title">SeshScore</h1>
         <p class="app-subtitle">Mobile scoreboard</p>
       </div>
+
+      <div class="start-actions">
+        <button class="btn primary" id="btnNewSesh">New sesh</button>
+        <button class="btn ghost" data-nav="game">Last sesh</button>
+        <button class="btn ghost" data-nav="history">📋 History</button>
+      </div>
     </div>
 
-    <div class="card">
-      <button class="btn primary" id="btnNewSesh">New sesh</button>
-      <button class="btn ghost" style="margin-top:10px" data-nav="game">Last sesh</button>
-      <button class="btn ghost" style="margin-top:10px" data-nav="history">📋 History</button>
-    </div>
+    <div class="start-footer">
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener" class="hint kofi-link">☕ Enjoying SeshScore? Buy me a coffee</a>
 
-    <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener" class="hint kofi-link">☕ Enjoying SeshScore? Buy me a coffee</a>
-
-    <!-- PWA install banner (shown by JS when applicable) -->
-    <div class="install-banner hidden" id="installBanner">
+      <!-- PWA install banner (shown by JS when applicable) -->
+      <div class="install-banner hidden" id="installBanner">
       <button class="install-dismiss" id="btnDismissInstall" aria-label="Dismiss">✕</button>
 
       <!-- Android / Chrome: native prompt -->
@@ -76,6 +77,7 @@
           <li>Tap <strong>Add to Home Screen</strong></li>
           <li>Tap <strong>Add</strong></li>
         </ol>
+      </div>
       </div>
     </div>
   </section>
@@ -243,6 +245,26 @@
     </div>
   </div>
 
+  <!-- Confirm sheet -->
+  <div class="sheet hidden" id="confirmSheet" role="dialog" aria-modal="true" aria-labelledby="confirmSheetTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-header">
+      <div>
+        <h3 id="confirmSheetTitle"></h3>
+        <p id="confirmSheetMsg" class="muted"></p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="row">
+        <button class="btn ghost" id="btnConfirmCancel">Cancel</button>
+        <button class="btn danger" id="btnConfirmOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast" role="alert" aria-live="polite"></div>
+
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js');
@@ -354,7 +376,13 @@
       const preset = PRESETS.find(p => p.id === id);
       if (!preset) return;
       const hasScores = players.some(p => p.log.length > 0);
-      if (hasScores && !confirm('Changing game profile will reset all scores. Continue?')) return;
+      if (hasScores) {
+        showConfirm('Change game profile?', 'This will reset all scores.', 'Reset & apply', () => _doApplyPreset(preset));
+        return;
+      }
+      _doApplyPreset(preset);
+    }
+    function _doApplyPreset(preset) {
       presetId   = preset.id;
       gameMode   = preset.gameMode;
       startScore = preset.startScore;
@@ -434,6 +462,13 @@
     const btnScoreAllSign      = document.getElementById('btnScoreAllSign');
     const btnApplyScoreAll     = document.getElementById('btnApplyScoreAll');
 
+    const confirmSheet         = document.getElementById('confirmSheet');
+    const confirmSheetTitle    = document.getElementById('confirmSheetTitle');
+    const confirmSheetMsg      = document.getElementById('confirmSheetMsg');
+    const btnConfirmCancel     = document.getElementById('btnConfirmCancel');
+    const btnConfirmOk         = document.getElementById('btnConfirmOk');
+    const toastEl              = document.getElementById('toast');
+
     // ── Navigation ───────────────────────────────────────────
     document.body.addEventListener('click', (e) => {
       const nav = e.target.closest('[data-nav]');
@@ -453,7 +488,13 @@
     function showScreen(id) {
       screens.forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+      if (id === 'start') syncLastSeshBtn();
       render();
+    }
+
+    function syncLastSeshBtn() {
+      const btn = document.querySelector('#start button[data-nav="game"]');
+      if (btn) btn.disabled = players.length === 0;
     }
 
     // ── Persistence ──────────────────────────────────────────
@@ -513,7 +554,7 @@
       } else {
         const val = parseInt(raw, 10);
         if (!Number.isFinite(val) || val < 1) {
-          alert('Enter a valid target score (e.g. 100) or leave empty to remove.');
+          showToast('Enter a valid target score, e.g. 100.');
           return;
         }
         winTarget = val;
@@ -533,9 +574,10 @@
     // ── Add player ───────────────────────────────────────────
     function addPlayer() {
       const name = (playerNameEl.value || '').trim();
-      if (!name) return alert('Please enter a name!');
-      if (players.some(p => p.name.toLowerCase() === name.toLowerCase()))
-        return alert('This player already exists!');
+      if (!name) { showToast('Please enter a player name.'); return; }
+      if (players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        showToast('This player already exists.'); return;
+      }
 
       const maxOrder = players.length ? Math.max(...players.map(p => p.order)) : -1;
       players.push({
@@ -555,22 +597,25 @@
 
     // ── Delete all ───────────────────────────────────────────
     btnDeleteAll.addEventListener('click', () => {
-      if (!confirm('Are you sure you want to remove all players?')) return;
-      players = [];
-      undoStack = [];
-      syncUndoBtn();
-      localStorage.removeItem(SESSION_KEY);
-      render();
+      showConfirm('Remove all players?', 'This cannot be undone.', 'Remove all', () => {
+        players = [];
+        undoStack = [];
+        syncUndoBtn();
+        localStorage.removeItem(SESSION_KEY);
+        syncLastSeshBtn();
+        render();
+      });
     });
 
     // ── Reset scores ─────────────────────────────────────────
     btnResetScores.addEventListener('click', () => {
       if (!players.length) return;
-      if (!confirm(`Reset all scores to ${startScore}?`)) return;
-      pushUndo();
-      players.forEach(p => { p.score = startScore; p.log = []; });
-      persist();
-      render();
+      showConfirm('Reset all scores?', `Scores will return to ${startScore}.`, 'Reset', () => {
+        pushUndo();
+        players.forEach(p => { p.score = startScore; p.log = []; });
+        persist();
+        render();
+      });
     });
 
     // ── Sort ─────────────────────────────────────────────────
@@ -621,10 +666,11 @@
     function deletePlayer(id) {
       const p = players.find(x => x.id === id);
       if (!p) return;
-      if (!confirm(`Remove ${p.name}?`)) return;
-      players = players.filter(x => x.id !== id);
-      normalizeOrder();
-      render();
+      showConfirm(`Remove ${escapeHtml(p.name)}?`, 'This player will be removed.', 'Remove', () => {
+        players = players.filter(x => x.id !== id);
+        normalizeOrder();
+        render();
+      });
     }
 
     function movePlayer(id, dir) {
@@ -665,9 +711,10 @@
     }
 
     document.getElementById('btnClearHistory').addEventListener('click', () => {
-      if (!confirm('Clear all history?')) return;
-      localStorage.removeItem(HISTORY_KEY);
-      render();
+      showConfirm('Clear all history?', 'Past games will be permanently deleted.', 'Clear', () => {
+        localStorage.removeItem(HISTORY_KEY);
+        render();
+      });
     });
 
     // ── Render ───────────────────────────────────────────────
@@ -825,7 +872,7 @@
     function closeSheet() {
       activePlayerIdForSheet = null;
       scoreSheet.classList.add('hidden');
-      if (logSheet.classList.contains('hidden') && scoreAllSheet.classList.contains('hidden')) hideBackdrop();
+      if (_noSheetsOpen()) hideBackdrop();
     }
 
     btnCloseSheet.addEventListener('click', closeSheet);
@@ -853,7 +900,7 @@
       if (!activePlayerIdForSheet) return;
       const abs = parseInt((customDeltaEl.value || '').trim(), 10);
       if (!Number.isFinite(abs) || abs === 0) {
-        alert('Enter a valid value (e.g. 7).');
+        showToast('Enter a value to apply, e.g. 7.');
         return;
       }
       updateScore(activePlayerIdForSheet, Math.abs(abs) * inputSign);
@@ -896,7 +943,7 @@
 
     function closeLogSheet() {
       logSheet.classList.add('hidden');
-      if (scoreSheet.classList.contains('hidden') && scoreAllSheet.classList.contains('hidden')) hideBackdrop();
+      if (_noSheetsOpen()) hideBackdrop();
     }
 
     btnCloseLogSheet.addEventListener('click', closeLogSheet);
@@ -923,7 +970,7 @@
 
     function closeScoreAllSheet() {
       scoreAllSheet.classList.add('hidden');
-      if (scoreSheet.classList.contains('hidden') && logSheet.classList.contains('hidden')) hideBackdrop();
+      if (_noSheetsOpen()) hideBackdrop();
     }
 
     function renderScoreAllExcludeChips() {
@@ -971,7 +1018,7 @@
 
     function applyScoreAllCustom() {
       const abs = parseInt((scoreAllDeltaEl.value || '').trim(), 10);
-      if (!Number.isFinite(abs) || abs === 0) { alert('Enter a valid value (e.g. 7).'); return; }
+      if (!Number.isFinite(abs) || abs === 0) { showToast('Enter a value to apply, e.g. 7.'); return; }
       applyScoreAll(Math.abs(abs) * scoreAllInputSign);
       closeScoreAllSheet();
     }
@@ -1000,12 +1047,50 @@
       sheetBackdrop.classList.add('hidden');
       sheetBackdrop.setAttribute('aria-hidden', 'true');
     }
+    function _noSheetsOpen() {
+      return scoreSheet.classList.contains('hidden') &&
+             logSheet.classList.contains('hidden') &&
+             scoreAllSheet.classList.contains('hidden') &&
+             confirmSheet.classList.contains('hidden');
+    }
 
     sheetBackdrop.addEventListener('click', () => {
       closeSheet();
       closeLogSheet();
       closeScoreAllSheet();
+      closeConfirm(false);
     });
+
+    // ── Toast ─────────────────────────────────────────────────
+    let _toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.remove('hidden');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 2600);
+    }
+
+    // ── Confirm sheet ─────────────────────────────────────────
+    let _confirmCallback = null;
+    function showConfirm(title, msg, label, onConfirm) {
+      confirmSheetTitle.textContent = title;
+      confirmSheetMsg.textContent   = msg;
+      btnConfirmOk.textContent      = label;
+      _confirmCallback = onConfirm;
+      showBackdrop();
+      confirmSheet.classList.remove('hidden');
+    }
+    function closeConfirm(runCallback) {
+      confirmSheet.classList.add('hidden');
+      if (_noSheetsOpen()) hideBackdrop();
+      if (runCallback && _confirmCallback) _confirmCallback();
+      _confirmCallback = null;
+    }
+
+    btnConfirmCancel.addEventListener('click', () => closeConfirm(false));
+    btnConfirmOk.addEventListener('click',     () => closeConfirm(true));
+    confirmSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    confirmSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeConfirm(false); }, { passive: true });
 
     // ── Animations ───────────────────────────────────────────
     function bumpScore(id) {
@@ -1035,6 +1120,7 @@
 
     // ── Init ─────────────────────────────────────────────────
     syncUndoBtn();
+    syncLastSeshBtn();
     render();
     initInstallBanner();
   </script>
