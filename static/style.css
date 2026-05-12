@@ -81,7 +81,6 @@ img { max-width: 100%; height: auto; display: block; }
   padding-top: calc(32px + var(--safe-top));
   padding-bottom: calc(24px + var(--safe-bottom));
 }
-
 .start-main {
   flex: 1;
   display: flex;
@@ -89,7 +88,6 @@ img { max-width: 100%; height: auto; display: block; }
   justify-content: center;
   gap: 32px;
 }
-
 .start-header {
   display: flex;
   flex-direction: column;
@@ -97,18 +95,15 @@ img { max-width: 100%; height: auto; display: block; }
   text-align: center;
   gap: 10px;
 }
-
 .start-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
 #start .btn {
   height: 56px;
   font-size: 1rem;
 }
-
 .start-footer {
   display: flex;
   flex-direction: column;
@@ -116,7 +111,7 @@ img { max-width: 100%; height: auto; display: block; }
   padding-top: 24px;
 }
 
-/* Header (shared styles reused in start-header) */
+/* Header shared styles */
 .app-logo {
   width: 72px;
   height: 72px;
@@ -906,7 +901,6 @@ select option { background: #1a1d2e; color: var(--text); }
   display: flex;
   flex-direction: column;
 }
-
 #game .players {
   flex: 1;
   display: flex;
@@ -914,7 +908,6 @@ select option { background: #1a1d2e; color: var(--text); }
   gap: 10px;
   margin-top: 10px;
 }
-
 #game .player-card {
   flex: 1;
   min-height: 150px;
@@ -922,7 +915,6 @@ select option { background: #1a1d2e; color: var(--text); }
   display: flex;
   flex-direction: column;
 }
-
 #game .player-score {
   flex: 1;
   display: flex;
@@ -930,16 +922,6 @@ select option { background: #1a1d2e; color: var(--text); }
   justify-content: center;
   margin: 4px 0;
 }
-
-/* Focus styles for keyboard navigation */
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-button:focus:not(:focus-visible),
-input:focus:not(:focus-visible),
-select:focus:not(:focus-visible) { outline: none; }
 
 /* Toast notification */
 .toast {
@@ -964,6 +946,16 @@ select:focus:not(:focus-visible) { outline: none; }
   from { opacity: 0; transform: translateX(-50%) translateY(6px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible) { outline: none; }
 
 /* Hover states for desktop (not triggered on touch) */
 @media (hover: hover) {

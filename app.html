@@ -47,37 +47,37 @@
 
       <!-- PWA install banner (shown by JS when applicable) -->
       <div class="install-banner hidden" id="installBanner">
-      <button class="install-dismiss" id="btnDismissInstall" aria-label="Dismiss">✕</button>
+        <button class="install-dismiss" id="btnDismissInstall" aria-label="Dismiss">✕</button>
 
-      <!-- Android / Chrome: native prompt -->
-      <div id="installBannerAndroid" class="hidden">
-        <div class="install-banner-header">
-          <span class="install-banner-icon">📲</span>
-          <div>
-            <div class="install-banner-title">Install SeshScore</div>
-            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+        <!-- Android / Chrome: native prompt -->
+        <div id="installBannerAndroid" class="hidden">
+          <div class="install-banner-header">
+            <span class="install-banner-icon">📲</span>
+            <div>
+              <div class="install-banner-title">Install SeshScore</div>
+              <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+            </div>
+          </div>
+          <div class="install-btn-row">
+            <button class="btn primary" id="btnInstallApp">Add to Home Screen</button>
           </div>
         </div>
-        <div class="install-btn-row">
-          <button class="btn primary" id="btnInstallApp">Add to Home Screen</button>
-        </div>
-      </div>
 
-      <!-- iOS Safari: manual steps -->
-      <div id="installBannerIOS" class="hidden">
-        <div class="install-banner-header">
-          <span class="install-banner-icon">📲</span>
-          <div>
-            <div class="install-banner-title">Install SeshScore</div>
-            <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+        <!-- iOS Safari: manual steps -->
+        <div id="installBannerIOS" class="hidden">
+          <div class="install-banner-header">
+            <span class="install-banner-icon">📲</span>
+            <div>
+              <div class="install-banner-title">Install SeshScore</div>
+              <div class="install-banner-sub">Fullscreen · Works offline · No app store needed</div>
+            </div>
           </div>
+          <ol class="install-steps">
+            <li>Tap the <span class="install-share-icon">Share</span> button at the bottom of Safari</li>
+            <li>Tap <strong>Add to Home Screen</strong></li>
+            <li>Tap <strong>Add</strong></li>
+          </ol>
         </div>
-        <ol class="install-steps">
-          <li>Tap the <span class="install-share-icon">Share</span> button at the bottom of Safari</li>
-          <li>Tap <strong>Add to Home Screen</strong></li>
-          <li>Tap <strong>Add</strong></li>
-        </ol>
-      </div>
       </div>
     </div>
   </section>
