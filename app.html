@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260512-7">
+  <link rel="stylesheet" href="./static/style.css?v=20260513-4">
 </head>
 
 <body>
@@ -127,12 +127,12 @@
       </div>
     </div>
 
-    <div class="section-title section-title-row">
-      <div>
+    <div class="section-title">
+      <div class="section-title-row">
         <h3>Players</h3>
-        <p>Use ↑/↓ to set the order.</p>
+        <button class="btn ghost btn-sm" id="btnDeleteAll">🗑 Clear all</button>
       </div>
-      <button class="btn ghost btn-sm" id="btnDeleteAll">🗑 Clear all</button>
+      <p>Use ↑/↓ to set the order.</p>
     </div>
 
     <div class="card">
@@ -150,7 +150,7 @@
   <!-- GAME -->
   <section class="screen" id="game">
     <div class="topbar">
-      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
+      <button class="icon-btn" id="btnEndGame" aria-label="End session">←</button>
       <div class="topbar-title">
         <h2>SeshScore</h2>
         <p>Tap + / − to score</p>
@@ -274,6 +274,30 @@
       <div class="row">
         <button class="btn ghost" id="btnConfirmCancel">Cancel</button>
         <button class="btn danger" id="btnConfirmOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End game sheet -->
+  <div class="sheet hidden" id="endGameSheet" role="dialog" aria-modal="true" aria-labelledby="endGameSheetTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-header">
+      <div>
+        <h3 id="endGameSheetTitle">End this session?</h3>
+        <p class="muted">Scores will be saved to history.</p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-btn-col">
+        <button class="btn primary btn-two-line" id="btnEndRemember">
+          <span>Remember session</span>
+          <small>Use the same players next time</small>
+        </button>
+        <button class="btn ghost btn-two-line" id="btnEndForget">
+          <span>Forget &amp; end</span>
+          <small>Start fresh next time</small>
+        </button>
+        <button class="btn ghost" id="btnEndCancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -1098,7 +1122,8 @@
       return scoreSheet.classList.contains('hidden') &&
              logSheet.classList.contains('hidden') &&
              scoreAllSheet.classList.contains('hidden') &&
-             confirmSheet.classList.contains('hidden');
+             confirmSheet.classList.contains('hidden') &&
+             document.getElementById('endGameSheet').classList.contains('hidden');
     }
 
     sheetBackdrop.addEventListener('click', () => {
@@ -1106,10 +1131,12 @@
       closeLogSheet();
       closeScoreAllSheet();
       closeConfirm(false);
+      if (typeof closeEndGameSheet === 'function') closeEndGameSheet();
     });
 
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
+      if (!document.getElementById('endGameSheet').classList.contains('hidden')) { closeEndGameSheet(); return; }
       if (!confirmSheet.classList.contains('hidden'))  { closeConfirm(false);    return; }
       if (!scoreSheet.classList.contains('hidden'))    { closeSheet();           return; }
       if (!logSheet.classList.contains('hidden'))      { closeLogSheet();        return; }
@@ -1168,6 +1195,34 @@
     btnConfirmOk.addEventListener('click',     () => closeConfirm(true));
     confirmSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
     confirmSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeConfirm(false); }, { passive: true });
+
+    // ── End game sheet ───────────────────────────────────────
+    const endGameSheet = document.getElementById('endGameSheet');
+    function openEndGameSheet() {
+      showBackdrop();
+      endGameSheet.classList.remove('hidden');
+      setTimeout(() => document.getElementById('btnEndRemember').focus(), 60);
+    }
+    function closeEndGameSheet() {
+      endGameSheet.classList.add('hidden');
+      if (_noSheetsOpen()) hideBackdrop();
+    }
+    document.getElementById('btnEndGame').addEventListener('click', openEndGameSheet);
+    document.getElementById('btnEndRemember').addEventListener('click', () => {
+      closeEndGameSheet();
+      saveToHistory();
+      persist();
+      showScreen('start');
+    });
+    document.getElementById('btnEndForget').addEventListener('click', () => {
+      closeEndGameSheet();
+      saveToHistory();
+      localStorage.removeItem(SESSION_KEY);
+      showScreen('start');
+    });
+    document.getElementById('btnEndCancel').addEventListener('click', closeEndGameSheet);
+    endGameSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    endGameSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeEndGameSheet(); }, { passive: true });
 
     // ── Animations ───────────────────────────────────────────
     function bumpScore(id) {
