@@ -1,17 +1,15 @@
-const CACHE_NAME = "seshscore-cache-v10";
+const CACHE_NAME = "seshscore-cache-v11";
 const urlsToCache = [
     "/app.html",
     "/manifest.json",
     "/static/style.css",
-    "/static/image/seshscore_icon_512x512.png",
-    "/static/image/seshscore_icon_192x192.png",
-    "/static/image/seshscore_icon_144x144.png",
-    "/static/image/seshscore_icon_96x96.png",
-    "/static/image/seshscore_icon_72x72.png",
-    "/static/image/seshscore_icon_48x48.png"
+    "/static/image/seshscore-icon.svg",
+    "/static/image/seshscore-icon-512x512.png",
+    "/static/image/seshscore-icon-192x192.png",
+    "/static/image/seshscore-icon-180x180.png",
+    "/static/image/seshscore-icon-128x128.png"
 ];
 
-// Install Service Worker en cache bestanden
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -20,7 +18,6 @@ self.addEventListener("install", (event) => {
     );
 });
 
-// Fetch verzoeken uit cache halen
 self.addEventListener("fetch", (event) => {
     event.respondWith(
         caches.match(event.request, { ignoreSearch: true }).then((response) => {
@@ -29,7 +26,6 @@ self.addEventListener("fetch", (event) => {
     );
 });
 
-// Verwijder oude caches bij een update
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
