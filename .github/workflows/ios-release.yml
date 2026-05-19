@@ -21,6 +21,16 @@ jobs:
       - name: Install Capacitor dependencies
         run: npm install
 
+      - name: Prepare www directory
+        run: |
+          mkdir -p www
+          cp app.html www/index.html
+          cp service-worker.js www/
+          cp manifest.json www/
+          cp favicon.ico www/ 2>/dev/null || true
+          cp favicon-32x32.png www/ 2>/dev/null || true
+          cp -r static www/
+
       - name: Add iOS platform and sync web assets
         run: |
           npx cap add ios
