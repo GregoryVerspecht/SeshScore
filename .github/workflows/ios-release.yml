@@ -45,9 +45,10 @@ jobs:
           sips -s format png /tmp/icon-flat.jpg --out assets/icon-only.png
           npx capacitor-assets generate --ios
           npx cap sync ios
-          # Set export compliance after sync so cap sync cannot overwrite it
+          # Set export compliance and build number after sync
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
           /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" ios/App/App/Info.plist
 
       - name: Install CocoaPods dependencies
         run: |
