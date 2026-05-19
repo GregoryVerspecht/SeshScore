@@ -47,7 +47,20 @@ jobs:
       - name: Initialize keychain
         run: keychain initialize
 
-      - name: Fetch signing files (creates if missing)
+      - name: Create distribution certificate
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          app-store-connect create-certificate \
+            --type IOS_DISTRIBUTION \
+            --save
+
+      - name: Add certificates to keychain
+        run: keychain add-certificates
+
+      - name: Fetch provisioning profile (creates if missing)
         env:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
@@ -56,9 +69,6 @@ jobs:
           app-store-connect fetch-signing-files com.gvtech.seshscore \
             --type IOS_APP_STORE \
             --create
-
-      - name: Add certificates to keychain
-        run: keychain add-certificates
 
       - name: Set up code signing
         run: xcode-project use-profiles
