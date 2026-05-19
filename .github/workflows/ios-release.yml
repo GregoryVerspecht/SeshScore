@@ -40,7 +40,9 @@ jobs:
         run: |
           npx cap add ios
           # Remove alpha channel — iOS requires fully opaque app icons
-          magick assets/icon-only.png -background white -alpha remove -alpha off assets/icon-only.png
+          # sips is macOS-native; JPEG roundtrip composites alpha against white
+          sips -s format jpeg assets/icon-only.png --out /tmp/icon-flat.jpg
+          sips -s format png /tmp/icon-flat.jpg --out assets/icon-only.png
           npx capacitor-assets generate --ios
           npx cap sync ios
           # Set export compliance after sync so cap sync cannot overwrite it
