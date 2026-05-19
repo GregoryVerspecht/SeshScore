@@ -9,9 +9,6 @@ workflows:
         - ios-signing
       vars:
         BUNDLE_ID: com.gvtech.seshscore
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.gvtech.seshscore
     scripts:
       - name: Install Capacitor dependencies
         script: npm install
