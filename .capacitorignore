@@ -1,0 +1,13 @@
+node_modules/
+ios/
+android/
+.git/
+.gitattributes
+.claude/
+branding/
+codemagic.yaml
+capacitor.config.json
+package.json
+package-lock.json
+CNAME
+index.html

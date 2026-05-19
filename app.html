@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#090B12" />
 
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; object-src 'none';">
+    content="default-src 'self' capacitor:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' capacitor: https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; object-src 'none';">
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./favicon.ico" sizes="any">
@@ -297,6 +297,7 @@
           <span>Forget &amp; end</span>
           <small>Start fresh next time</small>
         </button>
+        <button class="btn ghost" id="btnShareSession">⬆ Share scores</button>
         <button class="btn ghost" id="btnEndCancel">Cancel</button>
       </div>
     </div>
@@ -306,12 +307,53 @@
   <div class="toast hidden" id="toast" role="alert" aria-live="polite"></div>
 
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) {
       navigator.serviceWorker.register('./service-worker.js');
       // When a new SW takes over, reload once so the fresh HTML is served
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         window.location.reload();
       });
+    }
+
+    // ── Native plugin helpers (Capacitor) ────────────────────
+    function _cap() { return window.Capacitor?.Plugins ?? {}; }
+    const _isNative = () => !!(window.Capacitor?.isNativePlatform?.());
+
+    async function hapticLight() {
+      if (_cap().Haptics) {
+        try { await _cap().Haptics.impact({ style: 'LIGHT' }); } catch(e) {}
+      } else if ('vibrate' in navigator) {
+        navigator.vibrate(22);
+      }
+    }
+    async function hapticHeavy() {
+      if (_cap().Haptics) {
+        try {
+          await _cap().Haptics.impact({ style: 'HEAVY' });
+          await new Promise(r => setTimeout(r, 80));
+          await _cap().Haptics.impact({ style: 'MEDIUM' });
+        } catch(e) {}
+      } else if ('vibrate' in navigator) {
+        navigator.vibrate([80, 40, 80]);
+      }
+    }
+    async function setKeepAwake(enable) {
+      if (!_cap().KeepAwake) return;
+      try {
+        if (enable) await _cap().KeepAwake.keepAwake();
+        else        await _cap().KeepAwake.allowSleep();
+      } catch(e) {}
+    }
+    async function shareScores() {
+      const sorted = getSortedPlayersForGame();
+      if (!sorted.length) return;
+      const lines = sorted.map((p, i) => `${i + 1}. ${p.name}: ${p.score}`).join('\n');
+      const text  = `🎮 SeshScore — Round ${round}\n${lines}`;
+      if (_cap().Share) {
+        try { await _cap().Share.share({ title: 'SeshScore', text, dialogTitle: 'Share scores' }); } catch(e) {}
+      } else if (navigator.share) {
+        try { await navigator.share({ title: 'SeshScore', text }); } catch(e) {}
+      }
     }
 
     // ── PWA install prompt ────────────────────────────────────
@@ -335,6 +377,7 @@
         && !/crios|fxios|chrome/i.test(navigator.userAgent);
     }
     function _showInstallBanner(type) {
+      if (_isNative()) return;
       if (_isStandalone()) return;
       if (localStorage.getItem('pwa_install_dismissed')) return;
       const banner  = document.getElementById('installBanner');
@@ -541,6 +584,7 @@
       const next = document.getElementById(id);
       next.classList.add('active', goBack ? 'screen-back' : 'screen-forward');
       if (id === 'start') syncLastSeshBtn();
+      setKeepAwake(id === 'game');
       render();
     }
 
@@ -718,7 +762,7 @@
       p.score += delta;
       p.log.push({ delta, score: p.score, ts: Date.now() });
       if (p.log.length > 200) p.log = p.log.slice(-200);
-      if ('vibrate' in navigator) navigator.vibrate(22);
+      hapticLight();
       persist();
       bumpScore(id);
       render();
@@ -1099,7 +1143,7 @@
         p.log.push({ delta, score: p.score, ts: Date.now() });
         if (p.log.length > 200) p.log = p.log.slice(-200);
       });
-      if ('vibrate' in navigator) navigator.vibrate(22);
+      hapticLight();
       persist();
       render();
     }
@@ -1159,7 +1203,7 @@
           if (p.score <= 0 && !_announcedWinners.has(p.id)) {
             _announcedWinners.add(p.id);
             showToast(`🏆 ${p.name} wins! Checkout!`, true);
-            if ('vibrate' in navigator) navigator.vibrate([80, 40, 80]);
+            hapticHeavy();
           }
         });
       } else if (winTarget !== null) {
@@ -1167,7 +1211,7 @@
           if (p.score >= winTarget && !_announcedWinners.has(p.id)) {
             _announcedWinners.add(p.id);
             showToast(`🏆 ${p.name} wins with ${p.score}!`, true);
-            if ('vibrate' in navigator) navigator.vibrate([80, 40, 80]);
+            hapticHeavy();
           }
         });
       }
@@ -1221,6 +1265,7 @@
       showScreen('start');
     });
     document.getElementById('btnEndCancel').addEventListener('click', closeEndGameSheet);
+    document.getElementById('btnShareSession')?.addEventListener('click', shareScores);
     endGameSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
     endGameSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeEndGameSheet(); }, { passive: true });
 

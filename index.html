@@ -26,6 +26,8 @@
   <meta name="twitter:description" content="Free mobile scoreboard. No app store, no account, works offline. Card games, board games, any game." />
   <meta name="twitter:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore-icon-512x512.png" />
 
+  <script>if (window.Capacitor?.isNativePlatform?.()) window.location.replace('./app.html');</script>
+
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none';">
 
