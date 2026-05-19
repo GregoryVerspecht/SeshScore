@@ -91,6 +91,10 @@ jobs:
             --workspace ios/App/App.xcworkspace \
             --scheme App
 
+      - name: Show build logs on failure
+        if: failure()
+        run: cat /tmp/xcodebuild_logs/App.log 2>/dev/null | tail -100 || true
+
       - name: Upload to TestFlight
         env:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
