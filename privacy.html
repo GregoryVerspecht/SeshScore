@@ -33,7 +33,15 @@
   <p>The app loads fonts from Google Fonts (<a href="https://fonts.google.com">fonts.google.com</a>). This is a standard CDN request and subject to <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</p>
 
   <h2>Contact</h2>
-  <p>Questions? Reach out at <a href="mailto:gregory.verspecht@gmail.com">gregory.verspecht@gmail.com</a></p>
+  <p>Questions? Reach out at <a id="contact-link" href="#">loading…</a></p>
+  <script>
+    (function() {
+      var u = 'gregory.verspecht', d = 'gmail.com';
+      var a = document.getElementById('contact-link');
+      a.href = 'mailto:' + u + '@' + d;
+      a.textContent = u + '@' + d;
+    })();
+  </script>
 
   <footer>SeshScore by GV Tech · <a href="https://seshscore.gv-tech.eu">seshscore.gv-tech.eu</a></footer>
 </body>
