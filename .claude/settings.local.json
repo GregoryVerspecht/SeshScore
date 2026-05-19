@@ -12,7 +12,8 @@
       "PowerShell(Get-ChildItem -Recurse -Path \"c:\\\\ZZZ_Projecten\\\\GITHUB\\\\SeshScore\" | Where-Object { -not $_.PSIsContainer -and $_.Name -notlike \".DS_Store\" } | Select-Object FullName)",
       "Bash(Remove-Item \"c:\\\\ZZZ_Projecten\\\\GITHUB\\\\SeshScore\\\\service-workers.js\")",
       "Bash(npx serve *)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(npx --version)"
     ]
   }
 }
