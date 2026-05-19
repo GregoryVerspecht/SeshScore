@@ -13,7 +13,11 @@
       "Bash(Remove-Item \"c:\\\\ZZZ_Projecten\\\\GITHUB\\\\SeshScore\\\\service-workers.js\")",
       "Bash(npx serve *)",
       "WebFetch(domain:localhost)",
-      "Bash(npx --version)"
+      "Bash(dir \"c:\\\\ZZZ_Projecten\\\\GITHUB\\\\SeshScore\" -Recurse)",
+      "Bash(findstr /i \"brand\")",
+      "PowerShell(Get-ChildItem \"c:\\\\ZZZ_Projecten\\\\GITHUB\\\\SeshScore\" -Recurse | Where-Object { $_.Name -match \"brand\" } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"c:\\\\ZZZ_Projecten\" -Recurse -Depth 3 | Where-Object { $_.Name -match \"brand\" } | Select-Object FullName)",
+      "Bash(start python *)"
     ]
   }
 }
