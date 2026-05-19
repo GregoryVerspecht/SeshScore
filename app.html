@@ -1296,6 +1296,7 @@
     function cssEscape(s) { return String(s).replaceAll('"', '\\"'); }
 
     function initKofiBanner() {
+      if (_isNative()) return;
       if (localStorage.getItem('kofi_dismissed')) return;
       const count = parseInt(localStorage.getItem('kofi_session_count') || '0', 10);
       if (count < 3) return;
@@ -1316,6 +1317,9 @@
     }
 
     // ── Init ─────────────────────────────────────────────────
+    if (_isNative()) {
+      document.getElementById('kofiTextLink')?.style.setProperty('display', 'none');
+    }
     syncUndoBtn();
     syncLastSeshBtn();
     render();

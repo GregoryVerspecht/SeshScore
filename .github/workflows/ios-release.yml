@@ -39,6 +39,8 @@ jobs:
       - name: Add iOS platform and sync web assets
         run: |
           npx cap add ios
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
           npx capacitor-assets generate --ios
           npx cap sync ios
 
