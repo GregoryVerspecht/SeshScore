@@ -5,6 +5,8 @@ workflows:
     environment:
       xcode: latest
       node: latest
+      groups:
+        - ios-signing
       vars:
         BUNDLE_ID: com.gvtech.seshscore
       ios_signing:
