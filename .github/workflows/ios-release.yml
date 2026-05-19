@@ -56,7 +56,7 @@ jobs:
           openssl genrsa -out /tmp/cert_key.pem 2048
           app-store-connect certificates create \
             --type IOS_DISTRIBUTION \
-            --certificate-key /tmp/cert_key.pem \
+            --certificate-key @file:/tmp/cert_key.pem \
             --save
 
       - name: Add certificates to keychain
