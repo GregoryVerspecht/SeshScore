@@ -70,6 +70,7 @@ jobs:
         run: |
           app-store-connect fetch-signing-files com.gvtech.seshscore \
             --type IOS_APP_STORE \
+            --certificate-key @file:/tmp/cert_key.pem \
             --create
 
       - name: Set up code signing
