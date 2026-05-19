@@ -39,6 +39,7 @@ jobs:
       - name: Add iOS platform and sync web assets
         run: |
           npx cap add ios
+          npx capacitor-assets generate --ios
           npx cap sync ios
 
       - name: Install CocoaPods dependencies
