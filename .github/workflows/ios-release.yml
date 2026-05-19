@@ -39,10 +39,13 @@ jobs:
       - name: Add iOS platform and sync web assets
         run: |
           npx cap add ios
-          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
-          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
+          # Remove alpha channel — iOS requires fully opaque app icons
+          magick assets/icon-only.png -background white -alpha remove -alpha off assets/icon-only.png
           npx capacitor-assets generate --ios
           npx cap sync ios
+          # Set export compliance after sync so cap sync cannot overwrite it
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
 
       - name: Install CocoaPods dependencies
         run: |
