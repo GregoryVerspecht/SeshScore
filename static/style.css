@@ -231,6 +231,49 @@ img { max-width: 100%; height: auto; display: block; }
   font-size: 1.05rem;
 }
 
+/* Setup wizard */
+.setup-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 16px;
+}
+.setup-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: width .25s, border-radius .25s, background .25s, opacity .25s;
+}
+.setup-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--primary);
+}
+.setup-dot.done {
+  background: var(--primary);
+  opacity: .45;
+}
+.setup-step { display: none; }
+.setup-step.active { display: block; }
+.setup-step-btn {
+  width: 100%;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+.setup-nav-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+.setup-nav-row .btn { flex: 1; }
+.setup-nav-row--start .btn-start-game {
+  flex: 2;
+  margin: 0;
+}
+
 /* Topbar */
 .topbar {
   position: sticky;

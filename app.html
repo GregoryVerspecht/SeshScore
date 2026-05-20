@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-5">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-6">
 </head>
 
 <body>
@@ -102,47 +102,66 @@
   <!-- SETTINGS -->
   <section class="screen" id="settings">
     <div class="topbar">
-      <button class="icon-btn" data-nav="start" aria-label="Back">←</button>
+      <button class="icon-btn" id="btnSettingsBack" aria-label="Back">←</button>
       <div class="topbar-title">
-        <h2>New Session</h2>
-        <p>Set up your game</p>
+        <h2 id="settingsStepTitle">New Session</h2>
+        <p id="settingsStepSub">Choose a game</p>
       </div>
-      <button class="icon-btn" data-nav="game" id="btnStartGameTopbar" aria-label="Start game">▶</button>
+      <button class="icon-btn" data-nav="game" id="btnStartGameTopbar" aria-label="Go to game">▶</button>
     </div>
 
-    <div id="presetRow"></div>
+    <div class="setup-dots" id="setupDots">
+      <div class="setup-dot active" data-step="1"></div>
+      <div class="setup-dot" data-step="2"></div>
+      <div class="setup-dot" data-step="3"></div>
+    </div>
 
-    <div id="winTargetSection">
-      <div class="win-target-row">
-        <span class="win-target-label-text">Win target</span>
-        <div class="win-target-input-wrap">
-          <input type="number" id="winTargetInput" placeholder="none" inputmode="numeric" min="1" />
-          <span class="win-target-unit">pts</span>
+    <!-- Step 1: Choose Game -->
+    <div class="setup-step active" id="setupStep1">
+      <div id="presetRow"></div>
+      <button class="btn primary setup-step-btn" id="btnStep1Next">Next →</button>
+    </div>
+
+    <!-- Step 2: Add Players -->
+    <div class="setup-step" id="setupStep2">
+      <div class="section-label-row">
+        <span class="section-label">Players</span>
+        <button class="btn-link btn-link--danger" id="btnDeleteAll">🗑 Clear all</button>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
+          <button class="btn primary" id="btnAddPlayer">+</button>
         </div>
       </div>
-      <p id="winTargetStatus" class="muted win-target-hint"></p>
-    </div>
-
-    <div id="roundsRow" class="win-target-row">
-      <span class="win-target-label-text">Track rounds</span>
-      <button class="toggle-pill" id="btnToggleRounds">On</button>
-    </div>
-
-    <div class="section-label-row">
-      <span class="section-label">Players</span>
-      <button class="btn-link btn-link--danger" id="btnDeleteAll">🗑 Clear all</button>
-    </div>
-
-    <div class="card">
-      <div class="row">
-        <input type="text" id="playerName" placeholder="Player name" autocomplete="off" inputmode="text" />
-        <button class="btn primary" id="btnAddPlayer">+</button>
+      <div id="players-settings" class="players"></div>
+      <div class="setup-nav-row">
+        <button class="btn ghost" id="btnStep2Back">← Back</button>
+        <button class="btn primary" id="btnStep2Next">Next →</button>
       </div>
     </div>
 
-    <div id="players-settings" class="players"></div>
-
-    <button class="btn primary btn-start-game" id="btnStartGame" data-nav="game">Start game ▶</button>
+    <!-- Step 3: Options & Start -->
+    <div class="setup-step" id="setupStep3">
+      <div id="winTargetSection">
+        <div class="win-target-row">
+          <span class="win-target-label-text">Win target</span>
+          <div class="win-target-input-wrap">
+            <input type="number" id="winTargetInput" placeholder="none" inputmode="numeric" min="1" />
+            <span class="win-target-unit">pts</span>
+          </div>
+        </div>
+        <p id="winTargetStatus" class="muted win-target-hint"></p>
+      </div>
+      <div id="roundsRow" class="win-target-row">
+        <span class="win-target-label-text">Track rounds</span>
+        <button class="toggle-pill" id="btnToggleRounds">On</button>
+      </div>
+      <div class="setup-nav-row setup-nav-row--start">
+        <button class="btn ghost" id="btnStep3Back">← Back</button>
+        <button class="btn primary btn-start-game" id="btnStartGame" data-nav="game">Start game ▶</button>
+      </div>
+    </div>
   </section>
 
   <!-- GAME -->
@@ -454,6 +473,7 @@
     let _dartsCurrentIdx = 0;
     let showRounds  = typeof _s.showRounds === 'boolean' ? _s.showRounds : true;
     let _roundScored = new Set();
+    let _settingsStep = 1;
 
     // ── Game presets ─────────────────────────────────────────
     const PRESETS = [
@@ -896,8 +916,32 @@
 
     const SCREEN_LEVEL = { start: 0, settings: 1, game: 2, history: 1 };
 
+    const _STEP_INFO = [
+      ['Choose a game',  'Pick your favourite'],
+      ['Add players',    "Who's playing?"],
+      ['Ready to play',  'Check your options'],
+    ];
+
+    function _syncSettingsStep() {
+      [1,2,3].forEach(i => {
+        const el  = document.getElementById(`setupStep${i}`);
+        if (el) el.classList.toggle('active', i === _settingsStep);
+        const dot = document.querySelector(`.setup-dot[data-step="${i}"]`);
+        if (dot) {
+          dot.classList.toggle('active', i === _settingsStep);
+          dot.classList.toggle('done',   i < _settingsStep);
+        }
+      });
+      const [t, s] = _STEP_INFO[_settingsStep - 1] || _STEP_INFO[0];
+      const titleEl = document.getElementById('settingsStepTitle');
+      const subEl   = document.getElementById('settingsStepSub');
+      if (titleEl) titleEl.textContent = t;
+      if (subEl)   subEl.textContent   = s;
+    }
+
     function showScreen(id) {
       const currentId = document.querySelector('.screen.active')?.id;
+      if (id === 'settings') _settingsStep = (currentId === 'game') ? 2 : 1;
       const goBack = (SCREEN_LEVEL[id] ?? 0) < (SCREEN_LEVEL[currentId] ?? 0);
       screens.forEach(s => s.classList.remove('active', 'screen-forward', 'screen-back'));
       const next = document.getElementById(id);
@@ -1063,6 +1107,25 @@
       if (btn) applyPreset(btn.getAttribute('data-preset'));
     });
 
+    // ── Settings step navigation ──────────────────────────────
+    document.getElementById('btnSettingsBack')?.addEventListener('click', () => {
+      if (_settingsStep > 1) { _settingsStep--; render(); }
+      else showScreen('start');
+    });
+    document.getElementById('btnStep1Next')?.addEventListener('click', () => {
+      _settingsStep = 2; render();
+    });
+    document.getElementById('btnStep2Back')?.addEventListener('click', () => {
+      _settingsStep = 1; render();
+    });
+    document.getElementById('btnStep2Next')?.addEventListener('click', () => {
+      if (!players.length) { showToast('Add at least one player first.'); return; }
+      _settingsStep = 3; render();
+    });
+    document.getElementById('btnStep3Back')?.addEventListener('click', () => {
+      _settingsStep = 2; render();
+    });
+
     // ── Score actions (event delegation) ─────────────────────
     document.body.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
@@ -1197,6 +1260,7 @@
 
     function renderSettings() {
       if (!playersSettingsEl) return;
+      _syncSettingsStep();
       renderPresets();
       syncWinTargetUI();
       // Rounds toggle
