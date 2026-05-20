@@ -1260,7 +1260,6 @@
     });
     document.getElementById('btnEndForget').addEventListener('click', () => {
       closeEndGameSheet();
-      saveToHistory();
       localStorage.removeItem(SESSION_KEY);
       showScreen('start');
     });
