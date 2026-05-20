@@ -110,29 +110,22 @@
       <button class="icon-btn" data-nav="game" id="btnStartGameTopbar" aria-label="Start game">▶</button>
     </div>
 
-    <div class="section-title"><h3>Game profile</h3></div>
-    <div class="preset-row" id="presetRow"></div>
+    <div id="presetRow"></div>
 
     <div id="winTargetSection">
-      <div class="section-title">
-        <h3>Win target</h3>
-        <p>First player to reach this score wins.</p>
-      </div>
-      <div class="card">
-        <div class="row">
-          <input type="number" id="winTargetInput" placeholder="e.g. 100 (leave empty for none)" inputmode="numeric" min="1" />
-          <button class="btn primary" id="btnSetWinTarget">Set</button>
+      <div class="win-target-row">
+        <span class="win-target-label-text">Win target</span>
+        <div class="win-target-input-wrap">
+          <input type="number" id="winTargetInput" placeholder="none" inputmode="numeric" min="1" />
+          <span class="win-target-unit">pts</span>
         </div>
-        <p id="winTargetStatus" class="muted" style="margin-top:8px;font-size:.88rem"></p>
       </div>
+      <p id="winTargetStatus" class="muted win-target-hint"></p>
     </div>
 
-    <div class="section-title">
-      <div class="section-title-row">
-        <h3>Players</h3>
-        <button class="btn ghost btn-sm" id="btnDeleteAll">🗑 Clear all</button>
-      </div>
-      <p>Use ↑/↓ to set the order.</p>
+    <div class="section-label-row">
+      <span class="section-label">Players</span>
+      <button class="btn ghost btn-sm" id="btnDeleteAll">🗑 Clear all</button>
     </div>
 
     <div class="card">
@@ -487,14 +480,35 @@
       render();
     }
 
+    const PRESET_SUBS = {
+      uno:      'First to 500 pts',
+      rummy:    'First to 500 pts',
+      darts501: 'Count down from 501',
+      darts301: 'Count down from 301',
+    };
+
     function renderPresets() {
       const el = document.getElementById('presetRow');
       if (!el) return;
-      el.innerHTML = PRESETS.map(p => `
-        <button class="preset-btn${p.id === presetId ? ' active' : ''}" data-preset="${escapeHtml(p.id)}">${p.icon} ${escapeHtml(p.label)}</button>
+      const grid = PRESETS.filter(p => p.id !== 'custom').map(p => `
+        <button class="preset-card${p.id === presetId ? ' active' : ''}" data-preset="${escapeHtml(p.id)}">
+          <span class="preset-card-icon">${p.icon}</span>
+          <span class="preset-card-name">${escapeHtml(p.label)}</span>
+          <span class="preset-card-sub">${PRESET_SUBS[p.id] || ''}</span>
+        </button>
       `).join('');
+      el.innerHTML = `
+        <div class="preset-grid">${grid}</div>
+        <button class="preset-card preset-card-wide${presetId === 'custom' ? ' active' : ''}" data-preset="custom">
+          <span class="preset-card-icon">🎮</span>
+          <div>
+            <span class="preset-card-name">Custom</span>
+            <span class="preset-card-sub" style="display:block">Free play · set your own rules</span>
+          </div>
+        </button>
+      `;
       const wtSection = document.getElementById('winTargetSection');
-      if (wtSection) wtSection.classList.toggle('hidden', gameMode === 'darts');
+      if (wtSection) wtSection.classList.toggle('hidden', presetId !== 'custom');
     }
 
     function renderChips() {
@@ -526,7 +540,6 @@
     const winTargetLabelEl  = document.getElementById('winTargetLabel');
     const btnNextRound      = document.getElementById('btnNextRound');
     const winTargetInputEl  = document.getElementById('winTargetInput');
-    const btnSetWinTarget   = document.getElementById('btnSetWinTarget');
     const winTargetStatus   = document.getElementById('winTargetStatus');
 
     const sheetBackdrop     = document.getElementById('sheetBackdrop');
@@ -643,7 +656,7 @@
         : 'No win target — game runs until you stop.';
     }
 
-    btnSetWinTarget.addEventListener('click', () => {
+    winTargetInputEl.addEventListener('change', () => {
       const raw = (winTargetInputEl.value || '').trim();
       if (raw === '') {
         winTarget = null;
@@ -651,9 +664,11 @@
         const val = parseInt(raw, 10);
         if (!Number.isFinite(val) || val < 1) {
           showToast('Enter a valid target score, e.g. 100.');
-          return;
+          winTargetInputEl.value = '';
+          winTarget = null;
+        } else {
+          winTarget = val;
         }
-        winTarget = val;
       }
       persist();
       syncWinTargetUI();
@@ -729,7 +744,7 @@
     });
 
     document.getElementById('presetRow')?.addEventListener('click', e => {
-      const btn = e.target.closest('.preset-btn');
+      const btn = e.target.closest('.preset-card');
       if (btn) applyPreset(btn.getAttribute('data-preset'));
     });
 
@@ -854,10 +869,11 @@
         return;
       }
 
+      const AVATAR_COLORS = ['#a855f7','#3b82f6','#22c55e','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16'];
       playersSettingsEl.innerHTML = ordered.map((p, i) => `
         <div class="player-row">
           <div class="player-row-main">
-            <div class="badge">#${i + 1}</div>
+            <div class="player-avatar" style="background:${AVATAR_COLORS[i % AVATAR_COLORS.length]}">${escapeHtml(p.name.charAt(0).toUpperCase())}</div>
             <div class="player-row-name">${escapeHtml(p.name)}</div>
           </div>
           <div class="player-row-actions">
