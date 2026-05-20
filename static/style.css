@@ -1339,3 +1339,127 @@ select:focus:not(:focus-visible) { outline: none; }
   background-clip: text;
   color: transparent;
 }
+
+/* ── Negative score highlight ────────────────────────────── */
+.player-score.score-neg { color: var(--danger); }
+
+/* ── Ping pong mode ──────────────────────────────────────── */
+.game--pingpong .round-row,
+.game--pingpong .step-row,
+.game--pingpong .bottom-bar { display: none !important; }
+
+.game--pingpong {
+  padding-bottom: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.game--pingpong > .players {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 0;
+  gap: 0;
+}
+
+.pp-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.pp-status {
+  text-align: center;
+  font-size: .88rem;
+  font-weight: 800;
+  color: var(--muted);
+  padding: 8px 0 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.pp-status--deuce { color: var(--orange); font-size: 1rem; }
+.pp-status--adv   { color: var(--blue);   font-size: .9rem; }
+.pp-status--win   { color: #a78bfa;       font-size: 1rem; letter-spacing: .02em; }
+
+.pp-court {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  min-height: 0;
+}
+
+.pp-player {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  border-radius: 22px;
+  gap: 14px;
+  cursor: pointer;
+  transition: background .1s, border-color .15s, transform .08s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pp-player:active {
+  background: rgba(24,183,255,.1);
+  border-color: var(--primary);
+  transform: scale(.98);
+}
+
+.pp-player--won {
+  border-color: rgba(124,59,255,.45);
+  background: rgba(124,59,255,.08);
+}
+
+.pp-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: .02em;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.pp-score {
+  font-size: 6rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -4px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.pp-player--won .pp-score   { color: #a78bfa; }
+.pp-player:active .pp-score { color: var(--primary); }
+
+.pp-divider {
+  width: 2px;
+  background: var(--outline);
+  border-radius: 99px;
+  align-self: stretch;
+  margin: 24px 0;
+  flex-shrink: 0;
+}
+
+.pp-undo-row {
+  flex: 0 0 auto;
+  padding: 10px 0 calc(10px + var(--safe-bottom));
+  display: flex;
+  justify-content: center;
+}
+
+.pp-undo-btn {
+  width: auto;
+  min-width: 120px;
+  height: 44px;
+  padding: 0 24px;
+  font-size: .9rem;
+}

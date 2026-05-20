@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-1">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-2">
 </head>
 
 <body>
@@ -428,9 +428,11 @@
     const _s = loadSession();
     let round      = Number.isFinite(_s.round)      ? _s.round      : 1;
     let winTarget  = Number.isFinite(_s.winTarget)  ? _s.winTarget  : null;
-    let gameMode   = _s.gameMode === 'darts'         ? 'darts'       : 'standard';
+    const _VALID_MODES = ['standard','darts','hearts','pingpong'];
+    let gameMode   = _VALID_MODES.includes(_s.gameMode) ? _s.gameMode : 'standard';
     let startScore = Number.isFinite(_s.startScore) ? _s.startScore : 0;
     let presetId   = _s.presetId || 'custom';
+    let lowestWins = _s.lowestWins === true;
     let players   = (_s.players || []).map((p, i) => ({
       id:    p.id    ?? generateId(),
       name:  p.name,
@@ -448,11 +450,15 @@
 
     // ── Game presets ─────────────────────────────────────────
     const PRESETS = [
-      { id: 'custom',   label: 'Custom',    icon: '🎮', stepSize: 1,  winTarget: null, gameMode: 'standard', startScore: 0   },
-      { id: 'uno',      label: 'Uno',       icon: '🎴', stepSize: 10, winTarget: 500,  gameMode: 'standard', startScore: 0   },
-      { id: 'rummy',    label: 'Rummy',     icon: '🎲', stepSize: 5,  winTarget: 500,  gameMode: 'standard', startScore: 0   },
-      { id: 'darts501', label: 'Darts 501', icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 501 },
-      { id: 'darts301', label: 'Darts 301', icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 301 },
+      { id: 'custom',   label: 'Custom',         icon: '🎮', stepSize: 1,  winTarget: null, gameMode: 'standard', startScore: 0,   lowestWins: false },
+      { id: 'uno',      label: 'Uno',            icon: '🎴', stepSize: 10, winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false },
+      { id: 'rummy',    label: 'Rummy 500',      icon: '🃏', stepSize: 5,  winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false },
+      { id: 'catan',    label: 'Catan',          icon: '🏔', stepSize: 1,  winTarget: 10,   gameMode: 'standard', startScore: 0,   lowestWins: false },
+      { id: 'hearts',   label: 'Hearts',         icon: '♥', stepSize: 1,  winTarget: 100,  gameMode: 'hearts',   startScore: 0,   lowestWins: true  },
+      { id: 'kotokyo',  label: 'King of Tokyo',  icon: '👾', stepSize: 1,  winTarget: 20,   gameMode: 'standard', startScore: 0,   lowestWins: false },
+      { id: 'pingpong', label: 'Ping Pong',      icon: '🏓', stepSize: 1,  winTarget: 11,   gameMode: 'pingpong', startScore: 0,   lowestWins: false },
+      { id: 'darts501', label: 'Darts 501',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 501, lowestWins: false },
+      { id: 'darts301', label: 'Darts 301',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 301, lowestWins: false },
     ];
 
     function applyPreset(id) {
@@ -471,10 +477,11 @@
       startScore = preset.startScore;
       winTarget  = preset.winTarget;
       stepSize   = preset.stepSize;
+      lowestWins = preset.lowestWins ?? false;
       stepGroup.querySelectorAll('.step-btn').forEach(b => {
         b.classList.toggle('active', parseInt(b.getAttribute('data-step'), 10) === stepSize);
       });
-      if (sortOrderEl) sortOrderEl.value = gameMode === 'darts' ? 'asc' : 'desc';
+      if (sortOrderEl) sortOrderEl.value = (gameMode === 'darts' || lowestWins) ? 'asc' : 'desc';
       pushUndo();
       _announcedWinners.clear();
       players.forEach(p => { p.score = startScore; p.log = []; });
@@ -485,7 +492,11 @@
 
     const PRESET_SUBS = {
       uno:      'First to 500 pts',
-      rummy:    'First to 500 pts',
+      rummy:    'Rummy 500 · first to 500',
+      catan:    'First to 10 VP',
+      hearts:   'Lowest score wins · ends at 100',
+      kotokyo:  'First to 20 VP',
+      pingpong: 'First to 11 · win by 2',
       darts501: 'Count down from 501',
       darts301: 'Count down from 301',
     };
@@ -564,6 +575,7 @@
     const PROFILE_RENDERERS = {
       darts501: renderDartsGame,
       darts301: renderDartsGame,
+      pingpong: renderPingPongGame,
     };
 
     function renderDartsGame() {
@@ -729,11 +741,76 @@
       }
     }
 
+    function renderPingPongGame() {
+      if (!playersGameEl) return;
+
+      const topbarSub = document.querySelector('#game .topbar-title p');
+      if (topbarSub) topbarSub.textContent = 'First to 11 · win by 2';
+
+      const ordered = [...players].sort((a, b) => a.order - b.order);
+      if (ordered.length < 2) {
+        playersGameEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-emoji">🏓</div>
+            <div><h4>Need 2 players</h4><p>Add players in ⚙ settings.</p></div>
+          </div>`;
+        return;
+      }
+
+      const p1 = ordered[0], p2 = ordered[1];
+      const s1 = p1.score,   s2 = p2.score;
+      const bothTen = s1 >= 10 && s2 >= 10;
+      const lead    = Math.abs(s1 - s2);
+      const isDeuce = bothTen && lead < 2;
+      const p1Won   = s1 >= 11 && (s1 - s2) >= 2;
+      const p2Won   = s2 >= 11 && (s2 - s1) >= 2;
+
+      let status = 'First to 11', statusCls = '';
+      if (p1Won)       { status = `🏆 ${p1.name} wins!`; statusCls = 'pp-status--win'; }
+      else if (p2Won)  { status = `🏆 ${p2.name} wins!`; statusCls = 'pp-status--win'; }
+      else if (isDeuce){ status = 'DEUCE';                statusCls = 'pp-status--deuce'; }
+      else if (bothTen){ status = s1 > s2 ? `ADV ${p1.name}` : `ADV ${p2.name}`; statusCls = 'pp-status--adv'; }
+
+      const undoDisabled = undoStack.length === 0 ? 'disabled' : '';
+
+      playersGameEl.innerHTML = `
+        <div class="pp-screen">
+          <div class="pp-status ${statusCls}">${status}</div>
+          <div class="pp-court">
+            <button class="pp-player${p1Won ? ' pp-player--won' : ''}" data-action="inc" data-id="${escapeHtml(p1.id)}" aria-label="Point for ${escapeHtml(p1.name)}">
+              <div class="pp-name">${escapeHtml(p1.name)}</div>
+              <div class="pp-score">${s1}</div>
+            </button>
+            <div class="pp-divider"></div>
+            <button class="pp-player${p2Won ? ' pp-player--won' : ''}" data-action="inc" data-id="${escapeHtml(p2.id)}" aria-label="Point for ${escapeHtml(p2.name)}">
+              <div class="pp-name">${escapeHtml(p2.name)}</div>
+              <div class="pp-score">${s2}</div>
+            </button>
+          </div>
+          <div class="pp-undo-row">
+            <button class="btn ghost pp-undo-btn" data-action="ppundo" ${undoDisabled}>↩ Undo</button>
+          </div>
+        </div>`;
+    }
+
+    const PRESET_CHIPS = {
+      uno:    [[10,'+10'],[20,'+20'],[50,'+50'],[100,'+100']],
+      hearts: [[1,'+1'],[2,'+2'],[3,'+3'],[5,'+5'],[13,'+13 ♛'],[26,'+26 🌙']],
+      catan:  [[1,'+1'],[2,'+2'],[3,'+3'],[4,'+4'],[5,'+5']],
+      kotokyo:[[1,'+1'],[2,'+2'],[3,'+3'],[4,'+4'],[5,'+5']],
+    };
+
+    function _getChips() {
+      if (gameMode === 'darts') {
+        return [[-180,'180'],[-140,'140'],[-100,'100'],[-85,'85'],[-60,'60'],[-45,'45'],[-41,'41'],[-26,'26']];
+      }
+      if (PRESET_CHIPS[presetId]) return PRESET_CHIPS[presetId];
+      return [[-25,'−25'],[-10,'−10'],[-5,'−5'],[-2,'−2'],[-1,'−1'],[1,'+1'],[2,'+2'],[5,'+5'],[10,'+10'],[25,'+25'],[50,'+50']];
+    }
+
     function renderChips() {
       if (!chipRow) return;
-      const chips = gameMode === 'darts'
-        ? [[-180,'180'],[-140,'140'],[-100,'100'],[-85,'85'],[-60,'60'],[-45,'45'],[-41,'41'],[-26,'26']]
-        : [[-25,'−25'],[-10,'−10'],[-5,'−5'],[-2,'−2'],[-1,'−1'],[1,'+1'],[2,'+2'],[5,'+5'],[10,'+10'],[25,'+25'],[50,'+50']];
+      const chips = _getChips();
       chipRow.innerHTML = chips.map(([delta, label]) =>
         `<button class="chip ${delta < 0 ? 'chip-neg' : 'chip-pos'}" data-delta="${delta}">${escapeHtml(String(label))}</button>`
       ).join('');
@@ -827,7 +904,7 @@
 
     // ── Persistence ──────────────────────────────────────────
     function persist() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId })); }
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId, lowestWins })); }
       catch(e) {}
     }
 
@@ -981,6 +1058,11 @@
       if (action === 'delete') deletePlayer(id);
       if (action === 'up')     movePlayer(id, -1);
       if (action === 'down')   movePlayer(id, +1);
+      if (action === 'ppundo') {
+        if (!undoStack.length) return;
+        players = JSON.parse(undoStack.pop());
+        persist(); syncUndoBtn(); render();
+      }
     });
 
     document.body.addEventListener('click', (e) => {
@@ -1126,15 +1208,22 @@
       }
 
       const isDarts   = gameMode === 'darts';
-      const maxScore  = !isDarts && sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
-      const minScore  = isDarts  && sorted.length > 1 ? Math.min(...sorted.map(p => p.score)) : null;
+      const isHeartsM = gameMode === 'hearts';
+      const useLow    = isDarts || lowestWins;
+      const maxScore  = !useLow && sorted.length > 1 ? Math.max(...sorted.map(p => p.score)) : null;
+      const minScore  = useLow  && sorted.length > 1 ? Math.min(...sorted.map(p => p.score)) : null;
       const hasWinner = isDarts
         ? sorted.some(p => p.score <= 0)
-        : winTarget !== null && sorted.some(p => p.score >= winTarget);
+        : isHeartsM
+          ? sorted.some(p => p.score >= (winTarget ?? Infinity))
+          : winTarget !== null && sorted.some(p => p.score >= winTarget);
 
       playersGameEl.innerHTML = sorted.map((p, index) => {
-        const isWinner = isDarts ? p.score <= 0 : winTarget !== null && p.score >= winTarget;
-        const isLeader = isDarts
+        const isWinner = isDarts          ? p.score <= 0
+          : isHeartsM
+            ? (hasWinner && minScore !== null && p.score === minScore)
+            : (winTarget !== null && p.score >= winTarget);
+        const isLeader = useLow
           ? (!hasWinner && minScore !== null && p.score === minScore)
           : (!hasWinner && maxScore !== null && p.score === maxScore);
         const icon    = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
@@ -1149,7 +1238,7 @@
                 <div class="player-rank">#${index + 1}</div>
               </div>
             </div>
-            <div class="player-score" data-score="${escapeHtml(p.id)}">${Number(p.score)}</div>
+            <div class="player-score${p.score < 0 ? ' score-neg' : ''}" data-score="${escapeHtml(p.id)}">${Number(p.score)}</div>
             ${isDarts ? '<div class="darts-remaining-label">remaining</div>' : ''}
             <div class="player-controls">
               <button class="tap minus"  data-action="dec"    data-id="${escapeHtml(p.id)}" aria-label="Minus ${stepSize}">−${stepSize}</button>
@@ -1202,7 +1291,9 @@
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
       if (active === 'game') {
-        document.getElementById('game').classList.toggle('game--darts', gameMode === 'darts');
+        const _gameEl = document.getElementById('game');
+        _gameEl.classList.toggle('game--darts',    gameMode === 'darts');
+        _gameEl.classList.toggle('game--pingpong', gameMode === 'pingpong');
         if (PROFILE_RENDERERS[presetId]) {
           PROFILE_RENDERERS[presetId]();
         } else {
@@ -1349,9 +1440,7 @@
 
     function renderScoreAllChips() {
       if (!scoreAllChipRow) return;
-      const chips = gameMode === 'darts'
-        ? [[-180,'180'],[-140,'140'],[-100,'100'],[-85,'85'],[-60,'60'],[-45,'45'],[-41,'41'],[-26,'26']]
-        : [[-25,'−25'],[-10,'−10'],[-5,'−5'],[-2,'−2'],[-1,'−1'],[1,'+1'],[2,'+2'],[5,'+5'],[10,'+10'],[25,'+25'],[50,'+50']];
+      const chips = _getChips();
       scoreAllChipRow.innerHTML = chips.map(([delta, label]) =>
         `<button class="chip ${delta < 0 ? 'chip-neg' : 'chip-pos'}" data-all-delta="${delta}">${escapeHtml(String(label))}</button>`
       ).join('');
@@ -1459,6 +1548,24 @@
             hapticHeavy();
           }
         });
+      } else if (gameMode === 'hearts') {
+        const triggered = winTarget !== null && players.some(p => p.score >= winTarget);
+        if (triggered && !_announcedWinners.has('__hearts__')) {
+          _announcedWinners.add('__hearts__');
+          const winner = [...players].sort((a, b) => a.score - b.score)[0];
+          if (winner) { showToast(`🏆 ${winner.name} wins with ${winner.score}!`, true); hapticHeavy(); }
+        }
+      } else if (gameMode === 'pingpong') {
+        const ord = [...players].sort((a, b) => a.order - b.order);
+        if (ord.length >= 2) {
+          [[ord[0], ord[1]], [ord[1], ord[0]]].forEach(([w, l]) => {
+            if (w.score >= 11 && (w.score - l.score) >= 2 && !_announcedWinners.has(w.id)) {
+              _announcedWinners.add(w.id);
+              showToast(`🏆 ${w.name} wins!`, true);
+              hapticHeavy();
+            }
+          });
+        }
       } else if (winTarget !== null) {
         players.forEach(p => {
           if (p.score >= winTarget && !_announcedWinners.has(p.id)) {
