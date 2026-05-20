@@ -207,6 +207,20 @@ img { max-width: 100%; height: auto; display: block; }
   border-radius: 10px;
   flex-shrink: 0;
 }
+.btn-link {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+}
+.btn-link--danger { color: var(--danger); }
+.btn-link:active { opacity: .6; }
 .btn-start-game {
   display: block;
   width: 100%;
