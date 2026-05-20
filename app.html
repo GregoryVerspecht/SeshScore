@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-8">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-9">
 </head>
 
 <body>
@@ -152,6 +152,10 @@
           </div>
         </div>
         <p id="winTargetStatus" class="muted win-target-hint"></p>
+      </div>
+      <div class="win-target-row">
+        <span class="win-target-label-text">Winner</span>
+        <button class="toggle-pill" id="btnToggleLowestWins">Highest</button>
       </div>
       <div id="roundsRow" class="win-target-row">
         <span class="win-target-label-text">Track rounds</span>
@@ -1146,6 +1150,14 @@
       render();
     });
 
+    document.getElementById('btnToggleLowestWins')?.addEventListener('click', () => {
+      lowestWins = !lowestWins;
+      if (sortOrderEl) sortOrderEl.value = lowestWins ? 'asc' : 'desc';
+      _announcedWinners.clear();
+      persist();
+      render();
+    });
+
     document.getElementById('presetRow')?.addEventListener('click', e => {
       const btn = e.target.closest('.preset-card');
       if (btn) applyPreset(btn.getAttribute('data-preset'));
@@ -1344,6 +1356,13 @@
         btnRounds.textContent = showRounds ? 'On' : 'Off';
         btnRounds.classList.toggle('off', !showRounds);
       }
+      const btnLowest = document.getElementById('btnToggleLowestWins');
+      if (btnLowest) {
+        const isDartsOrPP = gameMode === 'darts' || gameMode === 'pingpong';
+        btnLowest.textContent = lowestWins ? 'Lowest' : 'Highest';
+        btnLowest.classList.toggle('off', lowestWins);
+        btnLowest.closest('.win-target-row')?.classList.toggle('hidden', isDartsOrPP);
+      }
       syncMaxRoundsUI();
       document.querySelectorAll('#settings [data-nav="game"]').forEach(btn => {
         btn.disabled = players.length === 0;
@@ -1453,7 +1472,7 @@
       listEl.innerHTML = history.map(game => {
         const d = new Date(game.date);
         const dateStr = d.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' });
-        const timeStr = d.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const roundStr = `${Number(game.rounds)} round${game.rounds !== 1 ? 's' : ''}`;
 
         return `
@@ -1573,7 +1592,7 @@
           const sign   = delta > 0 ? '+' : '';
           const cls    = isPass ? 'pass' : delta > 0 ? 'pos' : 'neg';
           const label  = isPass ? 'Pass' : `${sign}${delta}`;
-          const time   = new Date(entry.ts).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const time   = new Date(entry.ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           return `
             <div class="log-item">
               <span class="log-delta ${cls}">${label}</span>
