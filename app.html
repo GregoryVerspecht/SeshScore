@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-2">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-3">
 </head>
 
 <body>
@@ -121,6 +121,11 @@
         </div>
       </div>
       <p id="winTargetStatus" class="muted win-target-hint"></p>
+    </div>
+
+    <div id="roundsRow" class="win-target-row">
+      <span class="win-target-label-text">Track rounds</span>
+      <button class="toggle-pill" id="btnToggleRounds">On</button>
     </div>
 
     <div class="section-label-row">
@@ -447,18 +452,20 @@
     let _announcedWinners = new Set();
     let _dartsInput = '';
     let _dartsCurrentIdx = 0;
+    let showRounds  = typeof _s.showRounds === 'boolean' ? _s.showRounds : true;
+    let _roundScored = new Set();
 
     // ── Game presets ─────────────────────────────────────────
     const PRESETS = [
-      { id: 'custom',   label: 'Custom',         icon: '🎮', stepSize: 1,  winTarget: null, gameMode: 'standard', startScore: 0,   lowestWins: false },
-      { id: 'uno',      label: 'Uno',            icon: '🎴', stepSize: 10, winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false },
-      { id: 'rummy',    label: 'Rummy 500',      icon: '🃏', stepSize: 5,  winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false },
-      { id: 'catan',    label: 'Catan',          icon: '🏔', stepSize: 1,  winTarget: 10,   gameMode: 'standard', startScore: 0,   lowestWins: false },
-      { id: 'hearts',   label: 'Hearts',         icon: '♥', stepSize: 1,  winTarget: 100,  gameMode: 'hearts',   startScore: 0,   lowestWins: true  },
-      { id: 'kotokyo',  label: 'King of Tokyo',  icon: '👾', stepSize: 1,  winTarget: 20,   gameMode: 'standard', startScore: 0,   lowestWins: false },
-      { id: 'pingpong', label: 'Ping Pong',      icon: '🏓', stepSize: 1,  winTarget: 11,   gameMode: 'pingpong', startScore: 0,   lowestWins: false },
-      { id: 'darts501', label: 'Darts 501',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 501, lowestWins: false },
-      { id: 'darts301', label: 'Darts 301',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 301, lowestWins: false },
+      { id: 'custom',   label: 'Custom',         icon: '🎮', stepSize: 1,  winTarget: null, gameMode: 'standard', startScore: 0,   lowestWins: false, showRounds: true  },
+      { id: 'uno',      label: 'Uno',            icon: '🎴', stepSize: 10, winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false, showRounds: true  },
+      { id: 'rummy',    label: 'Rummy 500',      icon: '🃏', stepSize: 5,  winTarget: 500,  gameMode: 'standard', startScore: 0,   lowestWins: false, showRounds: true  },
+      { id: 'catan',    label: 'Catan',          icon: '🏔', stepSize: 1,  winTarget: 10,   gameMode: 'standard', startScore: 0,   lowestWins: false, showRounds: true  },
+      { id: 'hearts',   label: 'Hearts',         icon: '♥', stepSize: 1,  winTarget: 100,  gameMode: 'hearts',   startScore: 0,   lowestWins: true,  showRounds: true  },
+      { id: 'kotokyo',  label: 'King of Tokyo',  icon: '👾', stepSize: 1,  winTarget: 20,   gameMode: 'standard', startScore: 0,   lowestWins: false, showRounds: false },
+      { id: 'pingpong', label: 'Ping Pong',      icon: '🏓', stepSize: 1,  winTarget: 11,   gameMode: 'pingpong', startScore: 0,   lowestWins: false, showRounds: false },
+      { id: 'darts501', label: 'Darts 501',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 501, lowestWins: false, showRounds: false },
+      { id: 'darts301', label: 'Darts 301',      icon: '🎯', stepSize: 1,  winTarget: null, gameMode: 'darts',    startScore: 301, lowestWins: false, showRounds: false },
     ];
 
     function applyPreset(id) {
@@ -478,6 +485,7 @@
       winTarget  = preset.winTarget;
       stepSize   = preset.stepSize;
       lowestWins = preset.lowestWins ?? false;
+      showRounds = preset.showRounds ?? true;
       stepGroup.querySelectorAll('.step-btn').forEach(b => {
         b.classList.toggle('active', parseInt(b.getAttribute('data-step'), 10) === stepSize);
       });
@@ -486,6 +494,7 @@
       _announcedWinners.clear();
       players.forEach(p => { p.score = startScore; p.log = []; });
       _dartsInput = ''; _dartsCurrentIdx = 0;
+      _roundScored = new Set();
       persist();
       render();
     }
@@ -878,6 +887,7 @@
       round = 1;
       undoStack = [];
       _dartsInput = ''; _dartsCurrentIdx = 0;
+      _roundScored = new Set();
       _announcedWinners.clear();
       syncUndoBtn();
       persist();
@@ -904,7 +914,7 @@
 
     // ── Persistence ──────────────────────────────────────────
     function persist() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId, lowestWins })); }
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId, lowestWins, showRounds })); }
       catch(e) {}
     }
 
@@ -939,6 +949,7 @@
 
     btnNextRound.addEventListener('click', () => {
       round++;
+      _roundScored = new Set();
       persist();
       syncRoundUI();
     });
@@ -1022,6 +1033,7 @@
         _announcedWinners.clear();
         players.forEach(p => { p.score = startScore; p.log = []; });
         _dartsInput = ''; _dartsCurrentIdx = 0;
+        _roundScored = new Set();
         persist();
         render();
       });
@@ -1037,6 +1049,12 @@
       stepSize = parseInt(btn.getAttribute('data-step'), 10);
       stepGroup.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      render();
+    });
+
+    document.getElementById('btnToggleRounds')?.addEventListener('click', () => {
+      showRounds = !showRounds;
+      persist();
       render();
     });
 
@@ -1070,6 +1088,22 @@
       if (key) _dartsPressKey(key);
     });
 
+    function _checkAutoRoundAdvance() {
+      if (!showRounds || !players.length) return;
+      if (gameMode === 'darts' || gameMode === 'pingpong') return;
+      if (_roundScored.size < players.length) return;
+      // Don't auto-advance if game is already won
+      const over = (gameMode === 'hearts')
+        ? players.some(p => p.score >= (winTarget ?? Infinity))
+        : winTarget !== null && players.some(p => p.score >= winTarget);
+      if (over) return;
+      round++;
+      _roundScored = new Set();
+      persist();
+      syncRoundUI();
+      showToast(`↪ Round ${round} started`);
+    }
+
     function updateScore(id, delta) {
       const p = players.find(x => x.id === id);
       if (!p) return;
@@ -1087,6 +1121,8 @@
       if (p.log.length > 200) p.log = p.log.slice(-200);
       hapticLight();
       persist();
+      _roundScored.add(id);
+      _checkAutoRoundAdvance();
       bumpScore(id);
       render();
     }
@@ -1163,6 +1199,17 @@
       if (!playersSettingsEl) return;
       renderPresets();
       syncWinTargetUI();
+      // Rounds toggle
+      const roundsRow = document.getElementById('roundsRow');
+      const btnRounds  = document.getElementById('btnToggleRounds');
+      if (roundsRow) {
+        const relevant = gameMode !== 'darts' && gameMode !== 'pingpong';
+        roundsRow.classList.toggle('hidden', !relevant);
+      }
+      if (btnRounds) {
+        btnRounds.textContent = showRounds ? 'On' : 'Off';
+        btnRounds.classList.toggle('off', !showRounds);
+      }
       document.querySelectorAll('#settings [data-nav="game"]').forEach(btn => {
         btn.disabled = players.length === 0;
       });
@@ -1294,6 +1341,7 @@
         const _gameEl = document.getElementById('game');
         _gameEl.classList.toggle('game--darts',    gameMode === 'darts');
         _gameEl.classList.toggle('game--pingpong', gameMode === 'pingpong');
+        _gameEl.classList.toggle('game--norounds', !showRounds);
         if (PROFILE_RENDERERS[presetId]) {
           PROFILE_RENDERERS[presetId]();
         } else {
@@ -1484,9 +1532,11 @@
         p.score += delta;
         p.log.push({ delta, score: p.score, ts: Date.now() });
         if (p.log.length > 200) p.log = p.log.slice(-200);
+        _roundScored.add(p.id);
       });
       hapticLight();
       persist();
+      _checkAutoRoundAdvance();
       render();
     }
 

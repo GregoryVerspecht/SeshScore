@@ -1343,6 +1343,29 @@ select:focus:not(:focus-visible) { outline: none; }
 /* ── Negative score highlight ────────────────────────────── */
 .player-score.score-neg { color: var(--danger); }
 
+/* ── Rounds toggle pill ──────────────────────────────────── */
+.toggle-pill {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(24,183,255,.35);
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: .82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.toggle-pill.off {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--outline);
+}
+.toggle-pill:active { transform: scale(.94); }
+
+/* ── No-rounds game mode ─────────────────────────────────── */
+.game--norounds .round-row { display: none !important; }
+
 /* ── Ping pong mode ──────────────────────────────────────── */
 .game--pingpong .round-row,
 .game--pingpong .step-row,
