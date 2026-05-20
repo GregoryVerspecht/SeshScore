@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SeshScore — Free Score Tracker App for Any Game</title>
-  <meta name="description" content="SeshScore is a free mobile score tracker for card games, board games, dice games and more. No download, no account, works offline. Track scores instantly on any phone." />
-  <meta name="keywords" content="score tracker app, mobile scoreboard, free score keeper, card game score tracker, board game scoreboard, offline score tracker, multiplayer score counter, game score app, Uno score tracker, Yahtzee scorecard" />
+  <title>SeshScore: Free Score Tracker for Any Game</title>
+  <meta name="description" content="SeshScore is a free mobile score tracker for card games, board games, darts and more. Built-in presets, round tracking, game-over popups. No account, works offline. iOS App Store + PWA." />
+  <meta name="keywords" content="score tracker app, mobile scoreboard, free score keeper, card game score tracker, board game scoreboard, offline score tracker, multiplayer score counter, Uno score tracker, Darts scoreboard, Hearts score keeper" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#090B12" />
 
@@ -15,15 +15,15 @@
   <link rel="apple-touch-icon" href="./static/image/seshscore-icon-180x180.png" />
   <link rel="canonical" href="https://seshscore.gv-tech.eu/" />
 
-  <meta property="og:title"       content="SeshScore — Free Score Tracker App for Any Game" />
-  <meta property="og:description" content="Free mobile score tracker for card games, board games and more. No app store, no account, works offline." />
+  <meta property="og:title"       content="SeshScore: Free Score Tracker for Any Game" />
+  <meta property="og:description" content="Game profiles, round tracking, game-over popups, undo and more. Free, no account, works offline." />
   <meta property="og:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore-icon-512x512.png" />
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="https://seshscore.gv-tech.eu/" />
 
-  <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="SeshScore — Free Score Tracker for Any Game" />
-  <meta name="twitter:description" content="Free mobile scoreboard. No app store, no account, works offline. Card games, board games, any game." />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="SeshScore: Free Score Tracker for Any Game" />
+  <meta name="twitter:description" content="Game profiles, round tracking, game-over popups. Free, offline, no account." />
   <meta name="twitter:image"       content="https://seshscore.gv-tech.eu/static/image/seshscore-icon-512x512.png" />
 
   <script>if (window.Capacitor?.isNativePlatform?.()) window.location.replace('./app.html');</script>
@@ -36,13 +36,12 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "SeshScore",
-    "description": "Free mobile score tracker for card games, board games, dice games and more. No download, no account, works offline.",
+    "description": "Free mobile score tracker for card games, board games, darts and more. Built-in game profiles, round tracking, game-over popups.",
     "url": "https://seshscore.gv-tech.eu/app.html",
     "applicationCategory": "GameApplication",
     "operatingSystem": "Any",
-    "browserRequirements": "Requires a modern web browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-    "featureList": ["Offline support", "No account required", "Game history", "Multiplayer", "Undo", "PWA installable"]
+    "featureList": ["Offline support","No account required","Game history","Round tracking","Game-over popup","Undo with rounds","9 game presets","iOS App Store","PWA installable"]
   }
   </script>
 
@@ -52,405 +51,424 @@
 
   <style>
     :root {
-      --bg:         #090B12;
-      --card:       #111827;
-      --card-2:     #151A26;
-      --text:       #F8FAFC;
-      --muted:      #94A3B8;
-      --blue:       #18B7FF;
-      --purple:     #7C3BFF;
-      --magenta:    #D94CFF;
-      --orange:     #FF7A18;
-      --gradient:   linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
-      --outline:    rgba(255,255,255,.08);
-      --radius:     22px;
-      --shadow:     0 10px 30px rgba(0,0,0,.5);
+      --bg:       #090B12;
+      --card:     #111827;
+      --card-2:   #151A26;
+      --text:     #F8FAFC;
+      --muted:    #94A3B8;
+      --blue:     #18B7FF;
+      --purple:   #7C3BFF;
+      --magenta:  #D94CFF;
+      --danger:   #f87171;
+      --grad:     linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
+      --outline:  rgba(255,255,255,.08);
+      --r:        22px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background:
-        radial-gradient(circle at 8% 8%, rgba(24,183,255,.14), transparent 32%),
-        radial-gradient(circle at 92% 20%, rgba(124,59,255,.18), transparent 30%),
+        radial-gradient(circle at 8% 6%,  rgba(24,183,255,.13), transparent 34%),
+        radial-gradient(circle at 94% 18%, rgba(124,59,255,.17), transparent 32%),
+        radial-gradient(circle at 50% 85%, rgba(217,76,255,.08), transparent 40%),
         var(--bg);
       color: var(--text);
       line-height: 1.5;
       overflow-x: hidden;
     }
 
-    /* ── Nav ──────────────────────────────────────────────── */
+    /* ── Nav ─────────────────────────────────────────────────── */
     nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       padding: 20px 24px;
       max-width: 1100px;
       margin: 0 auto;
     }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; }
     .nav-logo img { height: 28px; width: auto; }
+    .nav-links { display: flex; align-items: center; gap: 12px; }
     .btn-nav {
-      height: 38px;
-      padding: 0 20px;
-      border-radius: 12px;
-      background: var(--gradient);
-      color: #fff;
-      font-weight: 700;
-      font-size: .875rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      box-shadow: 0 0 22px rgba(124,59,255,.3);
-      transition: opacity .15s;
+      height: 38px; padding: 0 20px; border-radius: 12px;
+      background: var(--grad); color: #fff; font-weight: 700; font-size: .875rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+      box-shadow: 0 0 22px rgba(124,59,255,.3); transition: opacity .15s; border: none;
     }
     .btn-nav:hover { opacity: .85; }
 
-    /* ── Buttons ──────────────────────────────────────────── */
+    /* ── Global buttons ──────────────────────────────────────── */
     .btn-primary {
-      height: 52px;
-      padding: 0 28px;
-      border-radius: 16px;
-      background: var(--gradient);
-      color: #fff;
-      font-weight: 800;
-      font-size: 1rem;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 0 28px rgba(124,59,255,.32);
-      transition: opacity .15s, transform .1s;
+      height: 52px; padding: 0 28px; border-radius: 16px;
+      background: var(--grad); color: #fff; font-weight: 800; font-size: 1rem;
+      border: none; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 0 28px rgba(124,59,255,.32); transition: opacity .15s, transform .1s;
     }
     .btn-primary:hover  { opacity: .88; }
     .btn-primary:active { opacity: .85; transform: translateY(1px); }
-    .btn-ghost {
-      height: 52px;
-      padding: 0 24px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      font-weight: 700;
-      font-size: 1rem;
-      border: 1px solid var(--outline);
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: background .15s;
-    }
-    .btn-ghost:hover  { background: rgba(255,255,255,.09); }
-    .btn-ghost:active { background: rgba(255,255,255,.12); }
 
-    /* ── Hero ─────────────────────────────────────────────── */
+    .btn-ghost {
+      height: 52px; padding: 0 24px; border-radius: 16px;
+      background: rgba(255,255,255,.05); color: var(--text); font-weight: 700; font-size: 1rem;
+      border: 1px solid var(--outline); cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px; transition: background .15s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.09); }
+
+    .btn-appstore {
+      height: 52px; padding: 0 22px; border-radius: 16px;
+      background: var(--card); color: var(--text); font-weight: 700; font-size: .9rem;
+      border: 1px solid rgba(255,255,255,.15); cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 10px; transition: border-color .15s, background .15s;
+    }
+    .btn-appstore:hover { background: #1a2033; border-color: rgba(24,183,255,.3); }
+    .btn-appstore svg { flex-shrink: 0; }
+
+    .btn-kofi {
+      height: 48px; padding: 0 24px; border-radius: 14px;
+      background: #FF5E5B; color: #fff; font-weight: 800; font-size: .95rem;
+      border: none; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px; transition: opacity .15s;
+    }
+    .btn-kofi:hover { opacity: .88; }
+
+    /* ── Hero ────────────────────────────────────────────────── */
     .hero {
-      max-width: 1100px;
-      margin: 0 auto;
+      max-width: 1100px; margin: 0 auto;
       padding: 48px 24px 80px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 56px;
-      align-items: center;
+      display: grid; grid-template-columns: 1fr; gap: 56px; align-items: center;
     }
     @media (min-width: 760px) {
-      .hero { grid-template-columns: 1fr 1fr; padding: 80px 40px 100px; gap: 40px; }
+      .hero { grid-template-columns: 1fr 1fr; padding: 80px 40px 100px; gap: 48px; }
     }
-    .hero-text {
-      text-align: center;
-    }
-    @media (min-width: 760px) {
-      .hero-text { text-align: left; }
-    }
+    .hero-text { text-align: center; }
+    @media (min-width: 760px) { .hero-text { text-align: left; } }
+
     .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(24,183,255,.1);
-      color: var(--blue);
-      border: 1px solid rgba(24,183,255,.2);
-      border-radius: 100px;
-      padding: 6px 16px;
-      font-size: .75rem;
-      font-weight: 700;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
+      display: inline-flex; align-items: center;
+      background: rgba(24,183,255,.1); color: var(--blue);
+      border: 1px solid rgba(24,183,255,.22); border-radius: 100px;
+      padding: 6px 16px; font-size: .73rem; font-weight: 700;
+      letter-spacing: .5px; text-transform: uppercase; margin-bottom: 22px;
     }
     h1 {
-      font-size: clamp(2.4rem, 6vw, 3.6rem);
-      font-weight: 900;
-      font-family: 'Sora', sans-serif;
-      line-height: 1.05;
-      letter-spacing: -.04em;
-      margin-bottom: 20px;
+      font-size: clamp(2.4rem, 6vw, 3.8rem); font-weight: 900;
+      font-family: 'Sora', sans-serif; line-height: 1.04;
+      letter-spacing: -.04em; margin-bottom: 20px;
     }
-    h1 .grad {
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+    .grad {
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; color: transparent;
     }
     .hero-sub {
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.65;
-      margin-bottom: 36px;
-      max-width: 440px;
-      margin-left: auto;
-      margin-right: auto;
+      color: var(--muted); font-size: 1.05rem; line-height: 1.65;
+      margin-bottom: 36px; max-width: 460px; margin-left: auto; margin-right: auto;
     }
-    @media (min-width: 760px) {
-      .hero-sub { margin-left: 0; margin-right: 0; }
-    }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    @media (min-width: 760px) {
-      .hero-actions { justify-content: flex-start; }
-    }
+    @media (min-width: 760px) { .hero-sub { margin-left: 0; margin-right: 0; } }
 
-    /* ── Phone mockup ─────────────────────────────────────── */
-    .phone-wrap {
-      display: flex;
-      justify-content: center;
-    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    @media (min-width: 760px) { .hero-actions { justify-content: flex-start; } }
+
+    /* ── Phone mockup ────────────────────────────────────────── */
+    .phone-wrap { display: flex; justify-content: center; position: relative; }
     .phone {
-      width: 256px;
-      background: #070A12;
-      border-radius: 42px;
-      border: 6px solid #1a1f2e;
-      box-shadow:
-        0 40px 100px rgba(0,0,0,.7),
-        0 0 0 1px rgba(255,255,255,.05),
-        inset 0 1px 0 rgba(255,255,255,.06);
-      overflow: hidden;
+      width: 258px; background: #070A12;
+      border-radius: 44px; border: 6px solid #1c2133;
+      box-shadow: 0 40px 100px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.05), inset 0 1px 0 rgba(255,255,255,.06);
+      overflow: hidden; position: relative; z-index: 2;
     }
-    .phone-notch {
-      width: 76px;
-      height: 22px;
-      background: #070A12;
-      border-radius: 0 0 14px 14px;
-      margin: 0 auto;
-    }
-    .phone-screen { padding: 6px 12px 20px; }
+    .phone-notch { width: 80px; height: 22px; background: #070A12; border-radius: 0 0 14px 14px; margin: 0 auto; }
+    .phone-screen { padding: 6px 12px 18px; }
+
     .phone-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      padding: 4px 0;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px; padding: 4px 0;
     }
-    .phone-app-name { font-size: .78rem; font-weight: 900; font-family: 'Sora', sans-serif; }
+    .phone-app-name { font-size: .77rem; font-weight: 900; font-family: 'Sora', sans-serif; }
     .phone-round-badge {
-      font-size: .65rem;
-      font-weight: 700;
-      background: var(--card);
-      border: 1px solid var(--outline);
-      border-radius: 6px;
-      padding: 2px 7px;
-      color: var(--muted);
+      font-size: .62rem; font-weight: 700;
+      background: var(--card); border: 1px solid var(--outline);
+      border-radius: 6px; padding: 2px 7px; color: var(--muted);
     }
     .phone-player {
-      background: var(--card);
-      border-radius: 14px;
-      border: 1px solid var(--outline);
-      padding: 9px 11px;
-      margin-bottom: 7px;
+      background: var(--card); border-radius: 13px;
+      border: 1px solid var(--outline); padding: 8px 10px; margin-bottom: 6px;
     }
     .phone-player.leader {
-      border-color: rgba(24,183,255,.28);
-      background: linear-gradient(145deg, #131826, #0e1420);
+      border-color: rgba(24,183,255,.3);
+      background: linear-gradient(145deg, #131f30, #0d1520);
     }
-    .phone-player-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-    .phone-player-name { font-size: .72rem; font-weight: 700; }
-    .phone-player-rank { font-size: .62rem; color: var(--muted); font-weight: 700; }
+    .phone-player.winner { border-color: rgba(255,196,10,.35); background: linear-gradient(145deg, #1f1a0d, #141008); }
+    .phone-player-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+    .phone-player-name { font-size: .71rem; font-weight: 700; }
+    .phone-player-rank { font-size: .6rem; color: var(--muted); font-weight: 700; }
     .phone-score {
-      font-size: 1.55rem;
-      font-weight: 900;
-      font-family: 'JetBrains Mono', monospace;
-      line-height: 1;
-      margin-bottom: 7px;
-      letter-spacing: -1px;
+      font-size: 1.5rem; font-weight: 900; font-family: 'JetBrains Mono', monospace;
+      line-height: 1; margin-bottom: 6px; letter-spacing: -1px;
     }
     .phone-player.leader .phone-score { color: var(--blue); }
+    .phone-player.winner .phone-score { color: #FFC40A; }
     .phone-btns { display: flex; gap: 4px; }
     .phone-btn {
-      flex: 1;
-      height: 24px;
-      border-radius: 7px;
-      border: 1px solid var(--outline);
-      background: var(--card-2);
-      font-size: .6rem;
-      font-weight: 800;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      flex: 1; height: 22px; border-radius: 7px; border: 1px solid var(--outline);
+      background: var(--card-2); font-size: .58rem; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; justify-content: center;
     }
     .phone-btn.plus  { background: rgba(24,183,255,.14); color: var(--blue); border-color: rgba(24,183,255,.2); }
-    .phone-btn.minus { background: rgba(248,113,113,.1); color: #f87171; border-color: rgba(248,113,113,.2); }
+    .phone-btn.minus { background: rgba(248,113,113,.1); color: var(--danger); border-color: rgba(248,113,113,.2); }
+    .phone-pass { width: 100%; margin-top: 5px; height: 16px; border-radius: 6px; border: 1px dashed rgba(255,255,255,.15); background: transparent; font-size: .52rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; justify-content: center; }
 
-    /* ── Divider ──────────────────────────────────────────── */
+    /* second floating phone */
+    .phone-float {
+      position: absolute; right: -24px; bottom: -20px; z-index: 3;
+      width: 180px; background: #070A12;
+      border-radius: 32px; border: 5px solid #1c2133;
+      box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.05);
+      overflow: hidden;
+    }
+    .phone-float .phone-notch { width: 56px; height: 16px; }
+    .phone-float .phone-screen { padding: 4px 9px 14px; }
+    .pf-trophy { font-size: 1.5rem; text-align: center; margin: 6px 0 3px; display: block; }
+    .pf-title  { font-size: .72rem; font-weight: 900; font-family: 'Sora', sans-serif; text-align: center; margin-bottom: 2px; }
+    .pf-sub    { font-size: .57rem; color: var(--muted); text-align: center; margin-bottom: 8px; }
+    .pf-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 7px; border-radius: 8px; margin-bottom: 4px;
+      background: rgba(255,255,255,.04); border: 1px solid var(--outline);
+      font-size: .59rem; font-weight: 700;
+    }
+    .pf-row.win { background: rgba(24,183,255,.08); border-color: rgba(24,183,255,.25); }
+    .pf-row-name { flex: 1; }
+    .pf-row-score { font-family: 'JetBrains Mono', monospace; color: var(--blue); font-size: .62rem; }
+    .pf-btns { display: flex; gap: 5px; margin-top: 8px; }
+    .pf-btn {
+      flex: 1; height: 18px; border-radius: 6px; font-size: .56rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; border: 1px solid var(--outline);
+    }
+    .pf-btn.ghost   { background: rgba(255,255,255,.06); }
+    .pf-btn.primary { background: var(--grad); border-color: transparent; color: #fff; }
+
+    /* ── Divider ─────────────────────────────────────────────── */
     hr { border: none; border-top: 1px solid var(--outline); }
 
-    /* ── Sections ─────────────────────────────────────────── */
+    /* ── Scrolling game tags ─────────────────────────────────── */
+    .tags-strip { padding: 32px 0; overflow: hidden; position: relative; }
+    .tags-strip::before, .tags-strip::after {
+      content: ''; position: absolute; top: 0; width: 80px; height: 100%; z-index: 2;
+      pointer-events: none;
+    }
+    .tags-strip::before { left: 0;  background: linear-gradient(to right, var(--bg), transparent); }
+    .tags-strip::after  { right: 0; background: linear-gradient(to left,  var(--bg), transparent); }
+    .tags-track {
+      display: flex; gap: 10px; width: max-content;
+      animation: scroll-tags 28s linear infinite;
+    }
+    .tags-track:hover { animation-play-state: paused; }
+    @keyframes scroll-tags {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .game-tag {
+      background: var(--card); border: 1px solid var(--outline);
+      border-radius: 100px; padding: 8px 18px;
+      font-size: .85rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; transition: border-color .15s;
+    }
+    .game-tag:hover { border-color: rgba(24,183,255,.25); }
+
+    /* ── Sections ────────────────────────────────────────────── */
     .section {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 72px 24px;
+      max-width: 1100px; margin: 0 auto; padding: 80px 24px;
     }
     .section-eyebrow {
-      text-align: center;
-      font-size: .88rem;
-      font-weight: 700;
-      letter-spacing: .4px;
-      text-transform: uppercase;
-      color: var(--blue);
-      margin-bottom: 12px;
+      text-align: center; font-size: .85rem; font-weight: 700;
+      letter-spacing: .5px; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 12px;
     }
     .section-heading {
       text-align: center;
-      font-size: clamp(1.7rem, 4vw, 2.3rem);
-      font-weight: 900;
-      font-family: 'Sora', sans-serif;
-      letter-spacing: -.03em;
-      line-height: 1.15;
-      margin-bottom: 48px;
+      font-size: clamp(1.75rem, 4vw, 2.4rem); font-weight: 900;
+      font-family: 'Sora', sans-serif; letter-spacing: -.03em;
+      line-height: 1.13; margin-bottom: 52px;
     }
 
-    /* ── Feature grid ─────────────────────────────────────── */
-    .features {
+    /* ── Presets grid ────────────────────────────────────────── */
+    .presets-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (min-width: 640px)  { .presets-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 900px)  { .presets-grid { grid-template-columns: repeat(5, 1fr); } }
+    .preset-card {
+      background: var(--card); border: 1px solid var(--outline);
+      border-radius: 18px; padding: 20px 12px;
+      text-align: center; transition: border-color .2s, transform .15s, box-shadow .2s;
+    }
+    .preset-card:hover {
+      border-color: rgba(124,59,255,.3); transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.35);
+    }
+    .preset-icon  { font-size: 1.9rem; display: block; margin-bottom: 9px; }
+    .preset-name  { font-weight: 800; font-size: .88rem; margin-bottom: 4px; }
+    .preset-sub   { color: var(--muted); font-size: .74rem; line-height: 1.4; }
+
+    /* ── Feature cards ───────────────────────────────────────── */
+    .features {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
     }
     @media (min-width: 720px) { .features { grid-template-columns: repeat(3, 1fr); } }
+
     .feature {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--outline);
-      padding: 24px 20px;
-      text-align: center;
+      background: var(--card); border-radius: var(--r); border: 1px solid var(--outline);
+      padding: 26px 22px; text-align: center;
       transition: border-color .2s, box-shadow .2s;
     }
-    .feature:hover {
-      border-color: rgba(24,183,255,.2);
-      box-shadow: 0 8px 32px rgba(0,0,0,.3);
-    }
-    .feature-icon  { font-size: 1.7rem; margin-bottom: 12px; display: block; }
-    .feature-title { font-weight: 800; font-size: .92rem; margin-bottom: 5px; }
+    .feature:hover { border-color: rgba(24,183,255,.22); box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+    .feature-icon  { font-size: 1.75rem; margin-bottom: 12px; display: block; }
+    .feature-title { font-weight: 800; font-size: .93rem; margin-bottom: 5px; }
     .feature-desc  { color: var(--muted); font-size: .82rem; line-height: 1.55; }
 
-    /* ── Steps ────────────────────────────────────────────── */
+    /* ── Steps ───────────────────────────────────────────────── */
     .steps {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
+      display: grid; grid-template-columns: 1fr; gap: 14px;
     }
     @media (min-width: 600px) { .steps { grid-template-columns: repeat(3, 1fr); } }
     .step {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--outline);
-      padding: 26px 22px;
-      text-align: center;
+      background: var(--card); border-radius: var(--r); border: 1px solid var(--outline);
+      padding: 28px 22px; text-align: center; position: relative;
     }
     .step-num {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: var(--gradient);
-      color: #fff;
-      font-weight: 900;
-      font-size: .9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
+      width: 36px; height: 36px; border-radius: 11px; background: var(--grad);
+      color: #fff; font-weight: 900; font-size: .9rem;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
     }
     .step-title { font-weight: 800; font-size: 1rem; margin-bottom: 7px; }
     .step-desc  { color: var(--muted); font-size: .85rem; line-height: 1.6; }
 
-    /* ── CTA section ──────────────────────────────────────── */
+    /* ── Split feature row ───────────────────────────────────── */
+    .split {
+      display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center;
+      padding: 64px 24px;
+    }
+    @media (min-width: 760px) {
+      .split { grid-template-columns: 1fr 1fr; padding: 72px 40px; }
+      .split.flip { direction: rtl; }
+      .split.flip > * { direction: ltr; }
+    }
+    .split-text { max-width: 480px; }
+    .split-eyebrow {
+      font-size: .82rem; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+    }
+    .split-heading {
+      font-size: clamp(1.5rem, 3.5vw, 2rem); font-weight: 900;
+      font-family: 'Sora', sans-serif; letter-spacing: -.03em;
+      line-height: 1.15; margin-bottom: 16px;
+    }
+    .split-desc { color: var(--muted); font-size: .95rem; line-height: 1.65; margin-bottom: 20px; }
+    .split-bullets { display: flex; flex-direction: column; gap: 8px; }
+    .split-bullet {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: .88rem; color: var(--muted);
+    }
+    .split-bullet strong { color: var(--text); }
+    .bullet-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--blue);
+      flex-shrink: 0; margin-top: 7px;
+    }
+    .split-visual {
+      background: var(--card); border: 1px solid var(--outline);
+      border-radius: 24px; padding: 28px; text-align: center;
+    }
+
+    /* Round demo */
+    .round-demo { font-size: .82rem; }
+    .round-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; background: var(--card-2); border-radius: 10px;
+      margin-bottom: 14px; font-size: .78rem;
+    }
+    .round-label { font-weight: 700; }
+    .round-badge {
+      background: rgba(24,183,255,.12); color: var(--blue);
+      border: 1px solid rgba(24,183,255,.2); border-radius: 6px;
+      padding: 2px 9px; font-size: .7rem; font-weight: 700;
+    }
+    .rd-player {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; background: var(--card-2);
+      border-radius: 11px; border: 1px solid var(--outline); margin-bottom: 6px;
+    }
+    .rd-player-name { flex: 1; font-weight: 700; font-size: .82rem; }
+    .rd-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: .9rem; }
+    .rd-check { color: var(--blue); font-size: .75rem; font-weight: 700; }
+    .rd-pass  { color: var(--muted); font-size: .7rem; font-style: italic; }
+    .rd-next  {
+      margin-top: 12px; padding: 9px; background: rgba(24,183,255,.08);
+      border: 1px solid rgba(24,183,255,.15); border-radius: 10px;
+      font-size: .78rem; font-weight: 700; color: var(--blue); text-align: center;
+    }
+
+    /* Game over demo */
+    .go-demo { text-align: center; padding: 4px 0; }
+    .go-trophy { font-size: 2.8rem; display: block; margin-bottom: 6px; }
+    .go-title { font-size: 1.2rem; font-weight: 900; font-family: 'Sora', sans-serif; margin-bottom: 3px; }
+    .go-sub { color: var(--muted); font-size: .8rem; margin-bottom: 16px; }
+    .go-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 11px; margin-bottom: 6px;
+      background: rgba(255,255,255,.04); border: 1px solid var(--outline);
+      font-size: .82rem; font-weight: 700;
+    }
+    .go-row.win { background: rgba(24,183,255,.08); border-color: rgba(24,183,255,.25); }
+    .go-row-rank { width: 26px; text-align: center; font-size: .9rem; }
+    .go-row-name { flex: 1; }
+    .go-row-score { font-family: 'JetBrains Mono', monospace; color: var(--blue); }
+    .go-btns { display: flex; gap: 10px; margin-top: 14px; }
+    .go-btn {
+      flex: 1; height: 36px; border-radius: 11px; font-size: .82rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; border: none; cursor: default;
+    }
+    .go-btn.ghost   { background: rgba(255,255,255,.07); border: 1px solid var(--outline); }
+    .go-btn.primary { background: var(--grad); color: #fff; }
+
+    /* ── CTA ─────────────────────────────────────────────────── */
     .cta-section {
-      text-align: center;
-      padding: 88px 24px;
+      text-align: center; padding: 88px 24px;
       background: linear-gradient(180deg, transparent, rgba(124,59,255,.06));
       border-top: 1px solid var(--outline);
     }
     .cta-section h2 {
-      font-size: clamp(1.9rem, 5vw, 2.8rem);
-      font-weight: 900;
-      font-family: 'Sora', sans-serif;
-      letter-spacing: -.035em;
-      line-height: 1.1;
-      margin-bottom: 14px;
+      font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 900;
+      font-family: 'Sora', sans-serif; letter-spacing: -.035em;
+      line-height: 1.1; margin-bottom: 12px;
     }
-    .cta-section p  { color: var(--muted); font-size: 1rem; margin-bottom: 36px; }
-    .cta-actions    { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+    .cta-section p { color: var(--muted); font-size: 1rem; margin-bottom: 36px; }
+    .cta-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
 
-    /* ── Footer ───────────────────────────────────────────── */
+    /* ── Footer ──────────────────────────────────────────────── */
     footer {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      max-width: 1100px; margin: 0 auto; padding: 28px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 14px; border-top: 1px solid var(--outline);
     }
     .footer-copy { color: var(--muted); font-size: .82rem; }
+    .footer-links { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
     .footer-link {
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: .82rem;
+      background: var(--grad); -webkit-background-clip: text;
+      background-clip: text; color: transparent;
+      text-decoration: none; font-weight: 700; font-size: .82rem;
     }
-    .game-tag {
-      background: var(--card);
-      border: 1px solid var(--outline);
-      border-radius: 100px;
-      padding: 7px 16px;
-      font-size: .85rem;
-      font-weight: 600;
-      color: var(--text);
-      transition: border-color .15s;
+    .footer-link-plain {
+      color: var(--muted); text-decoration: none; font-size: .82rem; font-weight: 600;
+      transition: color .15s;
     }
-    .game-tag:hover { border-color: rgba(24,183,255,.25); }
-    .btn-kofi {
-      height: 44px;
-      padding: 0 22px;
-      border-radius: 14px;
-      background: #FF5E5B;
-      color: #fff;
-      font-weight: 800;
-      font-size: .9rem;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      transition: opacity .15s, transform .1s;
-    }
-    .btn-kofi:hover  { opacity: .88; }
-    .btn-kofi:active { opacity: .85; transform: translateY(1px); }
-    .kofi-note { color: var(--muted); font-size: .8rem; margin-top: 14px; }
+    .footer-link-plain:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -460,30 +478,38 @@
     <a href="./" class="nav-logo">
       <img src="./static/image/seshscore-horizontal-dark.svg" alt="SeshScore">
     </a>
-    <a href="./app.html" class="btn-nav">Open App →</a>
+    <div class="nav-links">
+      <a href="./app.html" class="btn-nav">Open App →</a>
+    </div>
   </nav>
 
   <!-- Hero -->
   <section class="hero">
     <div class="hero-text">
       <div class="hero-badge">✦ Free &middot; No account &middot; Works offline</div>
-      <h1>Keep score.<br><span class="grad">Any game.</span><br>Any phone.</h1>
-      <p class="hero-sub">The free mobile score tracker for card games, board games, darts and more — pick a game profile, add players, tap to score. No app store, no login, no fuss.</p>
+      <h1>The score&shy;board<br>that keeps up.<br><span class="grad">Any game.</span></h1>
+      <p class="hero-sub">Built-in game profiles, round tracking, automatic win detection and a game-over popup with the full scoreboard. Pick a game, add players, tap to score.</p>
       <div class="hero-actions">
         <button class="btn-primary" id="btnInstallHero">📲 Install App</button>
+        <!-- Replace href with your App Store link -->
+        <a href="#" class="btn-appstore" id="btnAppStore">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.39-1.32 2.76-2.54 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" fill="currentColor"/></svg>
+          iOS App Store
+        </a>
         <a href="./app.html" class="btn-ghost">Open in Browser →</a>
       </div>
     </div>
 
+    <!-- Phone mockups -->
     <div class="phone-wrap">
+      <!-- Main: game screen -->
       <div class="phone">
         <div class="phone-notch"></div>
         <div class="phone-screen">
           <div class="phone-topbar">
             <span class="phone-app-name">SeshScore</span>
-            <span class="phone-round-badge">Round 3</span>
+            <span class="phone-round-badge">Round 3 / 5</span>
           </div>
-
           <div class="phone-player leader">
             <div class="phone-player-top">
               <span class="phone-player-name">👑 Alice</span>
@@ -495,8 +521,8 @@
               <div class="phone-btn">±</div>
               <div class="phone-btn plus">+1</div>
             </div>
+            <div class="phone-pass">✓ Scored</div>
           </div>
-
           <div class="phone-player">
             <div class="phone-player-top">
               <span class="phone-player-name">Bob</span>
@@ -508,21 +534,131 @@
               <div class="phone-btn">±</div>
               <div class="phone-btn plus">+1</div>
             </div>
+            <div class="phone-pass">Pass (0 pts)</div>
           </div>
-
           <div class="phone-player">
             <div class="phone-player-top">
               <span class="phone-player-name">Charlie</span>
               <span class="phone-player-rank">#3</span>
             </div>
-            <div class="phone-score">12</div>
+            <div class="phone-score">19</div>
             <div class="phone-btns">
               <div class="phone-btn minus">−1</div>
               <div class="phone-btn">±</div>
               <div class="phone-btn plus">+1</div>
             </div>
+            <div class="phone-pass">Pass (0 pts)</div>
           </div>
         </div>
+      </div>
+
+      <!-- Float: game-over sheet -->
+      <div class="phone-float">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <span class="pf-trophy">🏆</span>
+          <div class="pf-title">Alice wins!</div>
+          <div class="pf-sub">Reached 500 pts</div>
+          <div class="pf-row win"><span>🏆</span><span class="pf-row-name">Alice</span><span class="pf-row-score">520</span></div>
+          <div class="pf-row"><span>#2</span><span class="pf-row-name">Bob</span><span class="pf-row-score" style="color:var(--muted)">340</span></div>
+          <div class="pf-row"><span>#3</span><span class="pf-row-name">Charlie</span><span class="pf-row-score" style="color:var(--muted)">190</span></div>
+          <div class="pf-btns">
+            <div class="pf-btn ghost">Continue</div>
+            <div class="pf-btn primary">New sesh</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scrolling tags -->
+  <div class="tags-strip">
+    <div class="tags-track">
+      <span class="game-tag">🃏 Card games</span>
+      <span class="game-tag">🎲 Dice games</span>
+      <span class="game-tag">🎯 Darts</span>
+      <span class="game-tag">🧩 Board games</span>
+      <span class="game-tag">♥ Hearts</span>
+      <span class="game-tag">🏓 Ping Pong</span>
+      <span class="game-tag">🎴 Uno</span>
+      <span class="game-tag">🃏 Rummy 500</span>
+      <span class="game-tag">🏔 Catan</span>
+      <span class="game-tag">👾 King of Tokyo</span>
+      <span class="game-tag">🎉 Party games</span>
+      <span class="game-tag">🍺 Drinking games</span>
+      <span class="game-tag">🀄 Dominoes</span>
+      <span class="game-tag">♠️ Poker</span>
+      <span class="game-tag">📊 Yahtzee</span>
+      <!-- duplicate for seamless loop -->
+      <span class="game-tag">🃏 Card games</span>
+      <span class="game-tag">🎲 Dice games</span>
+      <span class="game-tag">🎯 Darts</span>
+      <span class="game-tag">🧩 Board games</span>
+      <span class="game-tag">♥ Hearts</span>
+      <span class="game-tag">🏓 Ping Pong</span>
+      <span class="game-tag">🎴 Uno</span>
+      <span class="game-tag">🃏 Rummy 500</span>
+      <span class="game-tag">🏔 Catan</span>
+      <span class="game-tag">👾 King of Tokyo</span>
+      <span class="game-tag">🎉 Party games</span>
+      <span class="game-tag">🍺 Drinking games</span>
+      <span class="game-tag">🀄 Dominoes</span>
+      <span class="game-tag">♠️ Poker</span>
+      <span class="game-tag">📊 Yahtzee</span>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Game profiles -->
+  <section class="section">
+    <div class="section-eyebrow">Game Profiles</div>
+    <h2 class="section-heading">Pick a game.<br>Everything sets itself up.</h2>
+    <div class="presets-grid">
+      <div class="preset-card">
+        <span class="preset-icon">🎴</span>
+        <div class="preset-name">Uno</div>
+        <div class="preset-sub">First to 500 pts</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🃏</span>
+        <div class="preset-name">Rummy 500</div>
+        <div class="preset-sub">First to 500 pts</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🏔</span>
+        <div class="preset-name">Catan</div>
+        <div class="preset-sub">First to 10 VP</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">♥</span>
+        <div class="preset-name">Hearts</div>
+        <div class="preset-sub">Lowest wins · ends at 100</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">👾</span>
+        <div class="preset-name">King of Tokyo</div>
+        <div class="preset-sub">First to 20 VP</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🏓</span>
+        <div class="preset-name">Ping Pong</div>
+        <div class="preset-sub">First to 11 · win by 2</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🎯</span>
+        <div class="preset-name">Darts 501</div>
+        <div class="preset-sub">Count down from 501</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🎯</span>
+        <div class="preset-name">Darts 301</div>
+        <div class="preset-sub">Count down from 301</div>
+      </div>
+      <div class="preset-card">
+        <span class="preset-icon">🎮</span>
+        <div class="preset-name">Custom</div>
+        <div class="preset-sub">Set your own rules</div>
       </div>
     </div>
   </section>
@@ -531,7 +667,7 @@
 
   <!-- Features -->
   <section class="section">
-    <div class="section-eyebrow">Why SeshScore</div>
+    <div class="section-eyebrow">Features</div>
     <h2 class="section-heading">Everything you need.<br>Nothing you don't.</h2>
     <div class="features">
       <div class="feature">
@@ -550,42 +686,50 @@
         <div class="feature-desc">Open and play. Nothing to sign up for, nothing to remember.</div>
       </div>
       <div class="feature">
+        <span class="feature-icon">🔁</span>
+        <div class="feature-title">Round tracking</div>
+        <div class="feature-desc">Auto-advances the round when every player has scored or passed. Set a max round limit.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🏆</span>
+        <div class="feature-title">Game-over popup</div>
+        <div class="feature-desc">Full scoreboard popup the moment someone wins, with Continue or New sesh options.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">↩️</span>
+        <div class="feature-title">Smart undo</div>
+        <div class="feature-desc">Undo any score change, including restoring the round counter if a round was auto-advanced.</div>
+      </div>
+      <div class="feature">
         <span class="feature-icon">📋</span>
         <div class="feature-title">Game history</div>
         <div class="feature-desc">Save results after each game. Browse your last 30 sessions anytime.</div>
       </div>
       <div class="feature">
-        <span class="feature-icon">🎯</span>
-        <div class="feature-title">Game profiles</div>
-        <div class="feature-desc">Built-in presets for Uno, Rummy and Darts 501/301. Pick one and it configures itself.</div>
+        <span class="feature-icon">⏭️</span>
+        <div class="feature-title">Pass (0 pts)</div>
+        <div class="feature-desc">Mark a player as having played their turn without scoring. Counts towards auto-advance.</div>
       </div>
       <div class="feature">
-        <span class="feature-icon">↩️</span>
-        <div class="feature-title">Undo mistakes</div>
-        <div class="feature-desc">Made a fat-finger? Undo the last change on any player instantly.</div>
+        <span class="feature-icon">🔀</span>
+        <div class="feature-title">Highest or lowest wins</div>
+        <div class="feature-desc">Toggle between highest and lowest wins mid-session, any time.</div>
       </div>
-    </div>
-  </section>
-
-  <hr>
-
-  <!-- Perfect for -->
-  <section class="section" style="padding-bottom: 48px;">
-    <div class="section-eyebrow">Perfect for</div>
-    <h2 class="section-heading">Any game that needs a score</h2>
-    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:640px; margin:0 auto;">
-      <span class="game-tag">🃏 Card games</span>
-      <span class="game-tag">🎲 Dice games</span>
-      <span class="game-tag">🎯 Darts</span>
-      <span class="game-tag">🧩 Board games</span>
-      <span class="game-tag">🎉 Party games</span>
-      <span class="game-tag">🍺 Drinking games</span>
-      <span class="game-tag">🀄 Dominoes</span>
-      <span class="game-tag">🎴 Uno</span>
-      <span class="game-tag">📊 Yahtzee</span>
-      <span class="game-tag">♠️ Poker</span>
-      <span class="game-tag">🃏 Rummy</span>
-      <span class="game-tag">🎮 Any game</span>
+      <div class="feature">
+        <span class="feature-icon">📱</span>
+        <div class="feature-title">iOS App Store</div>
+        <div class="feature-desc">Available on the App Store. Also installable as a PWA on Android and desktop.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🎯</span>
+        <div class="feature-title">Darts checkout hints</div>
+        <div class="feature-desc">Full checkout table 2–170. Bust detection. Numpad input. Auto-advance between players.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Score log</div>
+        <div class="feature-desc">Every +/− tap is recorded per player with timestamps. Tap the log icon to review.</div>
+      </div>
     </div>
   </section>
 
@@ -598,40 +742,122 @@
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <div class="step-title">Pick a game &amp; add players</div>
-        <div class="step-desc">Choose a game profile — Uno, Rummy, Darts 501 and more — or go fully custom. Then add your players.</div>
+        <div class="step-title">Choose your game</div>
+        <div class="step-desc">Pick from 9 built-in profiles: Uno, Darts, Hearts, Catan and more, or go fully custom. Win target, rounds and scoring all set themselves.</div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <div class="step-title">Tap to score</div>
-        <div class="step-desc">Hit +/− on each player's card or enter a custom value. Made a mistake? Undo it instantly.</div>
+        <div class="step-title">Add your players</div>
+        <div class="step-desc">Type a name and tap +. Reorder with arrows. Clear all and start fresh whenever you like.</div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <div class="step-title">Save and rematch</div>
-        <div class="step-desc">Start a new sesh to save results to history. Your last 30 games are always a tap away.</div>
+        <div class="step-title">Tap to score</div>
+        <div class="step-desc">Hit +/− or enter a custom value. Rounds advance automatically. Win detection fires a full scoreboard popup the moment it's over.</div>
       </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta-section">
-    <h2>Ready to play?</h2>
-    <p>Install it once, use it forever — no updates, no maintenance, no fuss.</p>
-    <div class="cta-actions">
-      <button class="btn-primary" id="btnInstallBottom">📲 Install App</button>
-      <a href="./app.html" class="btn-ghost">Open in Browser →</a>
-    </div>
-    <div style="margin-top:32px; border-top:1px solid var(--outline); padding-top:28px;">
-      <p style="color:var(--muted); font-size:.9rem; margin-bottom:14px;">SeshScore is free and always will be.<br>If it saves you from arguing about the score, consider buying me a coffee ☕</p>
-      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="btn-kofi">☕ Buy me a coffee</a>
     </div>
   </section>
 
   <hr>
+
+  <!-- Split: round tracking -->
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="split">
+      <div class="split-text">
+        <div class="split-eyebrow">Round tracking</div>
+        <h3 class="split-heading">Never lose count<br>of the round again.</h3>
+        <p class="split-desc">SeshScore tracks rounds automatically. The moment every player has scored or passed, the round advances with a toast notification.</p>
+        <div class="split-bullets">
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Auto-advance:</strong> round bumps when all players score or pass</div></div>
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Pass (0 pts):</strong> mark a turn without changing score</div></div>
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Max rounds:</strong> cap the game at X rounds, winner announced at the end</div></div>
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Undo restores round:</strong> undoing a score walks the counter back too</div></div>
+        </div>
+      </div>
+      <div class="split-visual">
+        <div class="round-demo">
+          <div class="round-header">
+            <span class="round-label">Round 3</span>
+            <span class="round-badge">/ 5 rounds</span>
+          </div>
+          <div class="rd-player">
+            <span class="rd-player-name">👑 Alice</span>
+            <span class="rd-score">47</span>
+            <span class="rd-check">✓ scored</span>
+          </div>
+          <div class="rd-player">
+            <span class="rd-player-name">Bob</span>
+            <span class="rd-score">31</span>
+            <span class="rd-pass">passed</span>
+          </div>
+          <div class="rd-player" style="border-color:rgba(24,183,255,.25); background:rgba(24,183,255,.06)">
+            <span class="rd-player-name">Charlie</span>
+            <span class="rd-score">19</span>
+            <span style="color:var(--muted); font-size:.7rem;">waiting…</span>
+          </div>
+          <div class="rd-next">↪ Round 4 starts when Charlie scores</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Split: game-over -->
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="split flip">
+      <div class="split-text">
+        <div class="split-eyebrow">Game over</div>
+        <h3 class="split-heading">The moment someone<br>wins, you'll know.</h3>
+        <p class="split-desc">As soon as a win condition is triggered, a full-screen popup slides up with the complete ranked scoreboard. No more squinting at a list of numbers.</p>
+        <div class="split-bullets">
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Triggers on</strong> win target, max rounds, darts checkout, Hearts, Ping Pong</div></div>
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>Continue playing:</strong> dismiss the popup and keep scoring</div></div>
+          <div class="split-bullet"><div class="bullet-dot"></div><div><strong>New sesh:</strong> saves to history and restarts from the setup wizard</div></div>
+        </div>
+      </div>
+      <div class="split-visual">
+        <div class="go-demo">
+          <span class="go-trophy">🏆</span>
+          <div class="go-title">Alice wins!</div>
+          <div class="go-sub">Reached 500 points</div>
+          <div class="go-row win"><span class="go-row-rank">🏆</span><span class="go-row-name">Alice</span><span class="go-row-score">520</span></div>
+          <div class="go-row"><span class="go-row-rank">#2</span><span class="go-row-name">Bob</span><span class="go-row-score" style="color:var(--muted)">340</span></div>
+          <div class="go-row"><span class="go-row-rank">#3</span><span class="go-row-name">Charlie</span><span class="go-row-score" style="color:var(--muted)">190</span></div>
+          <div class="go-btns">
+            <div class="go-btn ghost">Continue</div>
+            <div class="go-btn primary">New sesh ▶</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to play?</h2>
+    <p>Free forever. No updates to babysit, no account to manage.</p>
+    <div class="cta-actions">
+      <button class="btn-primary" id="btnInstallBottom">📲 Install as PWA</button>
+      <a href="#" class="btn-appstore" id="btnAppStoreBottom">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.39-1.32 2.76-2.54 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" fill="currentColor"/></svg>
+        iOS App Store
+      </a>
+      <a href="./app.html" class="btn-ghost">Open in Browser →</a>
+    </div>
+    <div style="margin-top:40px; border-top:1px solid var(--outline); padding-top:32px;">
+      <p style="color:var(--muted); font-size:.9rem; margin-bottom:16px;">SeshScore is free and always will be.<br>If it saves you from arguing about the score, consider buying me a coffee ☕</p>
+      <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="btn-kofi">☕ Buy me a coffee</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
   <footer>
-    <span class="footer-copy">© 2026 SeshScore</span>
-    <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+    <span class="footer-copy">© 2026 SeshScore by GV Tech</span>
+    <div class="footer-links">
+      <a href="./privacy.html" class="footer-link-plain">Privacy Policy</a>
       <a href="https://ko-fi.com/gvtech" target="_blank" rel="noopener noreferrer" class="footer-link">☕ Ko-fi</a>
       <a href="./app.html" class="footer-link">Open App →</a>
     </div>
@@ -639,11 +865,7 @@
 
   <script>
     let _deferredPrompt = null;
-
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      _deferredPrompt = e;
-    });
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredPrompt = e; });
     window.addEventListener('appinstalled', () => { _deferredPrompt = null; });
 
     async function triggerInstall() {
@@ -658,6 +880,14 @@
 
     document.getElementById('btnInstallHero').addEventListener('click', triggerInstall);
     document.getElementById('btnInstallBottom').addEventListener('click', triggerInstall);
+
+    // App Store buttons: replace '#' with the real App Store URL once published
+    const APP_STORE_URL = '#';
+    document.querySelectorAll('#btnAppStore, #btnAppStoreBottom').forEach(btn => {
+      btn.addEventListener('click', e => {
+        if (APP_STORE_URL === '#') { e.preventDefault(); window.location.href = './app.html'; }
+      });
+    });
   </script>
 
 </body>

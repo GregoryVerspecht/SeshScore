@@ -3,46 +3,246 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — SeshScore</title>
+  <title>Privacy Policy - SeshScore</title>
+  <meta name="description" content="SeshScore privacy policy. No data collection, no tracking, everything stays on your device." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#090B12" />
+
+  <link rel="icon" href="./favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="./static/image/seshscore-icon.svg" />
+  <link rel="apple-touch-icon" href="./static/image/seshscore-icon-180x180.png" />
+  <link rel="canonical" href="https://seshscore.gv-tech.eu/privacy.html" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: -apple-system, sans-serif; max-width: 680px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.6; }
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.1rem; margin-top: 2rem; }
-    p, li { color: #444; }
-    a { color: #0066cc; }
-    footer { margin-top: 3rem; font-size: .85rem; color: #888; }
+    :root {
+      --bg:      #090B12;
+      --card:    #111827;
+      --text:    #F8FAFC;
+      --muted:   #94A3B8;
+      --blue:    #18B7FF;
+      --purple:  #7C3BFF;
+      --magenta: #D94CFF;
+      --grad:    linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
+      --outline: rgba(255,255,255,.08);
+      --r:       22px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 8% 6%,  rgba(24,183,255,.10), transparent 34%),
+        radial-gradient(circle at 94% 18%, rgba(124,59,255,.13), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; }
+    .nav-logo img { height: 28px; width: auto; }
+    .btn-nav {
+      height: 38px; padding: 0 20px; border-radius: 12px;
+      background: var(--grad); color: #fff; font-weight: 700; font-size: .875rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+      box-shadow: 0 0 22px rgba(124,59,255,.3); transition: opacity .15s; border: none;
+    }
+    .btn-nav:hover { opacity: .85; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--outline);
+      margin: 0;
+    }
+
+    .page-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 100px;
+    }
+
+    .page-eyebrow {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .page-meta {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--outline);
+      border-radius: var(--r);
+      padding: 28px 32px;
+      margin-bottom: 16px;
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .section p,
+    .section li {
+      font-size: .95rem;
+      color: var(--muted);
+    }
+
+    .section ul {
+      margin: 10px 0 0 0;
+      padding-left: 1.4em;
+    }
+
+    .section li { margin-bottom: 6px; }
+
+    .section a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .section a:hover { text-decoration: underline; }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: .8rem;
+      font-weight: 700;
+      border: 1px solid rgba(24,183,255,.25);
+      color: var(--blue);
+      background: rgba(24,183,255,.08);
+    }
+
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+    .footer-text { font-size: .8rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .footer-link {
+      font-size: .8rem; color: var(--muted); text-decoration: none;
+    }
+    .footer-link:hover { color: var(--text); }
+    .footer-link-active {
+      font-size: .8rem; color: var(--blue); font-weight: 700; text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p><strong>SeshScore</strong> — Last updated: May 2026</p>
 
-  <h2>No data collection</h2>
-  <p>SeshScore does not collect, transmit, or share any personal data. The app has no analytics, no tracking, and no third-party SDKs that collect data.</p>
+  <nav>
+    <a class="nav-logo" href="./">
+      <img src="./static/image/seshscore-icon.svg" alt="SeshScore" />
+    </a>
+    <a class="btn-nav" href="./app.html">Open app</a>
+  </nav>
 
-  <h2>What is stored on your device</h2>
-  <p>The following data is saved locally on your device only and never leaves it:</p>
-  <ul>
-    <li>Player names and scores you enter</li>
-    <li>Game history (up to 30 sessions)</li>
-    <li>Your app preferences (sort order, game mode)</li>
-  </ul>
-  <p>This data is stored in your device's local storage. You can clear it at any time by clearing the app's data or uninstalling the app.</p>
+  <hr>
 
-  <h2>Fonts</h2>
-  <p>The app loads fonts from Google Fonts (<a href="https://fonts.google.com">fonts.google.com</a>). This is a standard CDN request and subject to <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</p>
+  <div class="page-wrap">
 
-  <h2>Contact</h2>
-  <p>Questions? Reach out at <a id="contact-link" href="#">loading…</a></p>
-  <script>
-    (function() {
-      var u = 'gregory.verspecht', d = 'gmail.com';
-      var a = document.getElementById('contact-link');
-      a.href = 'mailto:' + u + '@' + d;
-      a.textContent = u + '@' + d;
-    })();
-  </script>
+    <div class="page-eyebrow">Legal</div>
+    <h1>Privacy Policy</h1>
+    <p class="page-meta">Last updated: May 2026 &nbsp;·&nbsp; SeshScore by GV Tech</p>
 
-  <footer>SeshScore by GV Tech · <a href="https://seshscore.gv-tech.eu">seshscore.gv-tech.eu</a></footer>
+    <div class="section">
+      <h2>No data collection</h2>
+      <p>SeshScore does not collect, transmit, or share any personal data. The app has no analytics, no tracking, and no third-party SDKs that collect data.</p>
+      <div class="badge-row">
+        <span class="badge">No account required</span>
+        <span class="badge">No analytics</span>
+        <span class="badge">No ads</span>
+        <span class="badge">Works offline</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>What is stored on your device</h2>
+      <p>The following data is saved locally on your device only and never leaves it:</p>
+      <ul>
+        <li>Player names and scores you enter</li>
+        <li>Game history (up to 30 sessions)</li>
+        <li>Your app preferences (sort order, game mode, round settings)</li>
+      </ul>
+      <p style="margin-top:12px;">This data is stored in your device's local storage. You can clear it at any time by clearing the app's data or uninstalling the app.</p>
+    </div>
+
+    <div class="section">
+      <h2>Fonts</h2>
+      <p>The app loads fonts from Google Fonts (<a href="https://fonts.google.com" target="_blank" rel="noopener">fonts.google.com</a>). This is a standard CDN request and subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
+    </div>
+
+    <div class="section">
+      <h2>Contact</h2>
+      <p>Questions? Reach out at <a id="contact-link" href="#">loading...</a></p>
+      <script>
+        (function() {
+          var u = 'gregory.verspecht', d = 'gmail.com';
+          var a = document.getElementById('contact-link');
+          a.href = 'mailto:' + u + '@' + d;
+          a.textContent = u + '@' + d;
+        })();
+      </script>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <footer>
+    <div class="footer-text">SeshScore by GV Tech</div>
+    <div class="footer-links">
+      <a class="footer-link" href="./">Home</a>
+      <a class="footer-link-active" href="./privacy.html">Privacy Policy</a>
+    </div>
+  </footer>
+
 </body>
 </html>
