@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260513-6">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-1">
 </head>
 
 <body>
@@ -443,6 +443,8 @@
     let stepSize = 1;
     let undoStack = [];
     let _announcedWinners = new Set();
+    let _dartsInput = '';
+    let _dartsCurrentIdx = 0;
 
     // ── Game presets ─────────────────────────────────────────
     const PRESETS = [
@@ -476,6 +478,7 @@
       pushUndo();
       _announcedWinners.clear();
       players.forEach(p => { p.score = startScore; p.log = []; });
+      _dartsInput = ''; _dartsCurrentIdx = 0;
       persist();
       render();
     }
@@ -509,6 +512,221 @@
       `;
       const wtSection = document.getElementById('winTargetSection');
       if (wtSection) wtSection.classList.toggle('hidden', presetId !== 'custom');
+    }
+
+    // ── Darts checkout table ──────────────────────────────────
+    const _DARTS_CO = {
+      170:'T20+T20+Bull',167:'T20+T19+Bull',164:'T20+T18+Bull',161:'T20+T17+Bull',
+      160:'T20+T20+D20', 158:'T20+T20+D19', 157:'T20+T19+D20', 156:'T20+T20+D18',
+      155:'T20+T19+D19', 154:'T20+T18+D20', 153:'T20+T19+D18', 152:'T20+T20+D16',
+      151:'T20+T17+D20', 150:'T20+T18+D18', 149:'T20+T19+D16', 148:'T20+T20+D14',
+      147:'T20+T17+D18', 146:'T20+T18+D16', 145:'T20+T19+D14', 144:'T20+T20+D12',
+      143:'T20+T17+D16', 142:'T20+T14+D20', 141:'T20+T19+D12', 140:'T20+T20+D10',
+      139:'T20+T13+D20', 138:'T20+T18+D12', 137:'T20+T19+D10', 136:'T20+T20+D8',
+      135:'T20+T17+D12', 134:'T20+T14+D16', 133:'T20+T19+D8',  132:'T20+T16+D12',
+      131:'T20+T13+D16', 130:'T20+T18+D8',  129:'T19+T16+D12', 128:'T20+T16+D10',
+      127:'T20+T17+D8',  126:'T19+T19+D6',  125:'T20+T15+D10', 124:'T20+T14+D11',
+      123:'T20+T13+D12', 122:'T18+T18+D7',  121:'T20+T11+D14', 120:'T20+S20+D20',
+      119:'T19+T12+D13', 118:'T20+S18+D20', 117:'T20+S17+D20', 116:'T20+S16+D20',
+      115:'T20+S15+D20', 114:'T20+S14+D20', 113:'T20+S13+D20', 112:'T20+S12+D20',
+      111:'T20+S11+D20', 110:'T20+S10+D20', 109:'T20+S9+D20',  108:'T20+S8+D20',
+      107:'T19+S10+D20', 106:'T20+S6+D20',  105:'T20+S5+D20',  104:'T20+S4+D20',
+      103:'T20+S3+D20',  102:'T20+S2+D20',  101:'T20+S1+D20',  100:'T20+D20',
+       99:'T19+T10+D6',   98:'T20+D19',      97:'T19+D20',      96:'T20+D18',
+       95:'T19+D19',      94:'T18+D20',      93:'T19+D18',      92:'T20+D16',
+       91:'T17+D20',      90:'T18+D18',      89:'T19+D16',      88:'T20+D14',
+       87:'T17+D18',      86:'T18+D16',      85:'T15+D20',      84:'T20+D12',
+       83:'T17+D16',      82:'T14+D20',      81:'T19+D12',      80:'T20+D10',
+       79:'T13+D20',      78:'T18+D12',      77:'T19+D10',      76:'T20+D8',
+       75:'T17+D12',      74:'T14+D16',      73:'T19+D8',       72:'T16+D12',
+       71:'T13+D16',      70:'T18+D8',       69:'T19+D6',       68:'T20+D4',
+       67:'T17+D8',       66:'T10+D18',      65:'T19+D4',       64:'T16+D8',
+       63:'T13+D12',      62:'T10+D16',      61:'T15+D8',       60:'S20+D20',
+       59:'S19+D20',      58:'S18+D20',      57:'S17+D20',      56:'T16+D4',
+       55:'S15+D20',      54:'S14+D20',      53:'S13+D20',      52:'S12+D20',
+       51:'S11+D20',      50:'Bull',          49:'S9+D20',       48:'S16+D16',
+       47:'S7+D20',       46:'S6+D20',        45:'S5+D20',      44:'S4+D20',
+       43:'S3+D20',       42:'S10+D16',       41:'S9+D16',      40:'D20',
+       39:'S7+D16',       38:'D19',           37:'S5+D16',      36:'D18',
+       35:'S3+D16',       34:'D17',           33:'S1+D16',      32:'D16',
+       31:'S7+D12',       30:'D15',           29:'S1+D14',      28:'D14',
+       27:'S3+D12',       26:'D13',           25:'S1+D12',      24:'D12',
+       23:'S7+D8',        22:'D11',           21:'S5+D8',       20:'D10',
+       19:'S3+D8',        18:'D9',            17:'S1+D8',       16:'D8',
+       15:'S7+D4',        14:'D7',            13:'S5+D4',       12:'D6',
+       11:'S3+D4',        10:'D5',             9:'S1+D4',        8:'D4',
+        7:'S3+D2',         6:'D3',             5:'S1+D2',        4:'D2',
+        3:'S1+D1',         2:'D1',
+    };
+    const getDartsCheckout = n => (n >= 2 && n <= 170) ? (_DARTS_CO[n] || null) : null;
+
+    // ── Profile-specific renderers ────────────────────────────
+    const PROFILE_RENDERERS = {
+      darts501: renderDartsGame,
+      darts301: renderDartsGame,
+    };
+
+    function renderDartsGame() {
+      if (!playersGameEl) return;
+
+      const topbarSub = document.querySelector('#game .topbar-title p');
+      if (topbarSub) topbarSub.textContent = `${startScore} · Enter throws`;
+
+      const ordered = [...players].sort((a, b) => a.order - b.order);
+      if (!ordered.length) {
+        playersGameEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-emoji">🎯</div>
+            <div><h4>No players</h4><p>Go to ⚙ and add players.</p></div>
+          </div>`;
+        return;
+      }
+
+      if (_dartsCurrentIdx >= ordered.length) _dartsCurrentIdx = 0;
+
+      const allWon = ordered.every(p => p.score <= 0);
+      if (!allWon) {
+        let guard = 0;
+        while (ordered[_dartsCurrentIdx].score <= 0 && guard < ordered.length) {
+          _dartsCurrentIdx = (_dartsCurrentIdx + 1) % ordered.length;
+          guard++;
+        }
+      }
+
+      const activeP  = allWon ? null : ordered[_dartsCurrentIdx];
+      const inputNum = _dartsInput ? parseInt(_dartsInput, 10) : null;
+
+      let previewText = '';
+      let previewCls  = '';
+      if (inputNum !== null && activeP) {
+        const result = activeP.score - inputNum;
+        if (inputNum > 180) {
+          previewText = '⚠ Max 180';
+          previewCls  = 'darts-preview--bust';
+        } else if (result < 0 || result === 1) {
+          previewText = '💥 Bust!';
+          previewCls  = 'darts-preview--bust';
+        } else if (result === 0) {
+          previewText = '🏆 Checkout!';
+          previewCls  = 'darts-preview--win';
+        } else {
+          const co = getDartsCheckout(result);
+          previewText = co ? `→ ${result} · ${co}` : `→ ${result} left`;
+        }
+      } else if (activeP) {
+        const co = getDartsCheckout(activeP.score);
+        if (co) previewText = `💡 ${co}`;
+      }
+
+      const playersHtml = ordered.map((p, i) => {
+        const isActive = !allWon && i === _dartsCurrentIdx;
+        const isWon    = p.score <= 0;
+        return `
+          <div class="darts-player${isActive ? ' darts-player--active' : ''}${isWon ? ' darts-player--won' : ''}" data-player="${escapeHtml(p.id)}">
+            <div class="darts-player-name">${isWon ? '🏆 ' : isActive ? '🎯 ' : ''}${escapeHtml(p.name)}</div>
+            <div class="darts-player-score">${isWon ? 'OUT' : Number(p.score)}</div>
+          </div>`;
+      }).join('');
+
+      if (allWon) {
+        playersGameEl.innerHTML = `
+          <div class="darts-screen darts-screen--over">
+            <div class="darts-players-list">${playersHtml}</div>
+            <div class="darts-gameover">
+              <div class="darts-gameover-text">Game Over!</div>
+              <p class="muted">All players have finished.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      playersGameEl.innerHTML = `
+        <div class="darts-screen">
+          <div class="darts-players-list">${playersHtml}</div>
+          <div class="darts-input-area">
+            <div class="darts-display">
+              <span class="darts-display-val${!_dartsInput ? ' darts-display--empty' : ''}">${_dartsInput || '—'}</span>
+              <span class="darts-display-preview ${previewCls}">${previewText}</span>
+            </div>
+            <div class="darts-numpad">
+              <button class="darts-key" data-darts-key="7">7</button>
+              <button class="darts-key" data-darts-key="8">8</button>
+              <button class="darts-key" data-darts-key="9">9</button>
+              <button class="darts-key" data-darts-key="4">4</button>
+              <button class="darts-key" data-darts-key="5">5</button>
+              <button class="darts-key" data-darts-key="6">6</button>
+              <button class="darts-key" data-darts-key="1">1</button>
+              <button class="darts-key" data-darts-key="2">2</button>
+              <button class="darts-key" data-darts-key="3">3</button>
+              <button class="darts-key darts-key--miss" data-darts-key="miss">Miss</button>
+              <button class="darts-key" data-darts-key="0">0</button>
+              <button class="darts-key darts-key--back" data-darts-key="back">⌫</button>
+              <button class="darts-key darts-key--confirm" data-darts-key="confirm">✓ Confirm</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function _dartsPressKey(key) {
+      const ordered = [...players].sort((a, b) => a.order - b.order);
+      if (!ordered.length) return;
+      if (_dartsCurrentIdx >= ordered.length) _dartsCurrentIdx = 0;
+      const p = ordered[_dartsCurrentIdx];
+      if (!p || p.score <= 0) return;
+
+      if (key === 'back') {
+        _dartsInput = _dartsInput.slice(0, -1);
+        renderDartsGame();
+        return;
+      }
+
+      if (key === 'miss') {
+        hapticLight();
+        _dartsInput = '';
+        _dartsCurrentIdx = (_dartsCurrentIdx + 1) % ordered.length;
+        renderDartsGame();
+        return;
+      }
+
+      if (key === 'confirm') {
+        if (!_dartsInput) return;
+        const thrown = parseInt(_dartsInput, 10);
+        if (!Number.isFinite(thrown)) { _dartsInput = ''; renderDartsGame(); return; }
+        if (thrown > 180) {
+          showToast('Maximum per turn is 180.');
+          _dartsInput = '';
+          renderDartsGame();
+          return;
+        }
+        const result = p.score - thrown;
+        if (result < 0 || result === 1) {
+          showToast(`💥 Bust! ${p.name} needs ${p.score}.`);
+          hapticLight();
+          _dartsInput = '';
+          renderDartsGame();
+          return;
+        }
+        pushUndo();
+        p.score = result;
+        p.log.push({ delta: -thrown, score: p.score, ts: Date.now() });
+        if (p.log.length > 200) p.log = p.log.slice(-200);
+        hapticLight();
+        persist();
+        _dartsInput = '';
+        _dartsCurrentIdx = (_dartsCurrentIdx + 1) % ordered.length;
+        checkAndAnnounceWinners();
+        renderDartsGame();
+        return;
+      }
+
+      if (/^\d$/.test(key)) {
+        if (_dartsInput.length >= 3) return;
+        const next = _dartsInput + key;
+        if (parseInt(next, 10) > 180) return;
+        _dartsInput = next;
+        hapticLight();
+        renderDartsGame();
+      }
     }
 
     function renderChips() {
@@ -582,6 +800,7 @@
       players.forEach(p => { p.score = startScore; p.log = []; });
       round = 1;
       undoStack = [];
+      _dartsInput = ''; _dartsCurrentIdx = 0;
       _announcedWinners.clear();
       syncUndoBtn();
       persist();
@@ -725,6 +944,7 @@
         pushUndo();
         _announcedWinners.clear();
         players.forEach(p => { p.score = startScore; p.log = []; });
+        _dartsInput = ''; _dartsCurrentIdx = 0;
         persist();
         render();
       });
@@ -763,13 +983,19 @@
       if (action === 'down')   movePlayer(id, +1);
     });
 
+    document.body.addEventListener('click', (e) => {
+      const key = e.target.closest('[data-darts-key]')?.getAttribute('data-darts-key');
+      if (key) _dartsPressKey(key);
+    });
+
     function updateScore(id, delta) {
       const p = players.find(x => x.id === id);
       if (!p) return;
       if (gameMode === 'darts') {
         if (p.score <= 0) return;
-        if (p.score + delta < 0) {
-          showToast(`Bust! ${p.name} needs exactly ${p.score}.`);
+        const _r = p.score + delta;
+        if (_r < 0 || _r === 1) {
+          showToast(`💥 Bust! ${p.name} needs ${p.score}.`);
           return;
         }
       }
@@ -975,7 +1201,18 @@
     function render() {
       const active = document.querySelector('.screen.active')?.id;
       if (active === 'settings') renderSettings();
-      if (active === 'game')     { renderGame(); renderChips(); checkAndAnnounceWinners(); }
+      if (active === 'game') {
+        document.getElementById('game').classList.toggle('game--darts', gameMode === 'darts');
+        if (PROFILE_RENDERERS[presetId]) {
+          PROFILE_RENDERERS[presetId]();
+        } else {
+          const topbarSub = document.querySelector('#game .topbar-title p');
+          if (topbarSub) topbarSub.textContent = 'Tap + / − to score';
+          renderGame();
+          renderChips();
+        }
+        checkAndAnnounceWinners();
+      }
       if (active === 'history')  renderHistory();
     }
 

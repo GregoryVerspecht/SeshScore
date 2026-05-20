@@ -1149,4 +1149,193 @@ select:focus:not(:focus-visible) { outline: none; }
   .mini:hover { background: rgba(255,255,255,.1); }
   .sign-btn:hover { opacity: .85; }
   .log-btn:hover { opacity: .7; }
+  .darts-key:not(.darts-key--confirm):hover { background: rgba(255,255,255,.1); }
+}
+
+/* ── Darts game mode ─────────────────────────────────────── */
+.game--darts .round-row,
+.game--darts .step-row,
+.game--darts .bottom-bar { display: none !important; }
+
+.game--darts {
+  padding-bottom: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.game--darts > .players {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 0;
+  gap: 0;
+}
+
+.darts-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.darts-players-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 4px 0 8px;
+}
+
+.darts-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--card);
+  margin: 5px 0;
+  gap: 10px;
+  transition: border-color .15s, background .15s;
+}
+
+.darts-player--active {
+  border-color: var(--primary);
+  background: rgba(24,183,255,.09);
+}
+
+.darts-player--won { opacity: .42; }
+
+.darts-player-name {
+  font-weight: 800;
+  font-size: .95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.darts-player-score {
+  font-size: 1.85rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -1px;
+  flex: 0 0 auto;
+}
+
+.darts-player--active .darts-player-score { color: var(--primary); }
+
+/* Input area */
+.darts-input-area {
+  flex: 0 0 auto;
+  padding-bottom: calc(10px + var(--safe-bottom));
+}
+
+.darts-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  min-height: 52px;
+}
+
+.darts-display-val {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.darts-display--empty { color: var(--muted); }
+
+.darts-display-preview {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: right;
+  max-width: 58%;
+  line-height: 1.35;
+}
+
+.darts-preview--bust { color: var(--danger); }
+.darts-preview--win  { color: #a78bfa; font-weight: 900; font-size: .88rem; }
+
+/* Numpad */
+.darts-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.darts-key {
+  height: 58px;
+  border-radius: 13px;
+  border: 1px solid var(--outline);
+  background: var(--card);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text);
+  transition: background .1s, transform .08s;
+}
+
+.darts-key:active {
+  transform: scale(.94);
+  background: rgba(255,255,255,.12);
+}
+
+.darts-key--miss {
+  background: var(--danger-bg);
+  border-color: rgba(248,113,113,.22);
+  color: var(--danger);
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.darts-key--back {
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.darts-key--confirm {
+  grid-column: 1 / -1;
+  height: 54px;
+  background: linear-gradient(90deg, #18B7FF 0%, #7C3BFF 55%, #D94CFF 100%);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 6px 20px rgba(124,59,255,.38);
+  letter-spacing: .02em;
+}
+
+.darts-key--confirm:active { transform: translateY(1px); box-shadow: none; }
+
+/* Game over state */
+.darts-screen--over .darts-players-list { flex: none; }
+
+.darts-gameover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px calc(24px + var(--safe-bottom));
+  gap: 8px;
+}
+
+.darts-gameover-text {
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-family: 'Sora', sans-serif;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
