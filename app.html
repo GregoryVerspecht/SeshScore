@@ -1260,6 +1260,8 @@
     });
     document.getElementById('btnEndForget').addEventListener('click', () => {
       closeEndGameSheet();
+      players = [];
+      undoStack = [];
       localStorage.removeItem(SESSION_KEY);
       showScreen('start');
     });
