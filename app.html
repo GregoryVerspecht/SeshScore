@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-6">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-8">
 </head>
 
 <body>
@@ -157,6 +157,14 @@
         <span class="win-target-label-text">Track rounds</span>
         <button class="toggle-pill" id="btnToggleRounds">On</button>
       </div>
+      <div id="maxRoundsRow" class="win-target-row">
+        <span class="win-target-label-text">Number of rounds</span>
+        <div class="win-target-input-wrap">
+          <input type="number" id="maxRoundsInput" placeholder="∞" inputmode="numeric" min="1" />
+          <span class="win-target-unit">rounds</span>
+        </div>
+      </div>
+      <p id="maxRoundsStatus" class="muted win-target-hint"></p>
       <div class="setup-nav-row setup-nav-row--start">
         <button class="btn ghost" id="btnStep3Back">← Back</button>
         <button class="btn primary btn-start-game" id="btnStartGame" data-nav="game">Start game ▶</button>
@@ -176,7 +184,7 @@
     </div>
 
     <div class="round-row">
-      <span class="round-label">Round <strong id="roundNum">1</strong></span>
+      <span class="round-label">Round <strong id="roundNum">1</strong><span id="maxRoundsLabel"></span></span>
       <span class="win-target-label" id="winTargetLabel"></span>
       <button class="btn ghost round-next-btn" id="btnNextRound">Next round →</button>
     </div>
@@ -452,6 +460,7 @@
     const _s = loadSession();
     let round      = Number.isFinite(_s.round)      ? _s.round      : 1;
     let winTarget  = Number.isFinite(_s.winTarget)  ? _s.winTarget  : null;
+    let maxRounds  = Number.isFinite(_s.maxRounds)  ? _s.maxRounds  : null;
     const _VALID_MODES = ['standard','darts','hearts','pingpong'];
     let gameMode   = _VALID_MODES.includes(_s.gameMode) ? _s.gameMode : 'standard';
     let startScore = Number.isFinite(_s.startScore) ? _s.startScore : 0;
@@ -506,6 +515,7 @@
       stepSize   = preset.stepSize;
       lowestWins = preset.lowestWins ?? false;
       showRounds = preset.showRounds ?? true;
+      maxRounds  = preset.maxRounds  ?? null;
       stepGroup.querySelectorAll('.step-btn').forEach(b => {
         b.classList.toggle('active', parseInt(b.getAttribute('data-step'), 10) === stepSize);
       });
@@ -958,7 +968,7 @@
 
     // ── Persistence ──────────────────────────────────────────
     function persist() {
-      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, gameMode, startScore, presetId, lowestWins, showRounds })); }
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ players, round, winTarget, maxRounds, gameMode, startScore, presetId, lowestWins, showRounds })); }
       catch(e) {}
     }
 
@@ -984,6 +994,8 @@
     // ── Round counter ─────────────────────────────────────────
     function syncRoundUI() {
       if (roundNumEl) roundNumEl.textContent = round;
+      const maxRoundsLabelEl = document.getElementById('maxRoundsLabel');
+      if (maxRoundsLabelEl) maxRoundsLabelEl.textContent = maxRounds !== null ? ` / ${maxRounds}` : '';
       if (winTargetLabelEl) {
         winTargetLabelEl.textContent = gameMode === 'darts'
           ? `🎯 ${startScore}`
@@ -992,6 +1004,10 @@
     }
 
     btnNextRound.addEventListener('click', () => {
+      if (maxRounds !== null && round >= maxRounds) {
+        showToast(`Already on the last round!`);
+        return;
+      }
       round++;
       _roundScored = new Set();
       persist();
@@ -1023,6 +1039,34 @@
       }
       persist();
       syncWinTargetUI();
+    });
+
+    // ── Max rounds ────────────────────────────────────────────
+    function syncMaxRoundsUI() {
+      const el     = document.getElementById('maxRoundsInput');
+      const status = document.getElementById('maxRoundsStatus');
+      if (el) el.value = maxRounds !== null ? maxRounds : '';
+      if (status) status.textContent = maxRounds !== null
+        ? `Game ends after round ${maxRounds}.`
+        : 'No round limit — play as long as you want.';
+    }
+
+    document.getElementById('maxRoundsInput')?.addEventListener('change', (e) => {
+      const raw = (e.target.value || '').trim();
+      if (raw === '') {
+        maxRounds = null;
+      } else {
+        const val = parseInt(raw, 10);
+        if (!Number.isFinite(val) || val < 1) {
+          showToast('Enter a valid round count, e.g. 10.');
+          e.target.value = '';
+          maxRounds = null;
+        } else {
+          maxRounds = val;
+        }
+      }
+      persist();
+      syncMaxRoundsUI();
     });
 
     // ── Player order ─────────────────────────────────────────
@@ -1144,6 +1188,19 @@
         players = JSON.parse(undoStack.pop());
         persist(); syncUndoBtn(); render();
       }
+      if (action === 'pass') {
+        if (!showRounds || _roundScored.has(id)) return;
+        const p = players.find(x => x.id === id);
+        if (!p) return;
+        pushUndo();
+        p.log.push({ delta: 0, score: p.score, ts: Date.now() });
+        if (p.log.length > 200) p.log = p.log.slice(-200);
+        hapticLight();
+        persist();
+        _roundScored.add(id);
+        _checkAutoRoundAdvance();
+        render();
+      }
     });
 
     document.body.addEventListener('click', (e) => {
@@ -1155,11 +1212,22 @@
       if (!showRounds || !players.length) return;
       if (gameMode === 'darts' || gameMode === 'pingpong') return;
       if (_roundScored.size < players.length) return;
-      // Don't auto-advance if game is already won
+      // Don't auto-advance if game is already won by score
       const over = (gameMode === 'hearts')
         ? players.some(p => p.score >= (winTarget ?? Infinity))
         : winTarget !== null && players.some(p => p.score >= winTarget);
       if (over) return;
+      // Stop if we've hit the max round limit
+      if (maxRounds !== null && round >= maxRounds) {
+        if (!_announcedWinners.has('__maxrounds__')) {
+          _announcedWinners.add('__maxrounds__');
+          const winner = [...players].sort((a, b) => lowestWins ? a.score - b.score : b.score - a.score)[0];
+          showToast(`🏆 Game over! ${winner?.name} wins after ${round} rounds!`, true);
+          hapticHeavy();
+          render();
+        }
+        return;
+      }
       round++;
       _roundScored = new Set();
       persist();
@@ -1263,17 +1331,20 @@
       _syncSettingsStep();
       renderPresets();
       syncWinTargetUI();
-      // Rounds toggle
-      const roundsRow = document.getElementById('roundsRow');
-      const btnRounds  = document.getElementById('btnToggleRounds');
-      if (roundsRow) {
-        const relevant = gameMode !== 'darts' && gameMode !== 'pingpong';
-        roundsRow.classList.toggle('hidden', !relevant);
-      }
+      // Rounds toggle + max rounds
+      const roundsRow    = document.getElementById('roundsRow');
+      const maxRoundsRow = document.getElementById('maxRoundsRow');
+      const maxRoundsSts = document.getElementById('maxRoundsStatus');
+      const btnRounds    = document.getElementById('btnToggleRounds');
+      const relevant = gameMode !== 'darts' && gameMode !== 'pingpong';
+      if (roundsRow) roundsRow.classList.toggle('hidden', !relevant);
+      if (maxRoundsRow) maxRoundsRow.classList.toggle('hidden', !relevant || !showRounds);
+      if (maxRoundsSts) maxRoundsSts.classList.toggle('hidden', !relevant || !showRounds);
       if (btnRounds) {
         btnRounds.textContent = showRounds ? 'On' : 'Off';
         btnRounds.classList.toggle('off', !showRounds);
       }
+      syncMaxRoundsUI();
       document.querySelectorAll('#settings [data-nav="game"]').forEach(btn => {
         btn.disabled = players.length === 0;
       });
@@ -1329,6 +1400,9 @@
           ? sorted.some(p => p.score >= (winTarget ?? Infinity))
           : winTarget !== null && sorted.some(p => p.score >= winTarget);
 
+      const gameOverByRounds = maxRounds !== null && round >= maxRounds && _announcedWinners.has('__maxrounds__');
+      const showPassBtn = showRounds && !isDarts && gameMode !== 'pingpong' && !hasWinner && !gameOverByRounds;
+
       playersGameEl.innerHTML = sorted.map((p, index) => {
         const isWinner = isDarts          ? p.score <= 0
           : isHeartsM
@@ -1339,6 +1413,7 @@
           : (!hasWinner && maxScore !== null && p.score === maxScore);
         const icon    = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
         const cardCls = (isWinner ? 'winner' : isLeader ? 'leader' : '') + (isDarts ? ' darts-mode' : '');
+        const hasPassed = _roundScored.has(p.id);
 
         return `
           <div class="player-card ${cardCls}" data-player="${escapeHtml(p.id)}">
@@ -1356,6 +1431,7 @@
               <button class="tap custom" data-action="custom" data-id="${escapeHtml(p.id)}" aria-label="Custom value">±</button>
               <button class="tap plus"   data-action="inc"    data-id="${escapeHtml(p.id)}" aria-label="Plus ${stepSize}">+${stepSize}</button>
             </div>
+            ${showPassBtn ? `<button class="pass-btn${hasPassed ? ' passed' : ''}" data-action="pass" data-id="${escapeHtml(p.id)}" ${hasPassed ? 'disabled' : ''} aria-label="${hasPassed ? 'Already passed' : 'Pass this round'}">${hasPassed ? '✓ Passed' : 'Pass (0 pts)'}</button>` : ''}
           </div>`;
       }).join('');
     }
@@ -1493,12 +1569,14 @@
         logList.innerHTML = [...entries].reverse().map(entry => {
           const delta = Number(entry.delta);
           const score = Number(entry.score);
-          const sign  = delta > 0 ? '+' : '';
-          const cls   = delta > 0 ? 'pos' : 'neg';
-          const time  = new Date(entry.ts).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const isPass = delta === 0;
+          const sign   = delta > 0 ? '+' : '';
+          const cls    = isPass ? 'pass' : delta > 0 ? 'pos' : 'neg';
+          const label  = isPass ? 'Pass' : `${sign}${delta}`;
+          const time   = new Date(entry.ts).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           return `
             <div class="log-item">
-              <span class="log-delta ${cls}">${sign}${delta}</span>
+              <span class="log-delta ${cls}">${label}</span>
               <span class="log-score">→ ${score}</span>
               <span class="log-time">${time}</span>
             </div>`;

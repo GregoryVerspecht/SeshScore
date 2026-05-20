@@ -571,6 +571,26 @@ select option { background: #111827; color: var(--text); }
   font-size: 1.3rem;
   color: var(--muted);
 }
+.pass-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  height: 36px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.pass-btn.passed {
+  border-color: transparent;
+  color: var(--primary);
+  opacity: .65;
+}
+.pass-btn:not(.passed):active { opacity: .5; }
 
 /* Score bump animation */
 .player-score.bump { animation: bump .2s ease; }
@@ -825,8 +845,9 @@ select option { background: #111827; color: var(--text); }
   font-size: 1.05rem;
   min-width: 48px;
 }
-.log-delta.pos { color: var(--blue); }
-.log-delta.neg { color: var(--danger); }
+.log-delta.pos  { color: var(--blue); }
+.log-delta.neg  { color: var(--danger); }
+.log-delta.pass { color: var(--muted); font-style: italic; }
 .log-score {
   font-size: .9rem;
   color: var(--muted);
