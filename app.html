@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-9">
+  <link rel="stylesheet" href="./static/style.css?v=20260520-10">
 </head>
 
 <body>
@@ -328,6 +328,21 @@
         </button>
         <button class="btn ghost" id="btnShareSession">⬆ Share scores</button>
         <button class="btn ghost" id="btnEndCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over sheet -->
+  <div class="sheet hidden" id="gameOverSheet" role="dialog" aria-modal="true" aria-label="Game over">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="gameover-content">
+      <div class="gameover-trophy" id="gameOverTrophy">🏆</div>
+      <h2 class="gameover-title" id="gameOverTitle">Player wins!</h2>
+      <p class="gameover-subtitle" id="gameOverSubtitle">Final scores</p>
+      <div class="gameover-scoreboard" id="gameOverScoreboard"></div>
+      <div class="gameover-actions">
+        <button class="btn ghost" id="btnGameOverContinue">Continue</button>
+        <button class="btn primary" id="btnGameOverNewSesh">New sesh ▶</button>
       </div>
     </div>
   </div>
@@ -1234,9 +1249,8 @@
         if (!_announcedWinners.has('__maxrounds__')) {
           _announcedWinners.add('__maxrounds__');
           const winner = [...players].sort((a, b) => lowestWins ? a.score - b.score : b.score - a.score)[0];
-          showToast(`🏆 Game over! ${winner?.name} wins after ${round} rounds!`, true);
-          hapticHeavy();
           render();
+          if (winner) showGameOverSheet(winner.name, `After ${round} rounds`);
         }
         return;
       }
@@ -1720,7 +1734,8 @@
              logSheet.classList.contains('hidden') &&
              scoreAllSheet.classList.contains('hidden') &&
              confirmSheet.classList.contains('hidden') &&
-             document.getElementById('endGameSheet').classList.contains('hidden');
+             document.getElementById('endGameSheet').classList.contains('hidden') &&
+             document.getElementById('gameOverSheet').classList.contains('hidden');
     }
 
     sheetBackdrop.addEventListener('click', () => {
@@ -1728,12 +1743,14 @@
       closeLogSheet();
       closeScoreAllSheet();
       closeConfirm(false);
-      if (typeof closeEndGameSheet === 'function') closeEndGameSheet();
+      if (typeof closeEndGameSheet  === 'function') closeEndGameSheet();
+      if (typeof closeGameOverSheet === 'function') closeGameOverSheet();
     });
 
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
-      if (!document.getElementById('endGameSheet').classList.contains('hidden')) { closeEndGameSheet(); return; }
+      if (!document.getElementById('gameOverSheet').classList.contains('hidden')) { closeGameOverSheet(); return; }
+      if (!document.getElementById('endGameSheet').classList.contains('hidden'))  { closeEndGameSheet();  return; }
       if (!confirmSheet.classList.contains('hidden'))  { closeConfirm(false);    return; }
       if (!scoreSheet.classList.contains('hidden'))    { closeSheet();           return; }
       if (!logSheet.classList.contains('hidden'))      { closeLogSheet();        return; }
@@ -1755,8 +1772,7 @@
         players.forEach(p => {
           if (p.score <= 0 && !_announcedWinners.has(p.id)) {
             _announcedWinners.add(p.id);
-            showToast(`🏆 ${p.name} wins! Checkout!`, true);
-            hapticHeavy();
+            showGameOverSheet(p.name, `Checkout! · ${presetId === 'darts301' ? '301' : '501'} cleared`);
           }
         });
       } else if (gameMode === 'hearts') {
@@ -1764,7 +1780,7 @@
         if (triggered && !_announcedWinners.has('__hearts__')) {
           _announcedWinners.add('__hearts__');
           const winner = [...players].sort((a, b) => a.score - b.score)[0];
-          if (winner) { showToast(`🏆 ${winner.name} wins with ${winner.score}!`, true); hapticHeavy(); }
+          if (winner) showGameOverSheet(winner.name, `Lowest score wins · someone hit ${winTarget}`);
         }
       } else if (gameMode === 'pingpong') {
         const ord = [...players].sort((a, b) => a.order - b.order);
@@ -1772,8 +1788,7 @@
           [[ord[0], ord[1]], [ord[1], ord[0]]].forEach(([w, l]) => {
             if (w.score >= 11 && (w.score - l.score) >= 2 && !_announcedWinners.has(w.id)) {
               _announcedWinners.add(w.id);
-              showToast(`🏆 ${w.name} wins!`, true);
-              hapticHeavy();
+              showGameOverSheet(w.name, `First to 11 · win by 2`);
             }
           });
         }
@@ -1781,8 +1796,7 @@
         players.forEach(p => {
           if (p.score >= winTarget && !_announcedWinners.has(p.id)) {
             _announcedWinners.add(p.id);
-            showToast(`🏆 ${p.name} wins with ${p.score}!`, true);
-            hapticHeavy();
+            showGameOverSheet(p.name, `Reached ${winTarget} points`);
           }
         });
       }
@@ -1840,6 +1854,52 @@
     document.getElementById('btnShareSession')?.addEventListener('click', shareScores);
     endGameSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
     endGameSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeEndGameSheet(); }, { passive: true });
+
+    // ── Game Over sheet ──────────────────────────────────────
+    const gameOverSheet = document.getElementById('gameOverSheet');
+
+    function showGameOverSheet(winnerName, subtitle) {
+      const titleEl      = document.getElementById('gameOverTitle');
+      const subtitleEl   = document.getElementById('gameOverSubtitle');
+      const scoreboardEl = document.getElementById('gameOverScoreboard');
+      if (titleEl)    titleEl.textContent    = `${winnerName} wins!`;
+      if (subtitleEl) subtitleEl.textContent = subtitle || 'Final scores';
+      const sorted = [...players].sort((a, b) =>
+        (gameMode === 'darts' || lowestWins) ? a.score - b.score : b.score - a.score
+      );
+      if (scoreboardEl) {
+        scoreboardEl.innerHTML = sorted.map((p, i) => `
+          <div class="gameover-row${i === 0 ? ' gameover-row--winner' : ''}">
+            <span class="gameover-row-rank">${i === 0 ? '🏆' : `#${i + 1}`}</span>
+            <span class="gameover-row-name">${escapeHtml(p.name)}</span>
+            <span class="gameover-row-score">${p.score}</span>
+          </div>`).join('');
+      }
+      showBackdrop();
+      gameOverSheet.classList.remove('hidden');
+      hapticHeavy();
+    }
+
+    function closeGameOverSheet() {
+      gameOverSheet.classList.add('hidden');
+      if (_noSheetsOpen()) hideBackdrop();
+    }
+
+    document.getElementById('btnGameOverContinue')?.addEventListener('click', closeGameOverSheet);
+    document.getElementById('btnGameOverNewSesh')?.addEventListener('click', () => {
+      closeGameOverSheet();
+      saveToHistory();
+      players.forEach(p => { p.score = startScore; p.log = []; });
+      round = 1; undoStack = [];
+      _dartsInput = ''; _dartsCurrentIdx = 0;
+      _roundScored = new Set(); _announcedWinners.clear();
+      maxRounds = null;
+      syncUndoBtn(); persist();
+      _settingsStep = 1;
+      showScreen('settings');
+    });
+    gameOverSheet.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+    gameOverSheet.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeStartY > 80) closeGameOverSheet(); }, { passive: true });
 
     // ── Animations ───────────────────────────────────────────
     function bumpScore(id) {

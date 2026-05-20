@@ -592,6 +592,74 @@ select option { background: #111827; color: var(--text); }
 }
 .pass-btn:not(.passed):active { opacity: .5; }
 
+/* Game over sheet */
+.gameover-content {
+  padding: 4px 20px 36px;
+  text-align: center;
+}
+.gameover-trophy {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 6px;
+}
+.gameover-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+.gameover-subtitle {
+  color: var(--muted);
+  font-size: .88rem;
+  margin: 0 0 24px;
+}
+.gameover-scoreboard {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.gameover-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+}
+.gameover-row--winner {
+  background: rgba(24,183,255,.08);
+  border-color: rgba(24,183,255,.28);
+}
+.gameover-row-rank {
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.gameover-row-name {
+  flex: 1;
+  font-weight: 700;
+  font-size: .95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gameover-row-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.gameover-actions {
+  display: flex;
+  gap: 12px;
+}
+.gameover-actions .btn { flex: 1; }
+
 /* Score bump animation */
 .player-score.bump { animation: bump .2s ease; }
 @keyframes bump {
