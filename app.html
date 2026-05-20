@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260520-10">
+  <link rel="stylesheet" href="./static/style.css?v=20260521-1">
 </head>
 
 <body>
@@ -497,6 +497,8 @@
     let stepSize = 1;
     let undoStack = [];
     let _announcedWinners = new Set();
+    let _passHoldTimer = null;
+    let _passHoldBtn   = null;
     let _dartsInput = '';
     let _dartsCurrentIdx = 0;
     let showRounds  = typeof _s.showRounds === 'boolean' ? _s.showRounds : true;
@@ -538,7 +540,6 @@
       stepGroup.querySelectorAll('.step-btn').forEach(b => {
         b.classList.toggle('active', parseInt(b.getAttribute('data-step'), 10) === stepSize);
       });
-      if (sortOrderEl) sortOrderEl.value = (gameMode === 'darts' || lowestWins) ? 'asc' : 'desc';
       pushUndo();
       _announcedWinners.clear();
       players.forEach(p => { p.score = startScore; p.log = []; });
@@ -1178,7 +1179,6 @@
 
     document.getElementById('btnToggleLowestWins')?.addEventListener('click', () => {
       lowestWins = !lowestWins;
-      if (sortOrderEl) sortOrderEl.value = lowestWins ? 'asc' : 'desc';
       _announcedWinners.clear();
       persist();
       render();
@@ -1226,25 +1226,45 @@
         players = JSON.parse(undoStack.pop());
         persist(); syncUndoBtn(); render();
       }
-      if (action === 'pass') {
-        if (!showRounds || _roundScored.has(id)) return;
-        const p = players.find(x => x.id === id);
-        if (!p) return;
-        pushUndo();
-        p.log.push({ delta: 0, score: p.score, ts: Date.now() });
-        if (p.log.length > 200) p.log = p.log.slice(-200);
-        hapticLight();
-        persist();
-        _roundScored.add(id);
-        _checkAutoRoundAdvance();
-        render();
-      }
     });
 
     document.body.addEventListener('click', (e) => {
       const key = e.target.closest('[data-darts-key]')?.getAttribute('data-darts-key');
       if (key) _dartsPressKey(key);
     });
+
+    // ── Hold-to-pass ─────────────────────────────────────────
+    function _cancelPassHold() {
+      if (_passHoldTimer) { clearTimeout(_passHoldTimer); _passHoldTimer = null; }
+      if (_passHoldBtn)   { _passHoldBtn.classList.remove('holding'); _passHoldBtn = null; }
+    }
+
+    document.body.addEventListener('pointerdown', e => {
+      const btn = e.target.closest('.pass-btn:not(.passed):not([disabled])');
+      if (!btn) return;
+      const id = btn.dataset.passId;
+      if (!showRounds || _roundScored.has(id)) return;
+      e.preventDefault();
+      btn.setPointerCapture(e.pointerId);
+      btn.classList.add('holding');
+      _passHoldBtn = btn;
+      _passHoldTimer = setTimeout(() => {
+        _passHoldTimer = null;
+        _passHoldBtn   = null;
+        btn.classList.remove('holding');
+        const p = players.find(x => x.id === id);
+        if (!p) return;
+        pushUndo();
+        p.log.push({ delta: 0, score: p.score, ts: Date.now() });
+        if (p.log.length > 200) p.log = p.log.slice(-200);
+        hapticLight(); persist();
+        _roundScored.add(id);
+        _checkAutoRoundAdvance();
+        render();
+      }, 600);
+    });
+    document.body.addEventListener('pointerup',     _cancelPassHold);
+    document.body.addEventListener('pointercancel', _cancelPassHold);
 
     function _checkAutoRoundAdvance() {
       if (!showRounds || !players.length) return;
@@ -1475,7 +1495,7 @@
               <button class="tap custom" data-action="custom" data-id="${escapeHtml(p.id)}" aria-label="Custom value">±</button>
               <button class="tap plus"   data-action="inc"    data-id="${escapeHtml(p.id)}" aria-label="Plus ${stepSize}">+${stepSize}</button>
             </div>
-            ${showPassBtn ? `<button class="pass-btn${hasPassed ? ' passed' : ''}" data-action="pass" data-id="${escapeHtml(p.id)}" ${hasPassed ? 'disabled' : ''} aria-label="${hasPassed ? 'Already passed' : 'Pass this round'}">${hasPassed ? '✓ Passed' : 'Pass (0 pts)'}</button>` : ''}
+            ${showPassBtn ? `<button class="pass-btn${hasPassed ? ' passed' : ''}" data-pass-id="${escapeHtml(p.id)}" ${hasPassed ? 'disabled' : ''} aria-label="${hasPassed ? 'Already passed' : 'Hold to pass'}">${hasPassed ? '✓ Passed' : '<span class="pass-fill"></span>Hold to pass'}</button>` : ''}
           </div>`;
       }).join('');
     }

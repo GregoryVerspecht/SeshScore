@@ -573,24 +573,42 @@ select option { background: #111827; color: var(--text); }
 }
 .pass-btn {
   display: block;
+  position: relative;
+  overflow: hidden;
   width: 100%;
   margin-top: 10px;
   height: 36px;
   background: transparent;
-  border: 1px dashed var(--border);
+  border: 1px dashed rgba(148,163,184,.3);
   border-radius: 12px;
   font-size: .78rem;
   font-weight: 700;
   color: var(--muted);
   cursor: pointer;
-  transition: opacity .15s;
+  transition: border-color .15s, color .15s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .pass-btn.passed {
   border-color: transparent;
   color: var(--primary);
   opacity: .65;
 }
-.pass-btn:not(.passed):active { opacity: .5; }
+.pass-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0; width: 0;
+  background: rgba(148,163,184,.15);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.pass-btn.holding { border-color: rgba(148,163,184,.6); color: var(--text); }
+.pass-btn.holding .pass-fill {
+  animation: passFill 600ms linear forwards;
+}
+@keyframes passFill {
+  from { width: 0 }
+  to   { width: 100% }
+}
 
 /* Game over sheet */
 .gameover-content {
