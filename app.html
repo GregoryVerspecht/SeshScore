@@ -993,7 +993,7 @@
 
     // ── Undo ─────────────────────────────────────────────────
     function pushUndo() {
-      undoStack.push(JSON.stringify(players));
+      undoStack.push(JSON.stringify({ players, round, roundScored: [..._roundScored] }));
       if (undoStack.length > 20) undoStack.shift();
       syncUndoBtn();
     }
@@ -1004,9 +1004,18 @@
 
     btnUndo.addEventListener('click', () => {
       if (!undoStack.length) return;
-      players = JSON.parse(undoStack.pop());
+      const snap = JSON.parse(undoStack.pop());
+      // Support old format (plain players array) from pre-existing stacks
+      if (Array.isArray(snap)) {
+        players = snap;
+      } else {
+        players      = snap.players;
+        round        = snap.round        ?? round;
+        _roundScored = new Set(snap.roundScored ?? []);
+      }
       persist();
       syncUndoBtn();
+      syncRoundUI();
       render();
     });
 
@@ -1135,13 +1144,15 @@
     // ── Reset scores ─────────────────────────────────────────
     btnResetScores.addEventListener('click', () => {
       if (!players.length) return;
-      showConfirm('Reset all scores?', `Scores will return to ${startScore}.`, 'Reset', () => {
+      showConfirm('Reset all scores?', `Scores and round counter will return to the start.`, 'Reset', () => {
         pushUndo();
         _announcedWinners.clear();
         players.forEach(p => { p.score = startScore; p.log = []; });
         _dartsInput = ''; _dartsCurrentIdx = 0;
         _roundScored = new Set();
+        round = 1;
         persist();
+        syncRoundUI();
         render();
       });
     });
