@@ -200,6 +200,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .section-title-row h3 { margin: 0; }
 .btn-sm {
+  width: auto;
   height: 34px;
   padding: 0 14px;
   font-size: .82rem;
