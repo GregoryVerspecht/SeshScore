@@ -70,12 +70,12 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           CERTIFICATE_PRIVATE_KEY: ${{ secrets.CERTIFICATE_PRIVATE_KEY }}
         run: |
-          # Try to create a new cert; if Apple's 2-cert limit is hit, reuse existing ones
-          app-store-connect certificates create \
+          # Reuse existing cert if available; only create when none exist
+          app-store-connect certificates list \
             --type IOS_DISTRIBUTION \
             --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
             --save \
-          || app-store-connect certificates list \
+          || app-store-connect certificates create \
             --type IOS_DISTRIBUTION \
             --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
             --save
