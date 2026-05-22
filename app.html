@@ -107,7 +107,7 @@
         <h2 id="settingsStepTitle">New Session</h2>
         <p id="settingsStepSub">Choose a game</p>
       </div>
-      <button class="icon-btn" data-nav="game" id="btnStartGameTopbar" aria-label="Go to game">▶</button>
+      <div class="icon-btn" aria-hidden="true" style="visibility:hidden"></div>
     </div>
 
     <div class="setup-dots" id="setupDots">
@@ -1988,6 +1988,22 @@
     render();
     initInstallBanner();
     initKofiBanner();
+
+  window.addEventListener('message', e => {
+    if (!e.data || e.data.type !== '__sesh_demo') return;
+    const {act, sel, idx, val} = e.data;
+    const el = idx != null ? document.querySelectorAll(sel)[idx] : document.querySelector(sel);
+    if (!el) return;
+    if (act === 'tap') {
+      el.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true, pointerId:1}));
+      el.dispatchEvent(new PointerEvent('pointerup',   {bubbles:true, cancelable:true, pointerId:1}));
+      el.click();
+    } else if (act === 'set') {
+      el.value = val;
+      el.dispatchEvent(new Event('input',  {bubbles:true}));
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  });
   </script>
 </body>
 </html>
