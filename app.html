@@ -17,9 +17,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/style.css?v=20260521-1">
+  <link rel="stylesheet" href="./static/style.css?v=20260731-1">
 </head>
 
 <body>
@@ -1476,11 +1476,13 @@
           ? (!hasWinner && minScore !== null && p.score === minScore)
           : (!hasWinner && maxScore !== null && p.score === maxScore);
         const icon    = isWinner ? '🏆 ' : isLeader ? '👑 ' : '';
-        const cardCls = (isWinner ? 'winner' : isLeader ? 'leader' : '') + (isDarts ? ' darts-mode' : '');
+        const isDefault = !isWinner && !isLeader && !isDarts;
+        const cardCls = (isWinner ? 'winner' : isLeader ? 'leader' : '') + (isDarts ? ' darts-mode' : '') + (isDefault ? ' accented' : '');
+        const cardStyle = isDefault ? ` style="--player-hue:${hueForName(p.name)}"` : '';
         const hasPassed = _roundScored.has(p.id);
 
         return `
-          <div class="player-card ${cardCls}" data-player="${escapeHtml(p.id)}">
+          <div class="player-card ${cardCls}" data-player="${escapeHtml(p.id)}"${cardStyle}>
             <div class="player-top">
               <div class="player-name">${icon}${escapeHtml(p.name)}</div>
               <div class="player-top-right">
@@ -1957,6 +1959,14 @@
         .replaceAll("'", '&#039;');
     }
     function cssEscape(s) { return String(s).replaceAll('"', '\\"'); }
+
+    // Per-player color accent: deterministic hue from the player's name.
+    const PLAYER_HUES = ['var(--brand-blue)', 'var(--brand-violet)', 'var(--brand-magenta)', 'var(--brand-orange)', 'var(--brand-mint)'];
+    function hueForName(name) {
+      const code = (name || '').charCodeAt(0);
+      const idx = Number.isNaN(code) ? 0 : code % PLAYER_HUES.length;
+      return PLAYER_HUES[idx] || PLAYER_HUES[0];
+    }
 
     function initKofiBanner() {
       if (_isNative()) return;
