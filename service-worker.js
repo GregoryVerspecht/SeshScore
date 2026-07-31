@@ -1,4 +1,4 @@
-const CACHE_NAME = "seshscore-cache-v13";
+const CACHE_NAME = "seshscore-cache-v14";
 const urlsToCache = [
     "/app.html",
     "/manifest.json",

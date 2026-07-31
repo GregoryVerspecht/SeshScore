@@ -47,22 +47,49 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@700;800;900&family=JetBrains+Mono:wght@600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg:       #090B12;
-      --card:     #111827;
-      --card-2:   #151A26;
-      --text:     #F8FAFC;
-      --muted:    #94A3B8;
-      --blue:     #18B7FF;
-      --purple:   #7C3BFF;
-      --magenta:  #D94CFF;
-      --danger:   #f87171;
-      --grad:     linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
-      --outline:  rgba(255,255,255,.08);
-      --r:        22px;
+      /* ── Neon design system tokens ─────────────────── */
+      --brand-blue:#18B7FF; --brand-violet:#7C3BFF; --brand-magenta:#D94CFF;
+      --brand-orange:#FF7A18; --brand-mint:#34E5A8; --brand-gold:#FFC40A; --brand-red:#F87171;
+
+      --gradient-brand:linear-gradient(135deg,var(--brand-blue) 0%,var(--brand-violet) 52%,var(--brand-magenta) 100%);
+      --gradient-brand-btn:linear-gradient(90deg,var(--brand-blue) 0%,var(--brand-violet) 55%,var(--brand-magenta) 100%);
+
+      --bg:#090B12;
+      --surface-1:#111827; --surface-2:#151A26; --surface-3:#1A2033;
+
+      --text-1:#F8FAFC; --text-2:#94A3B8;
+      --border-1:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.14);
+
+      --primary:var(--brand-blue);
+      --primary-bg:rgba(24,183,255,.14); --primary-border:rgba(24,183,255,.28);
+      --accent:var(--brand-violet);
+      --danger:var(--brand-red);
+
+      --shadow-card:0 10px 25px rgba(0,0,0,.45);
+      --glow-primary:0 0 28px rgba(24,183,255,.28);
+      --glow-accent:0 0 28px rgba(124,59,255,.32);
+
+      --font-display:'Sora',system-ui,sans-serif;
+      --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+      --font-mono:'JetBrains Mono','Geist Mono',monospace;
+
+      --radius-2xl:22px;
+
+      /* ── Legacy aliases (keep existing rules working) ─ */
+      --card:var(--surface-1);
+      --card-2:var(--surface-2);
+      --text:var(--text-1);
+      --muted:var(--text-2);
+      --blue:var(--brand-blue);
+      --purple:var(--brand-violet);
+      --magenta:var(--brand-magenta);
+      --grad:var(--gradient-brand);
+      --outline:var(--border-1);
+      --r:var(--radius-2xl);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -94,19 +121,19 @@
     .nav-links { display: flex; align-items: center; gap: 12px; }
     .btn-nav {
       height: 38px; padding: 0 20px; border-radius: 12px;
-      background: var(--grad); color: #fff; font-weight: 700; font-size: .875rem;
+      background: var(--gradient-brand-btn); color: #fff; font-weight: 700; font-size: .875rem;
       cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
-      box-shadow: 0 0 22px rgba(124,59,255,.3); transition: opacity .15s; border: none;
+      box-shadow: var(--glow-accent); transition: opacity .15s; border: none;
     }
     .btn-nav:hover { opacity: .85; }
 
     /* ── Global buttons ──────────────────────────────────────── */
     .btn-primary {
       height: 52px; padding: 0 28px; border-radius: 16px;
-      background: var(--grad); color: #fff; font-weight: 800; font-size: 1rem;
+      background: var(--gradient-brand-btn); color: #fff; font-weight: 800; font-size: 1rem;
       border: none; cursor: pointer; text-decoration: none;
       display: inline-flex; align-items: center; gap: 8px;
-      box-shadow: 0 0 28px rgba(124,59,255,.32); transition: opacity .15s, transform .1s;
+      box-shadow: var(--glow-accent); transition: opacity .15s, transform .1s;
     }
     .btn-primary:hover  { opacity: .88; }
     .btn-primary:active { opacity: .85; transform: translateY(1px); }
@@ -212,6 +239,21 @@
     }
     .phone-player.leader .phone-score { color: var(--blue); }
     .phone-player.winner .phone-score { color: #FFC40A; }
+    .phone-score { transition: color .2s; }
+    .phone-score.bump { animation: score-bump .35s ease; }
+    @keyframes score-bump {
+      0%   { transform: scale(1); }
+      45%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .hero-toast {
+      position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+      background: var(--surface-1); border: 1px solid var(--border-1); border-radius: 10px;
+      padding: 6px 14px; font-size: .72rem; font-weight: 700; color: var(--text-2);
+      white-space: nowrap; opacity: 0; box-shadow: var(--shadow-card);
+      transition: opacity .25s, transform .25s; pointer-events: none;
+    }
+    .hero-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
     .phone-btns { display: flex; gap: 4px; }
     .phone-btn {
       flex: 1; height: 22px; border-radius: 7px; border: 1px solid var(--outline);
@@ -508,14 +550,14 @@
         <div class="phone-screen">
           <div class="phone-topbar">
             <span class="phone-app-name">SeshScore</span>
-            <span class="phone-round-badge">Round 3 / 5</span>
+            <span class="phone-round-badge" id="roundBadge">Round 3 / 5</span>
           </div>
           <div class="phone-player leader">
             <div class="phone-player-top">
               <span class="phone-player-name">👑 Alice</span>
               <span class="phone-player-rank">#1</span>
             </div>
-            <div class="phone-score">47</div>
+            <div class="phone-score" id="aliceScore">47</div>
             <div class="phone-btns">
               <div class="phone-btn minus">−1</div>
               <div class="phone-btn">±</div>
@@ -568,6 +610,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Animated round toast -->
+      <div class="hero-toast" id="heroToast">↪ Round 4 starts</div>
     </div>
   </section>
 
@@ -888,6 +933,28 @@
         if (APP_STORE_URL === '#') { e.preventDefault(); window.location.href = './app.html'; }
       });
     });
+
+    // Animated hero: Alice's score bumps every ~2.2s; a round toast fades in every 5 points.
+    (function () {
+      const score = document.getElementById('aliceScore');
+      const round = document.getElementById('roundBadge');
+      const toast = document.getElementById('heroToast');
+      if (!score || !round || !toast) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      let val = 47, r = 3;
+      setInterval(function () {
+        val += 1;
+        score.textContent = val;
+        score.classList.remove('bump'); void score.offsetWidth; score.classList.add('bump');
+        if (val % 5 === 0 && r < 5) {
+          r += 1;
+          round.textContent = 'Round ' + r + ' / 5';
+          toast.textContent = '↪ Round ' + r + ' starts';
+          toast.classList.add('show');
+          setTimeout(function () { toast.classList.remove('show'); }, 1400);
+        }
+      }, 2200);
+    })();
   </script>
 
 </body>

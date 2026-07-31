@@ -1,30 +1,102 @@
-/* ====== Mobile-first base ====== */
+/* ============================================================
+   SeshScore — Neon design system
+   Formalized semantic tokens (colors / type / spacing / radii).
+   Legacy aliases at the bottom keep older rules working.
+   ============================================================ */
 :root {
-  --bg: #090B12;
-  --card: #111827;
-  --card-2: #151A26;
-  --text: #F8FAFC;
-  --muted: #94A3B8;
+  /* ── Neutrals & whites ─────────────────────────────── */
+  --neutral-950:#090B12; --neutral-900:#111827; --neutral-850:#151A26; --neutral-800:#1A2033;
+  --neutral-700:#232B40; --neutral-500:#94A3B8; --neutral-300:#CBD5E1; --neutral-50:#F8FAFC;
+  --white-04:rgba(255,255,255,.04); --white-06:rgba(255,255,255,.06); --white-08:rgba(255,255,255,.08);
+  --white-10:rgba(255,255,255,.10); --white-12:rgba(255,255,255,.12); --white-14:rgba(255,255,255,.14);
 
-  --blue: #18B7FF;
-  --purple: #7C3BFF;
-  --magenta: #D94CFF;
-  --orange: #FF7A18;
-  --gradient: linear-gradient(135deg, #18B7FF 0%, #7C3BFF 52%, #D94CFF 100%);
+  /* ── Brand hues ────────────────────────────────────── */
+  --brand-blue:#18B7FF; --brand-violet:#7C3BFF; --brand-magenta:#D94CFF; --brand-orange:#FF7A18;
+  --brand-mint:#34E5A8; --brand-gold:#FFC40A; --brand-red:#F87171;
 
-  --shadow: 0 10px 25px rgba(0,0,0,.45);
-  --shadow-strong: 0 16px 40px rgba(0,0,0,.65);
+  --gradient-brand:linear-gradient(135deg,var(--brand-blue) 0%,var(--brand-violet) 52%,var(--brand-magenta) 100%);
+  --gradient-brand-btn:linear-gradient(90deg,var(--brand-blue) 0%,var(--brand-violet) 55%,var(--brand-magenta) 100%);
+  --gradient-warm:linear-gradient(135deg,var(--brand-orange),#FF5E5B);
 
-  --radius: 22px;
+  /* ── Surfaces & text ───────────────────────────────── */
+  --bg:var(--neutral-950);
+  --surface-1:var(--neutral-900);
+  --surface-2:var(--neutral-850);
+  --surface-3:var(--neutral-800);
+  --surface-glass:rgba(9,11,18,.88);
 
-  --primary: #18B7FF;
-  --primary-bg: rgba(24,183,255,.14);
-  --danger: #f87171;
-  --danger-bg: rgba(248,113,113,.14);
-  --outline: rgba(255,255,255,.08);
+  --text-1:var(--neutral-50);
+  --text-2:var(--neutral-500);
+  --text-3:rgba(148,163,184,.5);
+
+  --border-1:var(--white-08);
+  --border-2:var(--white-14);
+
+  /* ── Semantic roles ────────────────────────────────── */
+  --primary:var(--brand-blue);
+  --primary-bg:rgba(24,183,255,.14);
+  --primary-border:rgba(24,183,255,.28);
+  --accent:var(--brand-violet);
+  --accent-bg:rgba(124,59,255,.14);
+  --accent-border:rgba(124,59,255,.38);
+  --success:var(--brand-mint);
+  --success-bg:rgba(52,229,168,.14);
+  --danger:var(--brand-red);
+  --danger-bg:rgba(248,113,113,.14);
+  --warning:var(--brand-orange);
+  --warning-bg:rgba(255,122,24,.14);
+  --gold:var(--brand-gold);
+
+  /* ── Elevation ─────────────────────────────────────── */
+  --shadow-sm:0 2px 0 rgba(0,0,0,.25);
+  --shadow-card:0 10px 25px rgba(0,0,0,.45);
+  --shadow-strong:0 16px 40px rgba(0,0,0,.65);
+  --glow-primary:0 0 28px rgba(24,183,255,.28);
+  --glow-accent:0 0 28px rgba(124,59,255,.32);
+
+  /* ── Type ──────────────────────────────────────────── */
+  --font-display:'Sora',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono','Geist Mono',monospace;
+
+  --text-display-xl:clamp(2.4rem,6vw,3.8rem);
+  --text-display-lg:2.4rem; --text-display-md:1.7rem;
+  --text-heading:1.1rem; --text-subheading:1.05rem;
+  --text-body:.95rem; --text-body-sm:.88rem; --text-caption:.82rem; --text-micro:.72rem;
+  --text-score:4rem; --text-score-lg:6rem;
+
+  --weight-body:600; --weight-bold:700; --weight-heavy:800; --weight-black:900;
+  --tracking-tight:-.03em; --tracking-tighter:-.5px; --tracking-wide:.5px; --tracking-wider:.08em;
+  --leading-tight:1.05; --leading-snug:1.15; --leading-normal:1.5; --leading-relaxed:1.65;
+
+  /* ── Spacing / radii / controls ────────────────────── */
+  --space-1:4px; --space-2:8px; --space-3:10px; --space-4:12px; --space-5:14px;
+  --space-6:16px; --space-7:20px; --space-8:24px; --space-9:32px; --space-10:40px; --space-11:56px;
+
+  --radius-sm:8px; --radius-md:12px; --radius-lg:14px; --radius-xl:18px;
+  --radius-2xl:22px; --radius-3xl:28px; --radius-pill:999px;
+
+  --control-height-sm:34px; --control-height-md:48px; --control-height-lg:62px;
+
+  --z-topbar:10; --z-sheet-backdrop:50; --z-sheet:60; --z-toast:200; --z-splash:1000;
 
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+
+  /* ── Legacy aliases (keep older rules working) ─────── */
+  --card:var(--surface-1);
+  --card-2:var(--surface-2);
+  --text:var(--text-1);
+  --muted:var(--text-2);
+  --blue:var(--brand-blue);
+  --purple:var(--brand-violet);
+  --magenta:var(--brand-magenta);
+  --orange:var(--brand-orange);
+  --gradient:var(--gradient-brand);
+  --shadow:var(--shadow-card);
+  --radius:var(--radius-2xl);
+  --outline:var(--border-1);
+  --border:var(--border-1);
 }
 
 * { box-sizing: border-box; }
@@ -354,11 +426,11 @@ img { max-width: 100%; height: auto; display: block; }
 .btn:active { transform: translateY(1px); }
 
 .btn.primary {
-  background: linear-gradient(90deg, #18B7FF 0%, #7C3BFF 55%, #D94CFF 100%);
+  background: var(--gradient-brand-btn);
   color: #fff;
   border: none;
   font-weight: 800;
-  box-shadow: 0 8px 24px rgba(124,59,255,.45);
+  box-shadow: var(--glow-accent);
 }
 .btn.ghost {
   background: transparent;
@@ -535,6 +607,13 @@ select option { background: #111827; color: var(--text); }
   box-shadow: 0 14px 40px rgba(24,183,255,.08), var(--shadow);
 }
 .leader .player-score { color: var(--blue); }
+
+/* Per-player color accent (default-tone cards only).
+   --player-hue is set inline per card from hueForName(name). */
+.player-card.accented {
+  border-color: var(--player-hue, var(--border-1));
+  box-shadow: 0 0 0 1px var(--player-hue, transparent) inset, var(--shadow-card);
+}
 
 /* Controls: 3 buttons */
 .player-controls {
