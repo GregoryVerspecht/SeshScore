@@ -47,8 +47,12 @@ jobs:
           npx cap sync ios
           # Set version, build number, and export compliance after sync
           APP_VERSION=$(node -p "require('./package.json').version")
+          # Build number must strictly increase and be unique per upload — including
+          # across workflow RE-RUNS (which keep the same run number). Folding in the
+          # run attempt keeps it monotonic on both new runs and re-runs.
+          BUILD_NUMBER=$(( GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT ))
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" ios/App/App/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
           /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
 
