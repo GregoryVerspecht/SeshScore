@@ -1,0 +1,19 @@
+{
+  "name": "SeshScore",
+  "short_name": "SeshScore",
+  "icons": [
+    {
+      "src": "/icons/seshscore-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/seshscore-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#0F1115",
+  "background_color": "#091018",
+  "display": "standalone"
+}

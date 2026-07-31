@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080"/>
+<title>SeshScore Launch Reel</title>
+<!--
+  HOW TO RECORD:
+  1. Chrome → F12 → Ctrl+Shift+M  → custom size 1080 x 1920, DPR 1
+  2. Win+G or OBS screen-record
+  3. Reel auto-plays after 1 second. Click to replay.
+  MUSIC: add in CapCut/iMovie — search "neon city" or "app launch"
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Sora:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090B12;--card:#111827;--text:#F8FAFC;--muted:#94A3B8;
+  --blue:#18B7FF;--purple:#7C3BFF;--magenta:#D94CFF;
+  --grad:linear-gradient(135deg,#18B7FF 0%,#7C3BFF 52%,#D94CFF 100%);
+  --outline:rgba(255,255,255,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);user-select:none;}
+.reel{width:1080px;height:1920px;position:relative;overflow:hidden;cursor:pointer;}
+.bg{position:absolute;inset:0;background:
+  radial-gradient(circle at 18% 12%,rgba(24,183,255,.18),transparent 42%),
+  radial-gradient(circle at 82% 82%,rgba(124,59,255,.2),transparent 42%),
+  radial-gradient(circle at 55% 45%,rgba(217,76,255,.09),transparent 36%),
+  var(--bg);}
+
+/* ── SCENES ── */
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .45s ease;pointer-events:none;}
+.scene.active{opacity:1;pointer-events:all;}
+
+/* ── PERSISTENT PHONE (real app iframe) ── */
+.phone-wrap{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.92) translateY(32px);
+  width:390px;height:820px;border-radius:52px;
+  background:var(--bg);border:2px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 0 80px rgba(24,183,255,.12),0 60px 120px rgba(0,0,0,.8);
+  overflow:hidden;opacity:0;
+  transition:opacity .55s ease .1s,transform .6s cubic-bezier(.34,1.35,.64,1) .1s;
+  pointer-events:none;z-index:2;
+}
+.phone-wrap.show{opacity:1;transform:translate(-50%,-50%) scale(1) translateY(0);pointer-events:all;}
+.phone-island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:126px;height:36px;background:#000;border-radius:18px;z-index:10;pointer-events:none;}
+#appFrame{position:absolute;top:0;left:0;width:390px;height:820px;border:none;}
+
+/* ── REEL LABEL (pinned below phone center) ── */
+.reel-label{
+  position:absolute;top:1430px;left:0;right:0;
+  text-align:center;opacity:0;transform:translateY(18px);
+  transition:opacity .6s ease .35s,transform .6s ease .35s;
+}
+.scene.active .reel-label{opacity:1;transform:translateY(0);}
+.reel-label h2{font-family:'Sora',sans-serif;font-size:44px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:6px;}
+.reel-label p{font-size:24px;color:var(--muted);font-weight:600;}
+
+/* ── INTRO ── */
+.intro-icon{width:140px;height:140px;border-radius:34px;background:var(--card);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;box-shadow:0 0 80px rgba(24,183,255,.28),0 0 160px rgba(124,59,255,.16);margin-bottom:28px;opacity:0;transform:scale(.4) rotate(-8deg);transition:opacity .7s cubic-bezier(.34,1.56,.64,1),transform .7s cubic-bezier(.34,1.56,.64,1);}
+.scene.active .intro-icon{opacity:1;transform:scale(1) rotate(0);}
+.intro-icon img{width:98px;height:98px;border-radius:22px;}
+.intro-name{font-family:'Sora',sans-serif;font-size:88px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;transform:translateY(32px);transition:opacity .7s ease .28s,transform .7s ease .28s;}
+.scene.active .intro-name{opacity:1;transform:translateY(0);}
+.intro-sub{font-size:34px;color:var(--muted);font-weight:600;margin-top:8px;opacity:0;transform:translateY(18px);transition:opacity .7s ease .5s,transform .7s ease .5s;}
+.scene.active .intro-sub{opacity:1;transform:translateY(0);}
+
+/* ── OUTRO ── */
+.outro-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(124,59,255,.22),transparent 60%),radial-gradient(circle at 50% 40%,rgba(24,183,255,.12),transparent 80%);}
+.outro-icon{width:136px;height:136px;border-radius:32px;background:var(--card);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 70px rgba(24,183,255,.32),0 0 140px rgba(124,59,255,.18);opacity:0;transform:scale(.5) rotate(6deg);transition:opacity .75s cubic-bezier(.34,1.56,.64,1),transform .75s cubic-bezier(.34,1.56,.64,1);}
+.scene.active .outro-icon{opacity:1;transform:scale(1) rotate(0);}
+.outro-icon img{width:92px;height:92px;border-radius:20px;}
+.outro-name{font-family:'Sora',sans-serif;font-size:80px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;transform:translateY(26px);transition:opacity .7s ease .25s,transform .7s ease .25s;}
+.scene.active .outro-name{opacity:1;transform:translateY(0);}
+.outro-desc{font-size:28px;color:var(--muted);font-weight:600;margin-top:8px;opacity:0;transition:opacity .7s ease .45s;}
+.scene.active .outro-desc{opacity:1;}
+.outro-cta{margin-top:36px;height:62px;padding:0 30px;border-radius:20px;background:#fff;color:#000;font-size:20px;font-weight:800;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(16px);transition:opacity .7s ease .65s,transform .7s ease .65s;}
+.scene.active .outro-cta{opacity:1;transform:translateY(0);}
+.outro-url{margin-top:16px;font-size:22px;color:var(--muted);font-weight:600;opacity:0;transition:opacity .7s ease .85s;}
+.scene.active .outro-url{opacity:1;}
+
+#confetti-canvas{position:absolute;inset:0;pointer-events:none;z-index:5;}
+.tap-dot{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.55);transform:translate(-50%,-50%) scale(0);animation:tap-pop .5s cubic-bezier(.2,.8,.4,1) forwards;pointer-events:none;z-index:20;}
+@keyframes tap-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:1}18%{transform:translate(-50%,-50%) scale(1.05);opacity:1}30%{transform:translate(-50%,-50%) scale(.95);opacity:.9}100%{transform:translate(-50%,-50%) scale(.7);opacity:0}}
+.prog{position:absolute;bottom:0;left:0;height:5px;background:var(--grad);width:0%;transition:width linear;opacity:.55;z-index:6;}
+.replay{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:22px;color:rgba(255,255,255,.28);font-weight:600;opacity:0;transition:opacity .5s ease;z-index:6;}
+.replay.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="reel" id="reel" onclick="startReel()">
+  <div class="bg"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Real app inside a phone frame, persists across scenes 2–5 -->
+  <div class="phone-wrap" id="phoneWrap">
+    
+    <iframe id="appFrame" src="" scrolling="no" title="SeshScore app"></iframe>
+  </div>
+
+  <!-- SCENE 1: INTRO -->
+  <div class="scene" id="s1">
+    <div class="intro-icon">
+      <img src="./seshscore-icon-512x512.png" alt="SeshScore"/>
+    </div>
+    <div class="intro-name">SeshScore</div>
+    <div class="intro-sub">Mobile scoreboard</div>
+  </div>
+
+  <!-- SCENE 2: GAME PICKER -->
+  <div class="scene" id="s2">
+    <div class="reel-label"><h2>Game profiles</h2><p>Ready to go, zero setup</p></div>
+  </div>
+
+  <!-- SCENE 3: ADD PLAYERS -->
+  <div class="scene" id="s3">
+    <div class="reel-label"><h2>Add your crew</h2><p>No limit on players</p></div>
+  </div>
+
+  <!-- SCENE 4: GAME IN PROGRESS -->
+  <div class="scene" id="s4">
+    <div class="reel-label"><h2>Track every round</h2><p>Auto-advances when all players score</p></div>
+  </div>
+
+  <!-- SCENE 5: GAME OVER -->
+  <div class="scene" id="s5">
+    <div class="reel-label"><h2>Instant winner</h2><p>Full scoreboard, no arguments</p></div>
+  </div>
+
+  <!-- SCENE 6: OUTRO -->
+  <div class="scene" id="s6">
+    <div class="outro-glow"></div>
+    <div class="outro-icon">
+      <img src="./seshscore-icon-512x512.png" alt="SeshScore"/>
+    </div>
+    <div class="outro-name">SeshScore</div>
+    <div class="outro-desc">Free · No account · Works offline</div>
+    <div class="outro-cta">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Download on App Store
+    </div>
+    <div class="outro-url">seshscore.gv-tech.eu</div>
+  </div>
+
+  <div class="prog" id="prog"></div>
+  <div class="replay" id="replay">Tap to replay</div>
+</div>
+
+<script>
+// ── Timeline ──────────────────────────────────────────
+const TIMELINE = [
+  { id:'s1', dur:2000 },   // logo splash
+  { id:'s2', dur:2000 },   // game picker  (profiles grid visible from scene start)
+  { id:'s3', dur:5500 },   // add players  (players screen visible from scene start)
+  { id:'s4', dur:9700 },   // scoring      (game visible from scene start)
+  { id:'s5', dur:6000 },   // game over    (winner sheet visible from scene start)
+  { id:'s6', dur:3400 },   // outro CTA
+];
+const TOTAL = TIMELINE.reduce((s,x)=>s+x.dur,0);
+
+// Absolute scene start times — derived from TIMELINE so they always stay in sync
+const T_S2 = 3500;
+const T_S3 = T_S2 + 2000;   //  4000  (s2 dur=2000)
+const T_S4 = T_S3 + 5500;   //  9500  (s3 dur=5500)
+const T_S5 = T_S4 + 9700;   // 19200  (s4 dur=9700)
+const T_S6 = T_S5 + 6000;   // 25200  (s5 dur=6000)
+
+let timers=[], autoTimers=[], confettiOn=false, rafId=0, _reelStart=0;
+
+function T(fn,ms){ timers.push(setTimeout(fn,ms)); }
+function A(fn,abs){ autoTimers.push(setTimeout(fn, Math.max(0, abs-(Date.now()-_reelStart)))); }
+function clearAll(){ timers.forEach(clearTimeout); timers=[]; autoTimers.forEach(clearTimeout); autoTimers=[]; }
+
+function showScene(id){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Confetti ──────────────────────────────────────────
+const cvs=document.getElementById('confetti-canvas');
+const ctx=cvs.getContext('2d');
+cvs.width=1080; cvs.height=1920;
+const COLS=['#18B7FF','#7C3BFF','#D94CFF','#FFD700','#FF6B6B','#A8FF78','#fff'];
+let particles=[];
+
+function launchConfetti(){
+  particles=Array.from({length:180},()=>({
+    x:Math.random()*1080, y:-60-Math.random()*140,
+    w:7+Math.random()*14, h:4+Math.random()*7,
+    color:COLS[Math.floor(Math.random()*COLS.length)],
+    rot:Math.random()*Math.PI*2,
+    vx:(Math.random()-.5)*8, vy:5+Math.random()*8,
+    vrot:(Math.random()-.5)*.22, op:1,
+  }));
+  confettiOn=true;
+  drawConfetti();
+}
+function stopConfetti(){ confettiOn=false; }
+function drawConfetti(){
+  ctx.clearRect(0,0,1080,1920);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.18; p.rot+=p.vrot;
+    if(p.y>1100) p.op-=.025;
+    ctx.save(); ctx.globalAlpha=Math.max(0,p.op);
+    ctx.fillStyle=p.color;
+    ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ctx.restore();
+  });
+  particles=particles.filter(p=>p.op>0);
+  if(confettiOn||particles.length) rafId=requestAnimationFrame(drawConfetti);
+  else ctx.clearRect(0,0,1080,1920);
+}
+
+// ── App automation ────────────────────────────────────
+// Called once the iframe has loaded.
+// All A(fn, abs) calls schedule fn at `abs` ms from reel start.
+//
+// Scoring plan (Custom preset, maxRounds=3, stepSize=1, showRounds=true):
+//   Auto-advance fires when ALL players have scored ≥1 in the round.
+//   Round 1: Nikita goes first (5 taps → N=5), Greg goes last (1 tap → G=1) → advance
+//   Round 2: Nikita goes first (4 taps → N=9), Greg goes last (1 tap → G=2) → advance
+//   Round 3: Greg goes first  (5 taps → G=7), Nikita goes last (1 tap → N=10) → GAME OVER
+//   Final: Greg=7, Nikita=10 — Nikita wins!
+function scheduleAutomation(){
+  function send(act, sel, idxOrVal){
+    const msg={type:'__sesh_demo', act, sel};
+    if(act==='tap' && typeof idxOrVal==='number') msg.idx=idxOrVal;
+    if(act==='set') msg.val=idxOrVal;
+    document.getElementById('appFrame').contentWindow.postMessage(msg,'*');
+  }
+
+  // ── SCENE 2: game picker (2000ms venster: T_S2=2000 → T_S3=4000) ──
+  A(()=>send('tap','#btnNewSesh'),               T_S2+200);  // wizard opent, profiles zichtbaar
+  A(()=>send('tap','[data-preset="custom"]'),    T_S2+1000); // Custom selecteren
+  A(()=>send('tap','#btnStep1Next'),             T_S2+1700); // → step 2 (300ms voor T_S3)
+
+  // ── SCENE 3: add players ──────────────────────────────
+  A(()=>{ send('set','#playerName','Greg');   send('tap','#btnAddPlayer'); }, T_S3+200); // simultaneous
+  A(()=>{ send('set','#playerName','Nikita'); send('tap','#btnAddPlayer'); }, T_S3+1400);
+  A(()=>send('tap','#btnStep2Next'),             T_S3+2800);
+  A(()=>send('set','#maxRoundsInput','3'),        T_S3+3300);
+  A(()=>send('tap','#btnStartGame'),             T_S3+5200); // game starts 300ms before s4
+
+  // ── helper: rapid-fire taps ─────────────────────────
+  function rapid(idx, n, absStart, ms){
+    for(let i=0;i<n;i++) A(()=>send('tap','[data-action="inc"]',idx), absStart+i*ms);
+  }
+
+  // ── SCENE 4: 3 rondes — Nikita wint 69–7 ─────────────
+  // R1: Greg ×5 (300ms) gaat eerst → Greg leidt 5–0
+  //     Nikita ×1 als laatste → 5–1, auto-advance
+  rapid(0, 21, T_S4+200, 10);   
+                         // Greg: 200…1400ms
+  A(()=>send('tap','[data-action="inc"]',10), T_S4+2000);  // Nikita last → 5–1, advance
+
+  // R2: Nikita ×20 (100ms) gaat eerst → Nikita surge 21–5
+  //     Greg ×1 als laatste → 21–6, auto-advance
+  rapid(1, 21, T_S4+2500, 10);                           // Nikita: 2500…4400ms
+  A(()=>send('tap','[data-action="inc"]',0), T_S4+4900);  // Greg last → 21–6, advance
+
+  // R3: Nikita ×48 (70ms) sprint → 69 punten
+  //     Greg ×1 als laatste → GAME OVER 69–7
+  rapid(1, 48, T_S4+5400, 70);                            // Nikita: 5400…8690ms
+  A(()=>send('tap','[data-action="inc"]',0), T_S4+9190);  // Greg last → GAME OVER
+
+  A(()=>launchConfetti(), T_S4+9440);
+  A(()=>stopConfetti(),   T_S5+5000);
+}
+
+// ── Main sequencer ────────────────────────────────────
+function startReel(){
+  clearAll();
+  cancelAnimationFrame(rafId);
+  ctx.clearRect(0,0,1080,1920);
+  confettiOn=false; particles=[];
+  document.getElementById('replay').classList.remove('show');
+
+  const phoneWrap=document.getElementById('phoneWrap');
+  phoneWrap.classList.remove('show');
+
+  _reelStart=Date.now();
+
+  // Reload app iframe from scratch
+  localStorage.removeItem('scoreboard_session_v3');
+  const frame=document.getElementById('appFrame');
+  frame.onload=null;
+  frame.src='about:blank';
+  T(()=>{
+    frame.onload=()=>{ frame.onload=null; scheduleAutomation(); };
+    frame.src='../app.html';
+  }, 80);
+
+  // Progress bar
+  const prog=document.getElementById('prog');
+  prog.style.transition='none'; prog.style.width='0%';
+  setTimeout(()=>{ prog.style.transition=`width ${TOTAL}ms linear`; prog.style.width='100%'; },60);
+
+  // Scene transitions
+  let off=0;
+  TIMELINE.forEach(sc=>{
+    T(()=>{
+      showScene(sc.id);
+      if(sc.id==='s2') phoneWrap.classList.add('show');
+      if(sc.id==='s6') phoneWrap.classList.remove('show');
+    }, off);
+    off+=sc.dur;
+  });
+  T(()=>document.getElementById('replay').classList.add('show'), TOTAL+600);
+}
+
+// Tap-ripple: luister op positie-berichten van de app iframe
+const _PL = (1080-390)/2, _PT = (1920-820)/2; // phone left/top in reel-pixels
+window.addEventListener('message', e => {
+  if (e.data?.type !== '__sesh_tap_pos') return;
+  const dot = document.createElement('div');
+  dot.className = 'tap-dot';
+  dot.style.left = (_PL + e.data.cx) + 'px';
+  dot.style.top  = (_PT + e.data.cy) + 'px';
+  document.getElementById('reel').appendChild(dot);
+  setTimeout(() => dot.remove(), 600);
+});
+
+// Auto-start
+setTimeout(startReel, 1000);
+</script>
+</body>
+</html>
